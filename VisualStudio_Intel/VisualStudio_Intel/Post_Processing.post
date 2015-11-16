@@ -1,8 +1,22 @@
+
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!
-!=========================================================================================
-! PROBE TYPE: DEFAULT 
-!=========================================================================================
+! Post Processor Results
+!-----------------------------------------------------------------------------------------
+!POST PROCESSOR 
+
+!	Post Processor = GiD 7
+!	Results = Displacements , Cauchy Stress
+!	File Name = mesh_block.post.res
+	
+!END POST PROCESSOR 
+
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+
+
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! Defaut Probes
+!-----------------------------------------------------------------------------------------
 ! Variable Name: Displacements
 ! Components: 1=X ; 2=Y ; 3=Z ; All
 !-----------------------------------------------------------------------------------------
@@ -11,26 +25,14 @@
 !-----------------------------------------------------------------------------------------
 ! Variable Name: Deformation Gradient:
 ! Components: 1=XX ; 2=YX ; 3=ZX ; 4=XY ; 5=YY ; 6=ZY ; 7=XZ ; 8=YZ ; 9=ZZ ; All
-!
-!=========================================================================================
-! PROBE TYPE: USER DIFINED (GAUSS POINT) 
-!=========================================================================================
-! Variable Name: Same names that those implemented in 
-!				 subroutine GetResult_'NameOfConstitutiveModel'
-! Components: Scalar: 1 
-!			  Vector: 1=X ; 2=Y ; 3=Z ; All
-!			  NonSymmetric Tensor: 1=XX ; 2=YX ; 3=ZX ; 4=XY ; 5=YY ; 6=ZY ; 7=XZ ; 8=YZ ; 9=ZZ ; All
-!			  Symmetric Tensor: : 1=XX ; 2=YY ; 3=ZZ ; 4=XY ; 5=YZ; 6=XZ ; All
-!
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-NUMBER OF PROBES = 8
+NUMBER OF PROBES = 6
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
 PROBE
-	Type = Default
 	Location = Node
 	File Name = Disp_X_Node_11.probe
 	Variable Name = Displacements 
@@ -39,7 +41,6 @@ PROBE
 END PROBE 
 
 PROBE
-	Type = Default
 	Location = Node
 	File Name = Disp_Y_Node_11.probe
 	Variable Name = Displacements 
@@ -48,7 +49,6 @@ PROBE
 END PROBE 
 
 PROBE
-	Type = Default
 	Location = Node
 	File Name = Disp_Z_Node_11.probe
 	Variable Name = Displacements 
@@ -57,9 +57,8 @@ PROBE
 END PROBE  
 
 PROBE
-	Type = Default
 	Location = Gauss Point
-	File Name = Cauchy_Stress_Gauss_Point.probe
+	File Name = Stress_Gauss_Point.probe
 	Variable Name = Cauchy Stress  
 	Element = 60
 	Gauss Point = 1
@@ -67,9 +66,8 @@ PROBE
 END PROBE 
 
 PROBE
-	Type = Default
 	Location = Gauss Point
-	File Name = Log_Strain_Gauss_Point.probe
+	File Name = Strain_Gauss_Point.probe
 	Variable Name = Logarithmic Strain   
 	Element = 60
 	Gauss Point = 1
@@ -77,34 +75,11 @@ PROBE
 END PROBE 	
 
 PROBE
-	Type = Default
 	Location = Gauss Point
-	File Name = DefGrad_Gauss_Point.probe
+	File Name = F_Gauss_Point.probe
 	Variable Name = Deformation Gradient   
 	Element = 60
 	Gauss Point = 1
-	Components = 3
-END PROBE
-
-
-PROBE
-	Type = User Defined 
-	Location = Gauss Point
-	File Name = VonMises_Cauchy_Stress_Gauss_Point.probe
-	Variable Name = von Mises Cauchy Stress   
-	Element = 60
-	Gauss Point = 1
-	Components = 1 
-END PROBE
-
-PROBE
-	Type = User Defined 
-	Location = Gauss Point
-	File Name = Almansi_Strain_Gauss_Point.probe
-	Variable Name = Almansi Strain   
-	Element = 60
-	Gauss Point = 1
-	Components = 3 
-END PROBE
-
+	Components = 9 
+END PROBE 		
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX

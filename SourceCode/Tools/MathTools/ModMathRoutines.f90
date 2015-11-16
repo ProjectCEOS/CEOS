@@ -533,7 +533,7 @@ module MathRoutines
         implicit none
 
         real(8),dimension(:,:)   :: M
-        
+
         character(len=1)         :: jobz, uplo
         integer                  :: n, lda, lwork, info
         real(8),dimension(9)     :: work
@@ -566,9 +566,9 @@ module MathRoutines
     subroutine EigenProblemSym2D ( M, eigenvalues, eigenvectors )
 
         implicit none
-        
+
         real(8),dimension(:,:)   :: M
-        
+
         character(len=1)         :: jobz, uplo
         integer                  :: n, lda, lwork, info
         real(8),dimension(9)     :: work
@@ -597,7 +597,7 @@ module MathRoutines
     end subroutine
 !######################################################################################################################################################################################
 
-    
+
 !######################################################################################################################################################################################
     subroutine MatrixMatrixMultiply_Trans ( A, B, C, alpha, beta )
 
@@ -646,7 +646,7 @@ module MathRoutines
 
         ! The routines compute a scalar-matrix-matrix product with one symmetric matrix
         ! and add the result to a scalar-matrix product. The operation is defined as:
-        ! C := alpha*A*B + beta*C - A=Sym and upper triangular
+        ! C := alpha*A*B + beta*C  ; A=Sym and upper triangular
 
         side = 'L'
         uplo = 'U'
@@ -724,12 +724,12 @@ module MathRoutines
         lda = n
         ldb = n
         nrhs = 1
-        
+
         ipiv = 0
 
         call dgetrf( m, n, A, lda, ipiv, info )
         call dgetrs( trans, n, nrhs, A, lda, ipiv, b, ldb, info )
-        
+
         x_output = b(:,1)
 
     end subroutine

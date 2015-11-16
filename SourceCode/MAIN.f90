@@ -30,6 +30,8 @@ program MAIN
     use ModExportResultFile
     use modTools
     use Timer
+    use Parser
+
     implicit none
 
     ! Objects
@@ -41,11 +43,12 @@ program MAIN
     ! Internal variables
 	! ---------------------------------------------------------------------------------------------
 
-    character(len=100) , pointer , dimension(:) :: Args
-    character(len=255)                          :: DataFileName
-    type(ClassTimer) :: AnalysisTime
+    character(len=100), allocatable, dimension(:) :: Args
+    type(ClassTimer)                              :: AnalysisTime
+    type(ClassParser)                             :: Comp
 
-    character(len=255)                          :: ProbesFileName
+    character(len=255)                            :: SettingsFileName
+    character(len=255)                            :: PostProcessingFileName
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
@@ -53,6 +56,35 @@ program MAIN
 	!                                       MAIN PROGRAM
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+
+    !**********************************************************************************************
+    ! Reading Arguments
+    !**********************************************************************************************
+    call GetArgs(Args,.false.)
+
+    call Comp%Setup()
+
+    if ( size(Args) == 2 ) then
+
+    elseif ( size(Args) == 4 ) then
+
+        if( Comp%CompareStrings('/Solve',Args(1)) ) then
+            SettingsFileName = trim(Args(2))
+        else
+            stop 'ERROR: Expected /Solve in .bat file'
+        endif
+
+        if( Comp%CompareStrings('/PostProcessing',Args(3)) ) then
+            PostProcessingFileName = trim(Args(4))
+        else
+            stop 'ERROR: Expected /PostProcessing in .bat file'
+        endif
+
+    else
+        stop 'ERROR: Arguments not consistent in .bat file.'
+    endif
+
+    !**********************************************************************************************
 
 
 
@@ -63,10 +95,7 @@ program MAIN
 
     ! Reading FEM input files
     ! ---------------------------------------------------------------------------------------------
-    call GetArgs(Args,.false.)
-    DataFileName = trim(Args(1))
-
-	call FEMAnalysis_1%ReadInputData( DataFileName )
+	call FEMAnalysis_1%ReadInputData( SettingsFileName )
 
     ! Allocating memory for the sparse matrix (pre-assembling)
 	! ---------------------------------------------------------------------------------------------
@@ -102,9 +131,8 @@ program MAIN
     write(*,*) ''
 
     ! Reading Probes Input File
-	! ---------------------------------------------------------------------------------------------    
-    ProbesFileName = 'Probes.dat'
-    call ReadProbesInputFile(ProbesFileName,ProbeList)
+	! ---------------------------------------------------------------------------------------------
+    call ReadProbesInputFile(PostProcessingFileName,ProbeList)
     write(*,*) ''
 
     ! Reading Post Processors Input File

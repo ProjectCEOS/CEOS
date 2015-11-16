@@ -258,6 +258,7 @@ module ConstitutiveModelLibrary
             ! Modules and implicit declarations
             ! -----------------------------------------------------------------------------------
             use Analysis
+            use Parser
             implicit none
 
             ! Input variables
@@ -269,34 +270,40 @@ module ConstitutiveModelLibrary
             ! -----------------------------------------------------------------------------------
             integer , intent(out) :: modelID
 
+            type(ClassParser) :: Comp
+
             !************************************************************************************
 
 
             !************************************************************************************
             ! DECODE THE STRING SUPPLIED BY GiD
 		    !************************************************************************************
-! TODO (Thiago#1#03/06/15): Escrever o nome do modelo em letra minúscula. Parser!!!
-            if ( (trim(model) == "linear_elastic").and. (AnalysisSettings%ElementTech == ElementTechnologies%Full_Integration) ) then
+
+            call Comp%Setup()
+
+
+
+            if ( Comp%CompareStrings('Linear_Elastic', model).and. (AnalysisSettings%ElementTech == ElementTechnologies%Full_Integration) ) then
 
                 modelID = ConstitutiveModels % LinearElasticModel
 
-            elseif ( (trim(model) == "j2_plasticity") .and. (AnalysisSettings%ElementTech == ElementTechnologies%Full_Integration) ) then
+            elseif ( Comp%CompareStrings('j2_plasticity', model) .and. (AnalysisSettings%ElementTech == ElementTechnologies%Full_Integration) ) then
 
                 modelID = ConstitutiveModels % J2PlasticityModel
 
-            elseif ( (trim(model) == "neo_hookean") .and. (AnalysisSettings%ElementTech == ElementTechnologies%Full_Integration) ) then
+            elseif ( Comp%CompareStrings('neo_hookean', model) .and. (AnalysisSettings%ElementTech == ElementTechnologies%Full_Integration) ) then
 
                 modelID = ConstitutiveModels % NeoHookeanModel
 
-            elseif ( (trim(model) == "neo_hookean") .and. (AnalysisSettings%ElementTech == ElementTechnologies%Mean_Dilatation) ) then
+            elseif ( Comp%CompareStrings('neo_hookean', model) .and. (AnalysisSettings%ElementTech == ElementTechnologies%Mean_Dilatation) ) then
 
                 modelID = ConstitutiveModels % NeoHookeanQ1P0Model
 
-            elseif ( (trim(model) == "st_venant_kirchhoff") .and. (AnalysisSettings%ElementTech == ElementTechnologies%Full_Integration) ) then
+            elseif ( Comp%CompareStrings('st_venant_kirchhoff', model) .and. (AnalysisSettings%ElementTech == ElementTechnologies%Full_Integration) ) then
 
                 modelID = ConstitutiveModels % StVenantKirchhoffModel
 
-            elseif ( (trim(model) == "hyperelastic") .and. (AnalysisSettings%ElementTech == ElementTechnologies%Mean_Dilatation) ) then
+            elseif ( Comp%CompareStrings('hyperelastic', model) .and. (AnalysisSettings%ElementTech == ElementTechnologies%Mean_Dilatation) ) then
 
                 modelID = ConstitutiveModels % HyperelasticQ1P0Model
 

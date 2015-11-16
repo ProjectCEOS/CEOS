@@ -40,7 +40,7 @@ module FEMAnalysis
         type  (ClassBoundaryConditions) , pointer                    :: BC
         type  (ClassGlobalSparseMatrix) , pointer                    :: Kg
 
-        ! TODO (Jan#2#10/29/15): Generalizar e colocar uma classe "ResultFile"
+        ! TODO (Jan#1#10/29/15): Generalizar e colocar uma classe "ResultFile"
 !Assim é possível colocar vários pos-processadores
         type  (ClassGiDResultFile)                                   :: GidFile
 

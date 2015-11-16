@@ -63,7 +63,7 @@ module NonlinearSolver
             stop "Error: Non Linear Solver not defined"
         end subroutine
 
-! TODO (Thiago#2#11/15/15): Como ficaria o código ao criar um solver não linear para resolver um ponto de gauss usando a classe de solvers não lineares? Criar um tamplate para ver se iria valer a pena. A ideia seria manter todas as rotinas necessárias do modelo material contidas em um único módulo.
+! TODO (Thiago#1#11/15/15): Como ficaria o código ao criar um solver não linear para resolver um ponto de gauss usando a classe de solvers não lineares? Criar um tamplate para ver se iria valer a pena. A ideia seria manter todas as rotinas necessárias do modelo material contidas em um único módulo.
 
 
 

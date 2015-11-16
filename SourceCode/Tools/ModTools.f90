@@ -1,10 +1,12 @@
 module modTools
+
     contains
 
     subroutine GetArgs(Args,Show)
+
         use dflib
         implicit none
-        character(len=*),dimension(:),pointer::Args
+        character(len=*),dimension(:), allocatable :: Args
         logical,optional::Show
 
         integer::NARG
@@ -17,8 +19,7 @@ module modTools
             ShowArg=.false.
         endif
 
-        if (associated(Args)) deallocate(Args)
-        Args=>null()
+        if (allocated(Args)) deallocate(Args)
 
         NARG = NARGS()
         if (NARG>1) then

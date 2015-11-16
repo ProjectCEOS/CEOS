@@ -21,7 +21,7 @@ module ModProbe
     type , abstract :: ClassProbe
 
         integer :: Location
-        character(len=255) :: FileName='', VariableName='', ProbeType=''
+        character(len=255) :: FileName='', VariableName=''
         integer, allocatable , dimension(:) :: Components
         integer :: VariableNameID, ProbeTypeID
         logical :: AllComponents = .false., Active = .true.
@@ -157,6 +157,8 @@ module ModProbe
 
     end subroutine
     !==========================================================================================
+
+
     !==========================================================================================
     subroutine WriteOnFile_Char(this , string )
             class(ClassProbe) :: this
@@ -314,7 +316,7 @@ module ModProbe
 
 
     !==========================================================================================
-    subroutine GaussPointProbeConstructor (Probe, ProbeType, Variable, Element, FileName,  GaussPoint, ComponentsString)
+    subroutine GaussPointProbeConstructor (Probe, Variable, Element, FileName,  GaussPoint, ComponentsString)
             ! Modules and implicit declarations
             ! -----------------------------------------------------------------------------------
             use Parser
@@ -326,7 +328,7 @@ module ModProbe
 
             ! Input variables
             ! -----------------------------------------------------------------------------------
-            character(len=*) :: Variable, ProbeType
+            character(len=*) :: Variable
             character(len=*) :: FileName
             integer          :: Element, GaussPoint
             character(len=*) :: ComponentsString

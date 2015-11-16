@@ -31,7 +31,6 @@ module ModExportResultFile
         type (ClassParser) :: ProbeFile
         character(len=255) :: OptionName, OptionValue, String
         character(len=255) :: ProbeLocation, ProbeFileName, ProbeVariableName, ProbeComponentsString
-        character(len=255) :: ProbeType
         logical :: ProbeAllComponents
 
         integer :: NumberOfProbes, ProbeNode, ProbeElement, ProbeGaussPoint, i
@@ -63,7 +62,6 @@ module ModExportResultFile
                 call ProbeFile%RaiseError('Expecting Word PROBE in '//trim(FileName))
             end if
 
-            ProbeType = ''
             ProbeLocation = ''
             ProbeFileName = ''
             ProbeVariableName = ''
@@ -83,9 +81,7 @@ module ModExportResultFile
                 OptionValue = ''
                 call ProbeFile%GetCurrentOption(OptionName,OptionValue)
 
-                if (ProbeFile%CompareStrings(OptionName,'Type')) then
-                    ProbeType = OptionValue
-                elseif (ProbeFile%CompareStrings(OptionName,'Location')) then
+                if (ProbeFile%CompareStrings(OptionName,'Location')) then
                     ProbeLocation = OptionValue
                 elseif (ProbeFile%CompareStrings(OptionName,'File Name')) then
                     ProbeFileName = OptionValue
@@ -116,7 +112,7 @@ module ModExportResultFile
         ! Probes de Pontos de Gauss
         elseif (  ProbeFile%CompareStrings(ProbeLocation, 'Gauss Point' ) ) then
 
-            call GaussPointProbeConstructor(ProbeList(i)%Pr, ProbeType, ProbeVariableName, ProbeElement, ProbeFileName, ProbeGaussPoint, ProbeComponentsString)
+            call GaussPointProbeConstructor(ProbeList(i)%Pr, ProbeVariableName, ProbeElement, ProbeFileName, ProbeGaussPoint, ProbeComponentsString)
 
         endif
 
