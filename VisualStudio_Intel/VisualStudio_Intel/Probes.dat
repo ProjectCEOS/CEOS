@@ -1,0 +1,110 @@
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+!
+!=========================================================================================
+! PROBE TYPE: DEFAULT 
+!=========================================================================================
+! Variable Name: Displacements
+! Components: 1=X ; 2=Y ; 3=Z ; All
+!-----------------------------------------------------------------------------------------
+! Variable Name: Cauchy Stress or Logarithmic Strain
+! Components: 1=XX ; 2=YY ; 3=ZZ ; 4=XY ; 5=YZ; 6=XZ ; All
+!-----------------------------------------------------------------------------------------
+! Variable Name: Deformation Gradient:
+! Components: 1=XX ; 2=YX ; 3=ZX ; 4=XY ; 5=YY ; 6=ZY ; 7=XZ ; 8=YZ ; 9=ZZ ; All
+!
+!=========================================================================================
+! PROBE TYPE: USER DIFINED (GAUSS POINT) 
+!=========================================================================================
+! Variable Name: Same names that those implemented in 
+!				 subroutine GetResult_'NameOfConstitutiveModel'
+! Components: Scalar: 1 
+!			  Vector: 1=X ; 2=Y ; 3=Z ; All
+!			  NonSymmetric Tensor: 1=XX ; 2=YX ; 3=ZX ; 4=XY ; 5=YY ; 6=ZY ; 7=XZ ; 8=YZ ; 9=ZZ ; All
+!			  Symmetric Tensor: : 1=XX ; 2=YY ; 3=ZZ ; 4=XY ; 5=YZ; 6=XZ ; All
+!
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+NUMBER OF PROBES = 8
+
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+
+PROBE
+	Type = Default
+	Location = Node
+	File Name = Disp_X_Node_11.probe
+	Variable Name = Displacements 
+	Node = 11
+	Components = 1
+END PROBE 
+
+PROBE
+	Type = Default
+	Location = Node
+	File Name = Disp_Y_Node_11.probe
+	Variable Name = Displacements 
+	Node = 11
+	Components = 2 
+END PROBE 
+
+PROBE
+	Type = Default
+	Location = Node
+	File Name = Disp_Z_Node_11.probe
+	Variable Name = Displacements 
+	Node = 11
+	Components = 3 
+END PROBE  
+
+PROBE
+	Type = Default
+	Location = Gauss Point
+	File Name = Cauchy_Stress_Gauss_Point.probe
+	Variable Name = Cauchy Stress  
+	Element = 60
+	Gauss Point = 1
+	Components = 3  
+END PROBE 
+
+PROBE
+	Type = Default
+	Location = Gauss Point
+	File Name = Log_Strain_Gauss_Point.probe
+	Variable Name = Logarithmic Strain   
+	Element = 60
+	Gauss Point = 1
+	Components = 3  
+END PROBE 	
+
+PROBE
+	Type = Default
+	Location = Gauss Point
+	File Name = DefGrad_Gauss_Point.probe
+	Variable Name = Deformation Gradient   
+	Element = 60
+	Gauss Point = 1
+	Components = 3
+END PROBE
+
+
+PROBE
+	Type = User Defined 
+	Location = Gauss Point
+	File Name = VonMises_Cauchy_Stress_Gauss_Point.probe
+	Variable Name = von Mises Cauchy Stress   
+	Element = 60
+	Gauss Point = 1
+	Components = 1 
+END PROBE
+
+PROBE
+	Type = User Defined 
+	Location = Gauss Point
+	File Name = Almansi_Strain_Gauss_Point.probe
+	Variable Name = Almansi Strain   
+	Element = 60
+	Gauss Point = 1
+	Components = 3 
+END PROBE
+
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX

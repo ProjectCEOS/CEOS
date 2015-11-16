@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="CodeBlocks" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/CodeBlocks" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/CodeBlocks" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+		</Compiler>
+		<Unit filename="../SourceCode/ConstitutiveLibrary/ConstitutiveModelsLibrary/ModConstitutiveModelLibrary.f90" />
+		<Unit filename="../SourceCode/ConstitutiveLibrary/ConstitutiveModelsLibrary/ModHyperelasticQ1P0.f90" />
+		<Unit filename="../SourceCode/ConstitutiveLibrary/ConstitutiveModelsLibrary/ModJ2Plasticity.f90" />
+		<Unit filename="../SourceCode/ConstitutiveLibrary/ConstitutiveModelsLibrary/ModLinearElastic.f90" />
+		<Unit filename="../SourceCode/ConstitutiveLibrary/ConstitutiveModelsLibrary/ModNeoHookean.f90" />
+		<Unit filename="../SourceCode/ConstitutiveLibrary/ConstitutiveModelsLibrary/ModNeoHookeanQ1P0.f90" />
+		<Unit filename="../SourceCode/ConstitutiveLibrary/ConstitutiveModelsLibrary/ModStVenantKirchhoff.f90" />
+		<Unit filename="../SourceCode/ConstitutiveLibrary/ModConstitutiveModel.f90" />
+		<Unit filename="../SourceCode/FEM/BoundaryConditions/ModBoundaryConditions.f90" />
+		<Unit filename="../SourceCode/FEM/BoundaryConditions/ModLoadHistoryData.f90" />
+		<Unit filename="../SourceCode/FEM/Elements/ElementLibrary/ModElementHexa8.f90" />
+		<Unit filename="../SourceCode/FEM/Elements/ElementLibrary/ModElementLibrary.f90" />
+		<Unit filename="../SourceCode/FEM/Elements/ElementLibrary/ModElementQuad4.f90" />
+		<Unit filename="../SourceCode/FEM/Elements/ElementLibrary/ModElementTetra4.f90" />
+		<Unit filename="../SourceCode/FEM/Elements/ElementLibrary/ModElementTri3.f90" />
+		<Unit filename="../SourceCode/FEM/Elements/ElementMethods/ModElement.f90" />
+		<Unit filename="../SourceCode/FEM/Elements/ElementMethods/SubElementConstructor.f90" />
+		<Unit filename="../SourceCode/FEM/InputOutput/ModExportResultFile.f90" />
+		<Unit filename="../SourceCode/FEM/InputOutput/ModGiDResultFile.f90" />
+		<Unit filename="../SourceCode/FEM/InputOutput/ModReadInputFile.f90" />
+		<Unit filename="../SourceCode/FEM/InputOutput/SubAnalyzeLoadCaseTables.f90" />
+		<Unit filename="../SourceCode/FEM/InputOutput/SubGIDExportResultFile.f90" />
+		<Unit filename="../SourceCode/FEM/ModFEMAnalysis.f90" />
+		<Unit filename="../SourceCode/FEM/Modules/ModAnalysis.f90" />
+		<Unit filename="../SourceCode/FEM/Modules/ModFEMSystemOfEquations.f90" />
+		<Unit filename="../SourceCode/FEM/Modules/ModNodes.f90" />
+		<Unit filename="../SourceCode/FEM/Modules/ModProbe.f90" />
+		<Unit filename="../SourceCode/FEM/Modules/ModuleInterfaces.f90" />
+		<Unit filename="../SourceCode/FEM/Subroutines/SaveConvergedStressAndStateVariables.f90" />
+		<Unit filename="../SourceCode/FEM/Subroutines/SubAssembleGlobalMatrix.f90" />
+		<Unit filename="../SourceCode/FEM/Subroutines/SubExternalForce.f90" />
+		<Unit filename="../SourceCode/FEM/Subroutines/SubInternalForce.f90" />
+		<Unit filename="../SourceCode/FEM/Subroutines/SubPrecribedDisplacement.f90" />
+		<Unit filename="../SourceCode/FEM/Subroutines/SubSolveConstitutiveModel.f90" />
+		<Unit filename="../SourceCode/FEM/Subroutines/SubTangentStiffnessMatrix.f90" />
+		<Unit filename="../SourceCode/FEM/Subroutines/SubUpdateMeshCoordinates.f90" />
+		<Unit filename="../SourceCode/MAIN.f90" />
+		<Unit filename="../SourceCode/MultiScale/ModMicrostructure.f90" />
+		<Unit filename="../SourceCode/MultiScale/SubCentroidCorrection.f90" />
+		<Unit filename="../SourceCode/MultiScale/SubMacrocopicKinematics.f90" />
+		<Unit filename="../SourceCode/MultiScale/SubMicroscopicDisplacement.f90" />
+		<Unit filename="../SourceCode/MultiScale/SubStressHomogenisation.f90" />
+		<Unit filename="../SourceCode/Tools/MathTools/LinearSolver/ModPardisoSolver.f90" />
+		<Unit filename="../SourceCode/Tools/MathTools/LinearSolver/ModSparseLinearSolver.f90" />
+		<Unit filename="../SourceCode/Tools/MathTools/LinearSolver/ModSparseLinearSolverLibrary.f90" />
+		<Unit filename="../SourceCode/Tools/MathTools/LinearSolver/modLinearSolver.f90" />
+		<Unit filename="../SourceCode/Tools/MathTools/ModMathRoutines.f90" />
+		<Unit filename="../SourceCode/Tools/MathTools/NonlinearSolver/ModNonLinearSolver.f90" />
+		<Unit filename="../SourceCode/Tools/MathTools/NonlinearSolver/ModNonLinearSolverLibrary.f90" />
+		<Unit filename="../SourceCode/Tools/MathTools/NonlinearSolver/modNewtonRaphsonFull.f90" />
+		<Unit filename="../SourceCode/Tools/MathTools/SparseMatrixRoutines/ModGlobalSparseMatrix.f90" />
+		<Unit filename="../SourceCode/Tools/MathTools/SparseMatrixRoutines/ModSparseMatrixRoutines.f90" />
+		<Unit filename="../SourceCode/Tools/MathTools/SparseMatrixRoutines/ModSparseVectorRoutines.f90" />
+		<Unit filename="../SourceCode/Tools/MathTools/modNonLinearSystemOfEquations.f90" />
+		<Unit filename="../SourceCode/Tools/ModParser.f90" />
+		<Unit filename="../SourceCode/Tools/ModStringLib.f90" />
+		<Unit filename="../SourceCode/Tools/ModTimer.f90" />
+		<Unit filename="../SourceCode/Tools/ModTools.f90" />
+		<Unit filename="../SourceCode/Tools/SubError.f90" />
+		<Unit filename="../SourceCode/Tools/modStatus.f90" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
