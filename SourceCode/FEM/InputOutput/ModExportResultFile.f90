@@ -158,7 +158,7 @@ module ModExportResultFile
 
         write(*,*) 'Post Processing Results...'
 
-        ! Analisar se existem os arquivos dos probes pedidos. Caso exitam, são deletados
+        ! Analisar se existem os arquivos dos probes pedidos. Caso existam, são deletados
         do i = 1, size(ProbeList)
             call ProbeList(i)%Pr%InitializeFile
         enddo

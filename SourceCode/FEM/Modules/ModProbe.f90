@@ -17,6 +17,7 @@ module ModProbe
     end type
     type (ClassVariableNames), parameter :: VariableNames = ClassVariableNames()
 
+
     !----------------------------------------------------------------------------------------------
     type , abstract :: ClassProbe
 
@@ -68,7 +69,7 @@ module ModProbe
 
 
     contains
-
+!==========================================================================================
     subroutine ParseComponents( ComponentsString , Components )
         use StringLib
         use Parser
@@ -96,7 +97,7 @@ module ModProbe
 
         deallocate(SubStrings)
     end subroutine
-
+!==========================================================================================
     function ParseVariableName(Variable) result(enu)
         use Parser
         character(len=*) :: Variable
@@ -117,7 +118,7 @@ module ModProbe
             enu = VariableNames%UserDefined
         ENDIF
     end function
-
+!==========================================================================================
 
 
 
@@ -220,25 +221,17 @@ module ModProbe
 
             allocate(NodeProbe)
 
-            NodeProbe%FileName = FileName
-            NodeProbe%VariableName = VariableName
-            NodeProbe%Node = Node
+            NodeProbe%FileName       = FileName
+            NodeProbe%VariableName   = VariableName
+            NodeProbe%Node           = Node
+            NodeProbe%VariableNameID = ParseVariableName(VariableName)
 
-            if ( comp%CompareStrings( VariableName,'Displacements') ) then
-
-                NodeProbe%VariableNameID = VariableNames%Displacements
-
-                    if ( Comp%CompareStrings(ComponentsString, 'All') ) then
-                        NodeProbe%AllComponents = .true.
-                    else
-                        NodeProbe%AllComponents = .false.
-                        Call ParseComponents( ComponentsString , NodeProbe%Components )
-
-                    endif
-
-
-            end if
-
+            if ( Comp%CompareStrings(ComponentsString, 'All') ) then
+                NodeProbe%AllComponents = .true.
+            else
+                NodeProbe%AllComponents = .false.
+                Call ParseComponents( ComponentsString , NodeProbe%Components )
+            endif
 
             Probe => NodeProbe
 
@@ -268,23 +261,21 @@ module ModProbe
             ! Internal variables
             ! -----------------------------------------------------------------------------------
             real(8), dimension(size(this%Components)) :: Uprobe
-            integer :: FileNumber, i
-
             !************************************************************************************
 
-
-            ! TODO (Thiago#1#11/05/15): varificar se as entradas informadas no arquivo do probe é a prova de orelhas...
 
             ! teste se probe esta ativo
             if (.not. this%Active) then
                 return
             endif
 
+            ! Teste de inteligência do usuário
 
-            FileNumber = 33
-            open( FileNumber, file=this%FileName, Access='append', status='unknown')
-
-
+            if ( this%Node >  size(FEA%GlobalNodesList) ) then
+                call this%WriteOnFile('ERROR - Node Number is greater than the Max Number of Nodes in the Mesh')
+                this%Active = .false.
+                return
+            endif
 
             select case (this%VariableNameID)
 
@@ -294,22 +285,31 @@ module ModProbe
 
                         case (ProblemTypes%Mechanical)
 
-                            Uprobe = FEA%U( (this%Node - 1)*FEA%AnalysisSettings%NDOFnode + this%Components(:) )
+                            if (this%AllComponents) then
+                                call this%WriteOnFile(FEA%Time,FEA%U( (this%Node - 1)*FEA%AnalysisSettings%NDOFnode + [1:FEA%AnalysisSettings%NDOFnode] ))
+                            else
+                                if (any(this%Components>FEA%AnalysisSettings%NDOFnode)) then
+                                    call this%WriteOnFile('ERROR: Component is greater than the available')
+                                    this%Active=.false.
+                                    return
+                                endif
+                                Uprobe = FEA%U( (this%Node - 1)*FEA%AnalysisSettings%NDOFnode + this%Components(:) )
+                                call this%WriteOnFile(FEA%Time,UProbe)
+                            endif
 
                         case (ProblemTypes%Thermal)
-                            !A fazer...
-
+                            call this%WriteOnFile('ERROR: Thermal analysis not implemented')
+                            this%Active=.false.
+                            return
                     end select
 
-                    write(FileNumber,*) FEA%Time, (Uprobe(i),i=1,size(Uprobe))
-
                 case default
-                    stop 'Error in ModProbe - WriteProbeResult_Node'
+
+                    call this%WriteOnFile('ERROR: Variable not available')
+                    this%Active=.false.
+                    return
 
             end select
-
-            close(33)
-
 
     end subroutine
     !==========================================================================================

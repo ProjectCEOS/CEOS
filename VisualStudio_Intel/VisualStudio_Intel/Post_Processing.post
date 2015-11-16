@@ -37,7 +37,7 @@ PROBE
 	File Name = Disp_X_Node_11.probe
 	Variable Name = Displacements 
 	Node = 11
-	Components = 1
+	Components = all
 END PROBE 
 
 PROBE

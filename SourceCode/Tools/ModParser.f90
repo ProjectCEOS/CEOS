@@ -18,12 +18,7 @@ module Parser
     public :: GetNextString , GetCurrentString,  GetNextOption , GetCurrentOption
     public :: ShowError , RaiseError , ResetError , AdvanceTo , Setup , FormatString
     public :: CompareStrings , EOF , Warning , CheckError , ConvertToDouble , ConvertToInteger
-    public :: GetOriginalLine , CloseFile , EndParser , FillListOfOptions
-    !, FileExists
-    !public :: RemoveNullCharacters
-
-    !integer , dimension(3) , target :: DefaultNullCharacter = [0,9,32]
-
+    public :: GetOriginalLine , CloseFile , EndParser
 
     character(len=1) , parameter  ,private :: space=' '
 
@@ -82,16 +77,11 @@ module Parser
             procedure :: EndParser
             procedure :: FillListOfOptions_Complete
             procedure :: FillListOfOptions_Reduced
-            generic   :: FillListOfOptions => FillListOfOptions_Complete , FillListOfOptions_Reduced
+            procedure :: FillListOfOptions_Barrier
+            generic , public   :: FillListOfOptions => FillListOfOptions_Complete , FillListOfOptions_Reduced , FillListOfOptions_Barrier
             procedure :: Reset
     end type
     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-    Interface FillListOfOptions
-        procedure  FillListOfOptions_Complete
-        procedure  FillListOfOptions_Reduced
-    end interface
-
     contains
 !____________________________________________________________________________________________________________________________________________________
         subroutine Reset(this)
@@ -103,7 +93,6 @@ module Parser
             this% EndOfFile = .false.
             this%CurrentLine='' ; this% Line='' ;this% FileName=''
             if (allocated(this%NullCharacters)) deallocate(this%NullCharacters)
-             !this%NullCharacters=>null()
              call this%ResetError()
         end subroutine
 !____________________________________________________________________________________________________________________________________________________
@@ -210,7 +199,7 @@ module Parser
             elseif (FileNumberPresent) then
                 if (.not.UnitUsed(FileNumber)) goto 994
             else
-                !goto 995
+                !Nada é feito
             endif
 
             return
@@ -629,6 +618,48 @@ module Parser
 
     end subroutine
 !____________________________________________________________________________________________________________________________________________________
+    subroutine FillListOfOptions_Barrier(this,ListOfOptions,ListOfValues,Found,Barrier)
+        class(ClassParser)::this
+        character(len=*),dimension(:)::ListOfOptions,ListOfValues
+        logical,dimension(:)::Found
+        character(len=*) :: Barrier
+
+        integer :: i
+        character(len=255)::String
+        character(len=len(ListOfOptions)) :: OptionName
+        character(len=len(ListOfValues))  :: OptionValue
+
+        if ((Size(ListOfOptions).ne.size(ListOfValues)).or.(size(ListOfOptions).ne.size(Found))) then
+            call This%SetError("FillListOfOptions:: ListOfOptions,ListOfValues,and Found array must have the same size")
+            return
+        endif
+
+        Found=.false.
+        ListOfValues=''
+
+
+        LOOP: do while (.not.EOF(this))
+
+                call this%GetNextString(String)
+                If (EOF(this)) then
+                    exit Loop
+                elseif (this%CompareStrings(String,Barrier)) then
+                    exit LOOP
+                end if
+
+                OptionValue = ''
+                call this%GetCurrentOption(OptionName,OptionValue)
+
+                do i=1,size(ListOfOptions)
+                    if (this%CompareStrings(OptionName,ListOfOptions(i))) then
+                        Found(i)=.true.
+                        ListOfValues(i) = OptionValue
+                    endif
+                enddo
+
+        enddo LOOP
+
+    end subroutine
 
 
 end module

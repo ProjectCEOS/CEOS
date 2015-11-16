@@ -163,6 +163,7 @@ module NeoHookean
             ListOfOptions=["C10","BulkModulus"]
 
             call DataFile%FillListOfOptions(ListOfOptions,ListOfValues,FoundOption)
+            !call DataFile%FillListOfOptions(ListOfOptions,ListOfValues,FoundOption,'barreira')
             call DataFile%CheckError
 
             do i=1,size(FoundOption)
