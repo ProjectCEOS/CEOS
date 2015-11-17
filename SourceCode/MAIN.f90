@@ -27,6 +27,7 @@ program MAIN
 	! ---------------------------------------------------------------------------------------------
     use FEMAnalysis
     use ModProbe
+    use ModPostProcessors
     use ModExportResultFile
     use modTools
     use Timer
@@ -38,6 +39,7 @@ program MAIN
 	! ---------------------------------------------------------------------------------------------
     type (ClassFEMAnalysis) :: FEMAnalysis_1
     type (ClassProbeWrapper), pointer, dimension(:) :: ProbeList
+    class(ClassPostProcessor), pointer :: PostProcessor
 
 
     ! Internal variables
@@ -50,6 +52,8 @@ program MAIN
     character(len=255)                            :: SettingsFileName
     character(len=255)                            :: PostProcessingFileName
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+! TODO (Thiago#2#11/17/15): Trocar todos o nome dos módulos para Mod'NOME'
 
 
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -132,7 +136,7 @@ program MAIN
 
     ! Reading Probes Input File
 	! ---------------------------------------------------------------------------------------------
-    call ReadProbesInputFile(PostProcessingFileName,ProbeList)
+    call ReadPostProcessingInputFile(PostProcessingFileName,ProbeList,PostProcessor)
     write(*,*) ''
 
     ! Reading Post Processors Input File
@@ -141,7 +145,7 @@ program MAIN
 
     ! Post Processing Results
 	! ---------------------------------------------------------------------------------------------
-    call PostProcessingResults(ProbeList,FEMAnalysis_1)
+    call PostProcessingResults(ProbeList,PostProcessor,FEMAnalysis_1)
 
     call AnalysisTime%Stop
     write(*,*) ''

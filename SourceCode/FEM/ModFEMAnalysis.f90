@@ -19,7 +19,6 @@ module FEMAnalysis
     use Analysis
     use BoundaryConditions
     use GlobalSparseMatrix
-    use GiDResultFile
     use NonLinearSolver
 
     implicit none
@@ -40,9 +39,6 @@ module FEMAnalysis
         type  (ClassBoundaryConditions) , pointer                    :: BC
         type  (ClassGlobalSparseMatrix) , pointer                    :: Kg
 
-        ! TODO (Jan#1#10/29/15): Generalizar e colocar uma classe "ResultFile"
-!Assim é possível colocar vários pos-processadores
-        type  (ClassGiDResultFile)                                   :: GidFile
 
         class (ClassNonLinearSolver)    , pointer                    :: NLSolver
 
@@ -104,7 +100,7 @@ module FEMAnalysis
             ! Reading the input files
             !************************************************************************************
             call ReadInputFile( FileName, this%AnalysisSettings , this%GlobalNodesList , this%ElementList , &
-                                this%GiDFile, this%BC , this%NLSolver )
+                                this%BC , this%NLSolver )
 
 		    !************************************************************************************
 
@@ -220,9 +216,6 @@ module FEMAnalysis
             ! SELECT PARAMETERS OF THE analysis type
 		    !************************************************************************************
 
-            ! Writing the GiD's result file header
-            !************************************************************************************
-            call this%GiDFile%WriteResultFileHeader()
 
             ! Calling the quasi-static analysis routine
             !************************************************************************************
@@ -230,16 +223,12 @@ module FEMAnalysis
 
                 case ( AnalysisTypes%Quasi_Static )
                     call QuasiStaticAnalysisFEM( this%ElementList, this%AnalysisSettings, this%GlobalNodesList , &
-                                                 this%BC, this%GiDFile, this%Kg, this%NLSolver )
+                                                 this%BC, this%Kg, this%NLSolver )
 
                 case default
                     stop "Error in AnalysisType - ModFEMAnalysis"
             end select
 
-
-            ! Closing the GiD's results file
-            !************************************************************************************
-            call this%GidFile%Close
 
 
 		    !************************************************************************************
@@ -308,7 +297,7 @@ module FEMAnalysis
 ! TODO (Thiago#1#03/11/15): Criar rotina para gerenciar escrita na tela e um arquivo Log
 
 !##################################################################################################
-subroutine QuasiStaticAnalysisFEM( ElementList , AnalysisSettings , GlobalNodesList , BC, GiDFile  , &
+subroutine QuasiStaticAnalysisFEM( ElementList , AnalysisSettings , GlobalNodesList , BC  , &
                                    Kg , NLSolver )
 
     !************************************************************************************
@@ -320,7 +309,6 @@ subroutine QuasiStaticAnalysisFEM( ElementList , AnalysisSettings , GlobalNodesL
     use Analysis
     use Nodes
     use BoundaryConditions
-    use GiDResultFile
     use GlobalSparseMatrix
     use NonLinearSolver
     use Interfaces
@@ -336,7 +324,6 @@ subroutine QuasiStaticAnalysisFEM( ElementList , AnalysisSettings , GlobalNodesL
     type (ClassAnalysis)                        :: AnalysisSettings
     type (ClassNodes) , pointer , dimension(:)  :: GlobalNodesList
     type (ClassBoundaryConditions)     , pointer         :: BC
-    type (ClassGiDResultFile)                   :: GidFile
     type (ClassGlobalSparseMatrix) , pointer              :: Kg
     class(ClassNonLinearSolver) , pointer       :: NLSolver
 
@@ -491,12 +478,6 @@ subroutine QuasiStaticAnalysisFEM( ElementList , AnalysisSettings , GlobalNodesL
                 enddo
             enddo
             ! -----------------------------------------------------------------------------------
-
-
-
-            ! Export the converged results
-!            call ExportResultFile(  FEMSoE % Time , U , AnalysisSettings%NDOFnode, size(GlobalNodesList) , &
-!                                    ElementList , GiDFile)
 
 
 

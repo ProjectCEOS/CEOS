@@ -2,13 +2,13 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ! Post Processor Results
 !-----------------------------------------------------------------------------------------
-!POST PROCESSOR 
+POST PROCESSOR 
 
-!	Post Processor = GiD 7
-!	Results = Displacements , Cauchy Stress
-!	File Name = mesh_block.post.res
+	Post Processor = GiD 7 !None
+	Results = Displacements , Cauchy Stress
+	File Name = mesh_block.post.res
 	
-!END POST PROCESSOR 
+END POST PROCESSOR 
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 

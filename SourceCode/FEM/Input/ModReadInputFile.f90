@@ -8,7 +8,6 @@ module modReadInputFile
     use ConstitutiveModelLibrary
     use NonLinearSolverLibrary
     use SparseLinearSolverLibrary
-    use GiDResultFile
     use Parser
     use ConstitutiveModel
 
@@ -28,10 +27,9 @@ module modReadInputFile
 
 contains
 
-subroutine ReadInputFile( FileName, AnalysisSettings , GlobalNodesList , ElementList , GiDFile, BC , NLSolver )
+subroutine ReadInputFile( FileName, AnalysisSettings , GlobalNodesList , ElementList , BC , NLSolver )
     implicit none
 
-    type (ClassGidResultFile)                                :: GiDFile
     type (ClassAnalysis)                                     :: AnalysisSettings
     type (ClassNodes) , pointer , dimension(:)               :: GlobalNodesList
     type (ClassElementsWrapper) , pointer , dimension(:)     :: ElementList
@@ -103,7 +101,7 @@ subroutine ReadInputFile( FileName, AnalysisSettings , GlobalNodesList , Element
 !---------------------------------------------------------------------------------------------------------------------------------------------------------
             case (iMeshAndBC)
                 if (.not.all(BlockFound([iAnalysisSettings,iMaterial]))) call DataFile%RaiseError("Analysis Settings, Multiscale Settings and Material must be specified before mesh.")
-                call ReadMeshAndBC(DataFile,GlobalNodesList,ElementList,AnalysisSettings,MaterialList,GiDFile,BC)
+                call ReadMeshAndBC(DataFile,GlobalNodesList,ElementList,AnalysisSettings,MaterialList,BC)
 
 !---------------------------------------------------------------------------------------------------------------------------------------------------------
             case default
@@ -357,10 +355,9 @@ subroutine ReadMaterialModel(AnalysisSettings,MaterialList,DataFile)
 end subroutine
 !____________________________________________________________________________________________________________________________________________________
 
-subroutine ReadMeshAndBC(DataFile,GlobalNodesList,ElementList,AnalysisSettings,MaterialList,GiDFile,BC)
+subroutine ReadMeshAndBC(DataFile,GlobalNodesList,ElementList,AnalysisSettings,MaterialList,BC)
     implicit none
     type (ClassParser)                                            :: DataFile
-    type (ClassGidResultFile)                                     :: GiDFile
     type (ClassAnalysis)                                          :: AnalysisSettings
     type (ClassNodes) , pointer , dimension(:)                    :: GlobalNodesList
     type (ClassElementsWrapper) , pointer , dimension(:)      :: ElementList
@@ -400,11 +397,10 @@ subroutine ReadMeshAndBC(DataFile,GlobalNodesList,ElementList,AnalysisSettings,M
         call datafile%RaiseError("Preprocessor not identified")
     ENDIF
 
-    GiDFile%DatFile = trim(ListOfValues(1))
 
     call DataMeshBC%Setup(FileName=ListOfValues(1),FileNumber=43)
 
-    call ReadMesh(DataMeshBC,GlobalNodesList,ElementList,AnalysisSettings,MaterialList,GiDFile, PreProcessorID)
+    call ReadMesh(DataMeshBC,GlobalNodesList,ElementList,AnalysisSettings,MaterialList, PreProcessorID)
 
     TimeFileName = ListOfValues(2)
     call ReadBoundaryConditions(TimeFileName,DataMeshBC,BC,AnalysisSettings)
@@ -424,11 +420,10 @@ subroutine ReadMeshAndBC(DataFile,GlobalNodesList,ElementList,AnalysisSettings,M
 end subroutine
 !____________________________________________________________________________________________________________________________________________________
 
-subroutine ReadMesh(DataFile,GlobalNodesList,ElementList,AnalysisSettings,MaterialList,GiDFile , PreProcessorID)
+subroutine ReadMesh(DataFile,GlobalNodesList,ElementList,AnalysisSettings,MaterialList , PreProcessorID)
     use Interfaces
     implicit none
     type (ClassParser)                                    :: DataFile
-    type (ClassGidResultFile)                             :: GiDFile
     type (ClassAnalysis)                                  :: AnalysisSettings
     type (ClassNodes) , pointer , dimension(:)            :: GlobalNodesList
     type (ClassElementsWrapper) , pointer , dimension(:)  :: ElementList
@@ -563,8 +558,6 @@ subroutine ReadMesh(DataFile,GlobalNodesList,ElementList,AnalysisSettings,Materi
 
     call DataFile%GetNextString(string)
     IF (.not.DataFile%CompareStrings(string,'end connectivity')) call DataFile%RaiseError("Expected: End connectivity")
-
-    GiDFile%ElementType = ElemType
 
 
     call DataFile%GetNextString(string)

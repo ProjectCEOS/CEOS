@@ -2,6 +2,8 @@ module ModExportResultFile
 
     use FEMAnalysis
     use ModProbe
+    use ModPostProcessors
+    use ModGid
 
 
     contains
@@ -9,7 +11,7 @@ module ModExportResultFile
     !==========================================================================================
     ! Subroutine Description:
     !==========================================================================================
-    subroutine  ReadProbesInputFile(FileName,ProbeList)
+    subroutine  ReadPostProcessingInputFile(FileName,ProbeList,PostProcessor)
 
 
         !************************************************************************************
@@ -25,30 +27,93 @@ module ModExportResultFile
         ! -----------------------------------------------------------------------------------
         character (len=*) :: FileName
         type (ClassProbeWrapper), pointer, dimension(:) :: ProbeList
+        class(ClassPostProcessor), pointer :: PostProcessor
 
         ! Internal variables
         ! -----------------------------------------------------------------------------------
-        type (ClassParser) :: ProbeFile
+        type (ClassParser) :: File
         character(len=255) :: OptionName, OptionValue, String
         character(len=255) :: ProbeLocation, ProbeFileName, ProbeVariableName, ProbeComponentsString
         logical :: ProbeAllComponents
+
+        character(len=255), allocatable, dimension(:) :: PostProcessorResults
+        character(len=255)                            :: PostProcessorFileName=''
 
         integer :: NumberOfProbes, ProbeNode, ProbeElement, ProbeGaussPoint, i
 
         !************************************************************************************
 
-        call ProbeFile%Setup (FileName,FileNumber=30)
+        call File%Setup (FileName,FileNumber=30)
 
-        write(*,*) 'Reading Probe File: ',trim(FileName)
-
-        !Começo da leitura do arquivo dat
-        call ProbeFile%GetNextOption(OptionName,OptionValue)
+        write(*,*) 'Reading Post Processing File: ',trim(FileName)
 
 
-        if (ProbeFile%CompareStrings(OptionName,'Number of Probes')) then
-            call ProbeFile%ConvertToInteger(OptionValue,NumberOfProbes)
+        ! Leitura do Pos Processador
+        !------------------------------------------------------------------------------------
+        call File%GetNextString(String)
+
+        if ( .not. File%CompareStrings(String,'POST PROCESSOR') ) then
+            call File%RaiseError('Expecting Word POST PROCESSOR in '//trim(FileName))
+        end if
+
+
+        call File%GetNextOption(OptionName,OptionValue)
+
+        if (File%CompareStrings(OptionName,'Post Processor')) then
+
+            ! GiD 7
+            !--------------------------------------------------------------------------------
+            if ( File%CompareStrings(OptionValue,'GiD 7') ) then
+
+                call File%GetNextOption(OptionName,OptionValue)
+                if ( .not. File%CompareStrings(OptionName,'Results') ) then
+                    call File%RaiseError('Expecting Word Results in '//trim(FileName))
+                end if
+                call SplitString(OptionValue, PostProcessorResults, ',')
+
+
+                call File%GetNextOption(OptionName,OptionValue)
+                if ( .not. File%CompareStrings(OptionName,'File Name') ) then
+                    call File%RaiseError('Expecting Word File Name in '//trim(FileName))
+                end if
+                PostProcessorFileName = OptionValue
+
+                ! Constuindo o Pos Processador
+                !------------------------------------------------------------------------------------
+                call Constructor_GiD( PostProcessor, PostProcessorResults, PostProcessorFileName )
+
+
+
+            elseif ( File%CompareStrings(OptionValue,'None') ) then
+                !?????
+
+            endif
+            !--------------------------------------------------------------------------------
+
         else
-            call ProbeFile%RaiseError('Expecting Number of Probes in '//trim(FileName))
+            call File%RaiseError('Expecting Post Processor Name in '//trim(FileName))
+
+        end if
+
+
+        call File%GetNextString(String)
+
+        if ( .not. File%CompareStrings(String,'END POST PROCESSOR') ) then
+            call File%RaiseError('Expecting Word END POST PROCESSOR in '//trim(FileName))
+        end if
+
+
+
+
+
+        !Começo da leitura do arquivo
+        call File%GetNextOption(OptionName,OptionValue)
+
+
+        if (File%CompareStrings(OptionName,'Number of Probes')) then
+            call File%ConvertToInteger(OptionValue,NumberOfProbes)
+        else
+            call File%RaiseError('Expecting Number of Probes in '//trim(FileName))
         end if
 
         allocate (ProbeList(NumberOfProbes))
@@ -56,10 +121,10 @@ module ModExportResultFile
 
         do i = 1,NumberOfProbes
 
-            call ProbeFile%GetNextString(String)
+            call File%GetNextString(String)
 
-            if (.not. ProbeFile%CompareStrings(String,'Probe')) then
-                call ProbeFile%RaiseError('Expecting Word PROBE in '//trim(FileName))
+            if (.not. File%CompareStrings(String,'Probe')) then
+                call File%RaiseError('Expecting Word PROBE in '//trim(FileName))
             end if
 
             ProbeLocation = ''
@@ -73,30 +138,30 @@ module ModExportResultFile
 
             PROBE_BLOCK_LOOP: do while (.true.)
 
-                call ProbeFile%GetNextString(String)
+                call File%GetNextString(String)
 
-                if (ProbeFile%CompareStrings(String,'End Probe')) then
+                if (File%CompareStrings(String,'End Probe')) then
                     exit PROBE_BLOCK_LOOP
                 end if
                 OptionValue = ''
-                call ProbeFile%GetCurrentOption(OptionName,OptionValue)
+                call File%GetCurrentOption(OptionName,OptionValue)
 
-                if (ProbeFile%CompareStrings(OptionName,'Location')) then
+                if (File%CompareStrings(OptionName,'Location')) then
                     ProbeLocation = OptionValue
-                elseif (ProbeFile%CompareStrings(OptionName,'File Name')) then
+                elseif (File%CompareStrings(OptionName,'File Name')) then
                     ProbeFileName = OptionValue
-                elseif (ProbeFile%CompareStrings(OptionName,'Variable Name')) then
+                elseif (File%CompareStrings(OptionName,'Variable Name')) then
                     ProbeVariableName = OptionValue
-                elseif (ProbeFile%CompareStrings(OptionName,'Node')) then
-                    call ProbeFile%ConvertToInteger(OptionValue,ProbeNode)
-                elseif (ProbeFile%CompareStrings(OptionName,'Components')) then
+                elseif (File%CompareStrings(OptionName,'Node')) then
+                    call File%ConvertToInteger(OptionValue,ProbeNode)
+                elseif (File%CompareStrings(OptionName,'Components')) then
                     ProbeComponentsString = OptionValue
-                elseif (ProbeFile%CompareStrings(OptionName,'Element')) then
-                    call ProbeFile%ConvertToInteger(OptionValue,ProbeElement)
-                elseif (ProbeFile%CompareStrings(OptionName,'Gauss Point')) then
-                    call ProbeFile%ConvertToInteger(OptionValue,ProbeGaussPoint)
+                elseif (File%CompareStrings(OptionName,'Element')) then
+                    call File%ConvertToInteger(OptionValue,ProbeElement)
+                elseif (File%CompareStrings(OptionName,'Gauss Point')) then
+                    call File%ConvertToInteger(OptionValue,ProbeGaussPoint)
                 else
-                    call ProbeFile%RaiseError('Expression not identified in '//trim(FileName))
+                    call File%RaiseError('Expression not identified in '//trim(FileName))
                 endif
 
             enddo PROBE_BLOCK_LOOP
@@ -105,12 +170,12 @@ module ModExportResultFile
 
         ! Construtor dos Probes
         ! Probes de Nós
-        if (  ProbeFile%CompareStrings(ProbeLocation, 'Node' ) ) then
+        if (  File%CompareStrings(ProbeLocation, 'Node' ) ) then
 
             call NodeProbeConstructor(ProbeList(i)%Pr, ProbeFileName, ProbeVariableName, ProbeNode, ProbeComponentsString)
 
         ! Probes de Pontos de Gauss
-        elseif (  ProbeFile%CompareStrings(ProbeLocation, 'Gauss Point' ) ) then
+        elseif (  File%CompareStrings(ProbeLocation, 'Gauss Point' ) ) then
 
             call GaussPointProbeConstructor(ProbeList(i)%Pr, ProbeVariableName, ProbeElement, ProbeFileName, ProbeGaussPoint, ProbeComponentsString)
 
@@ -128,7 +193,7 @@ module ModExportResultFile
     !==========================================================================================
     ! Subroutine Description:
     !==========================================================================================
-    subroutine  PostProcessingResults(ProbeList,FEA)
+    subroutine  PostProcessingResults(ProbeList,PostProcessor,FEA)
 
         !************************************************************************************
         ! DECLARATIONS OF VARIABLES
@@ -143,6 +208,7 @@ module ModExportResultFile
         ! Input variables
         ! -----------------------------------------------------------------------------------
         type (ClassProbeWrapper), pointer, dimension(:) :: ProbeList
+        class (ClassPostProcessor), pointer             :: PostProcessor
         type (ClassFEMAnalysis)                         :: FEA
 
         ! Internal variables
@@ -162,6 +228,10 @@ module ModExportResultFile
         do i = 1, size(ProbeList)
             call ProbeList(i)%Pr%InitializeFile
         enddo
+
+        if (associated(PostProcessor)) then
+            call PostProcessor%InitializePostProcessorFile(FEA)
+        endif
 
 
 
@@ -230,6 +300,9 @@ module ModExportResultFile
                 do i = 1, size(ProbeList)
                     call ProbeList(i)%Pr%WriteProbeResult(FEA)
                 enddo
+                if (associated(PostProcessor)) then
+                    call PostProcessor%WritePostProcessorResult(FEA)
+                endif
             endif
 
             ! SAVING THE CONVERGED STATE

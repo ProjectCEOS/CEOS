@@ -18,7 +18,7 @@ module Parser
     public :: GetNextString , GetCurrentString,  GetNextOption , GetCurrentOption
     public :: ShowError , RaiseError , ResetError , AdvanceTo , Setup , FormatString
     public :: CompareStrings , EOF , Warning , CheckError , ConvertToDouble , ConvertToInteger
-    public :: GetOriginalLine , CloseFile , EndParser
+    public :: GetOriginalLine , CloseFile , EndParser, SplitString
 
     character(len=1) , parameter  ,private :: space=' '
 
@@ -661,6 +661,36 @@ module Parser
 
     end subroutine
 
+!==========================================================================================
+    subroutine SplitString( String , SubStrings, Delimiter )
+
+        use StringLib
+
+        character(len=*) :: String
+        character(len=*) , allocatable , dimension(:) :: SubStrings
+        character(len=*) :: Delimiter
+
+        character(len=len(String)) , pointer , dimension(:) :: SubStringsPointer
+        integer::i
+
+
+        if (allocated(SubStrings)) deallocate(SubStrings)
+
+        call SplitSub(String,Delimiter, SubStringsPointer)
+
+        if (.not.associated(SubStringsPointer)) then
+            return
+        endif
+
+        allocate(SubStrings(size(SubStringsPointer)))
+
+        do i=1,size(SubStrings)
+            SubStrings(i) = SubStringsPointer(i)
+        enddo
+
+        deallocate(SubStringsPointer)
+    end subroutine
+!==========================================================================================
 
 end module
 

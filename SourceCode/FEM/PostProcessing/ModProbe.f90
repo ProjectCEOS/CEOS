@@ -24,7 +24,7 @@ module ModProbe
         integer :: Location
         character(len=255) :: FileName='', VariableName=''
         integer, allocatable , dimension(:) :: Components
-        integer :: VariableNameID, ProbeTypeID
+        integer :: VariableNameID
         logical :: AllComponents = .false., Active = .true.
 
     contains
