@@ -94,16 +94,16 @@ module Interfaces
         !==========================================================================================
 
         !==========================================================================================
-        subroutine ExportResultFile( Time , u, nDOFnode, TotalnNodes , ElementList , GiDFile)
-            use Element
-            use GiDResultFile
-            implicit none
-            type (ClassElementsWrapper) , dimension(:) :: ElementList
-            type(ClassGiDResultFile)                                       :: GidFile
-            integer :: nDOFnode, TotalnNodes
-            real(8) , dimension(:) :: u
-            Real(8)::Time
-        end subroutine
+        !subroutine ExportResultFile( Time , u, nDOFnode, TotalnNodes , ElementList , GiDFile)
+        !    use Element
+        !    use GiDResultFile
+        !    implicit none
+        !    type (ClassElementsWrapper) , dimension(:) :: ElementList
+        !    type(ClassGiDResultFile)                                       :: GidFile
+        !    integer :: nDOFnode, TotalnNodes
+        !    real(8) , dimension(:) :: u
+        !    Real(8)::Time
+        !end subroutine
         !==========================================================================================
 
         !==========================================================================================
