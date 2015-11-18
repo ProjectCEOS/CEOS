@@ -18,7 +18,6 @@ module ModGid
             procedure ::  WritePostProcessorResult    =>  WritePostProcessorResult_GiD
             procedure ::  ExportOnGaussPoints
             procedure ::  ExportOnNodes
-            !procedure :: Close => CloseGidFile
     end type
     !************************************************************************************
 
@@ -47,7 +46,8 @@ module ModGid
             this%FileNumber = FileNumber
 
             !arquivo de resultados do GiD -----------------------------------------
-            !this%ResultFile  = this%DatFile(1:len(trim(this%DatFile))-4) // '.post.res'
+
+            ! TODO (Jan#1#11/18/15): Ver como exportar malha mista no GiD
 
             open (FileNumber,file=this%FileName,status='unknown')
 
@@ -122,7 +122,7 @@ module ModGid
             logical :: FoundUserVariable
 
         call Comp%Setup()
-            
+
         do v = 1,size(this%VariableNames)
 
 
@@ -188,6 +188,8 @@ module ModGid
 
 
                  case (VariableNames%UserDefined)
+
+                    ! TODO (Jan#2#11/18/15): Colocar para exportar todos os dados do usuário também
 
                     nelem = size( FEA%ElementList )
                     ngp = size(FEA%ElementList(1)%el%GaussPoints)

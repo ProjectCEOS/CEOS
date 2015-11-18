@@ -83,6 +83,9 @@ module ModProbe
 
         if (allocated(Components)) deallocate(Components)
 
+        ! TODO (Jan#1#11/18/15): Colocar rotina de split no modulo Tools ou Parser e depois  ...
+!arrumar esta rotina
+
         call SplitSub(ComponentsString,",", SubStrings)
 
         if (.not.associated(SubStrings)) then
@@ -361,8 +364,8 @@ module ModProbe
 
     end subroutine
     !==========================================================================================
-    
-    
+
+
     !==========================================================================================
     subroutine WriteProbeResult_GaussPoint(this,FEA)
             ! Modules and implicit declarations

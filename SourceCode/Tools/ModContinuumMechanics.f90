@@ -43,7 +43,7 @@ module ModContinuumMechanics
             Strain = 0.0d0
 
             select case (StrainID)
-                
+
 
                 case (StrainMeasures%RightCauchyGreen)
 
@@ -182,7 +182,7 @@ module ModContinuumMechanics
             real(8)                                  :: vonMises, J2
             real(8), dimension(size(T,1),size(T,2))  :: devT
 
-            devT = Diviatoric (T)
+            devT = Deviatoric (T)
 
             J2 = (1.0d0/2.0d0)*Tensor_Inner_Product(devT,devT)
 
