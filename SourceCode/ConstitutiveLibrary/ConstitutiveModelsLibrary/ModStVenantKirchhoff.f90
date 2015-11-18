@@ -18,6 +18,7 @@ module StVenantKirchhoff
     ! Modules and implicit declarations
     ! --------------------------------------------------------------------------------------------
     use ConstitutiveModel
+    use ModContinuumMechanics
     implicit none
 
 
@@ -404,7 +405,9 @@ module StVenantKirchhoff
             !Cauchy
             J = det(this%F)
 
-            S = matmul(matmul(this%F,S),transpose(this%F))/J
+            !S = matmul(matmul(this%F,S),transpose(this%F))/J
+
+            S = StressTransformation(This%F,S,StressMeasures%SecondPiola,StressMeasures%Cauchy)
 
              this%Stress(1)=S(1,1)
              this%Stress(2)=S(2,2)
@@ -512,7 +515,7 @@ module StVenantKirchhoff
 
             integer,parameter :: Scalar=1,Vector=2,Tensor=3
             real (8) :: h , c(6)
-            real (8) :: I(3,3), e(3,3), eV(6)
+            real (8) :: T(3,3), T_voigt(6)
 
             Name=''
 
@@ -526,42 +529,26 @@ module StVenantKirchhoff
                     Variable(1:Length) = this%Stress
 
                 case (2)
-                    Name='AlmansiStrain'
+                    Name='Almansi Strain'
                     VariableType = Tensor
                     Length=size(this%Stress)
                     !-------------------------------------------------------------
                     !Almansi Strain
                     !-------------------------------------------------------------
-
-                    ! Identity
-                    I = 0.0d0
-                    I(1,1) = 1.0d0
-                    I(2,2) = 1.0d0
-                    I(3,3) = 1.0d0
-
-                    e = inverse( matmul(this%F, transpose(this%F)) )
-                    e = 0.50d0*( I - e )
-                    eV = Convert_to_Voigt(e)
-                    Variable(1:Length) = eV(1:Length)
+                    T  = StrainMeasure(this%F,StrainMeasures%Almansi)
+                    T_voigt = Convert_to_Voigt(T)
+                    Variable(1:Length) = T_voigt(1:Length)
                     !-------------------------------------------------------------
 
                 case (3)
-                    Name='vonMisesCauchyStress'
+                    Name='von Mises Cauchy Stress'
                     VariableType = Scalar
                     Length=1
                     !-------------------------------------------------------------
                     ! von Mises Cauchy Stress
                     !-------------------------------------------------------------
-                    associate(c => this%Stress)
-                        
-                    c = this%Stress
-                    !h=( c(1) + c(2) + c(4))/3.0d0
-                    !Variable(1:Length)  = dsqrt( (3.0d0/2.0d0) * ((c(1)-h)**2.0d0 + (c(2)-h)**2.0d0 + (c(4)-h)**2.0d0 +2.0d0*c(3)*c(3) ) )
-
-                    h=( c(1) + c(2) + c(3))/3.0d0
-                    Variable(1:Length)  = dsqrt( (3.0d0/2.0d0) * ((c(1)-h)**2.0d0 + (c(2)-h)**2.0d0 + (c(3)-h)**2.0d0 +2.0d0*c(4)*c(4) +2.0d0*c(5)*c(5) +2.0d0*c(6)*c(6) ) )
-
-                    end associate
+                    T = Convert_to_Tensor_3D_Sym (this%Stress)
+                    Variable(1:Length) = vonMisesMeasure(T)
                     !-------------------------------------------------------------
 
                 case default

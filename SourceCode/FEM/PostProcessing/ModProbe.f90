@@ -361,6 +361,8 @@ module ModProbe
 
     end subroutine
     !==========================================================================================
+    
+    
     !==========================================================================================
     subroutine WriteProbeResult_GaussPoint(this,FEA)
             ! Modules and implicit declarations
@@ -368,6 +370,8 @@ module ModProbe
             use FEMAnalysis
             use MathRoutines
             use Parser
+            use ModContinuumMechanics
+
             implicit none
 
             ! Object
@@ -449,40 +453,18 @@ module ModProbe
                         this%Active = .false.
                     else
 
-                                ! TODO (Jan#1#11/14/15): Isso aqui é precioso demais para ficar só aqui. ...
-!Tem que criar um modulo para disponibilizar isso quando quiser. Ex: modMechanical , modContinuumMechanics sei lá
-                                ! Logarithmic Strain
-                                !---------------------------------------------------------------------------------------
-                                F = 0.0d0
-                                b = 0.0d0
-                                F = GP%F
-                                b = matmul(F,transpose(F))
+                        Log_Strain = StrainMeasure(GP%F,StrainMeasures%Logarithmic)
 
-                                eigenvalues  = 0.0d0
-                                eigenvectors = 0.0d0
-                                call EigenProblemSym3D ( b, eigenvalues, eigenvectors )
+                        Strain_Voigt = Convert_to_Voigt_3D_Sym (Log_Strain)
 
-                                Log_Strain = 0.0d0
-                                do i = 1,size(Log_Strain,1)
-                                    N = 0.0d0
-                                    N = Tensor_Product(eigenvectors(:,i),eigenvectors(:,i)) !Autoprojeção
-                                    N = 0.50d0*( N + transpose(N) ) !simetrizando para garantir :)
-                                    Log_Strain = Log_Strain + dlog((eigenvalues(i)**0.50d0))*N
-                                enddo
+                        if (this%AllComponents) then
+                            call this%WriteOnFile(FEA%Time , Strain_Voigt)
+                        else
+                            ProbeVariable = Strain_Voigt (this%Components)
+                            call this%WriteOnFile(FEA%Time , ProbeVariable)
+                        endif
 
-                                Strain_Voigt = Convert_to_Voigt_3D_Sym (Log_Strain)
-
-                                if (this%AllComponents) then
-                                    call this%WriteOnFile(FEA%Time , Strain_Voigt)
-                                else
-                                    ProbeVariable = Strain_Voigt (this%Components)
-                                    call this%WriteOnFile(FEA%Time , ProbeVariable)
-                                endif
-
-
-
-                                !---------------------------------------------------------------------------------------
-                            endif
+                    endif
 
 
                 ! Writing Deformation Gradient

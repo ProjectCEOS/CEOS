@@ -85,6 +85,7 @@
 		<Unit filename="../SourceCode/Tools/MathTools/SparseMatrixRoutines/ModSparseMatrixRoutines.f90" />
 		<Unit filename="../SourceCode/Tools/MathTools/SparseMatrixRoutines/ModSparseVectorRoutines.f90" />
 		<Unit filename="../SourceCode/Tools/MathTools/modNonLinearSystemOfEquations.f90" />
+		<Unit filename="../SourceCode/Tools/ModContinuumMechanics.f90" />
 		<Unit filename="../SourceCode/Tools/ModParser.f90" />
 		<Unit filename="../SourceCode/Tools/ModStringLib.f90" />
 		<Unit filename="../SourceCode/Tools/ModTimer.f90" />

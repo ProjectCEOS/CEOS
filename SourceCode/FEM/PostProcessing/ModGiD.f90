@@ -1,6 +1,7 @@
 module ModGid
 
     use ModPostProcessors
+    use ModContinuumMechanics
 
 
     implicit none
@@ -15,8 +16,8 @@ module ModGid
 
             procedure ::  InitializePostProcessorFile =>  InitializePostProcessorFile_GiD
             procedure ::  WritePostProcessorResult    =>  WritePostProcessorResult_GiD
-            procedure :: ExportOnGaussPoints
-            procedure :: ExportOnNodes
+            procedure ::  ExportOnGaussPoints
+            procedure ::  ExportOnNodes
             !procedure :: Close => CloseGidFile
     end type
     !************************************************************************************
@@ -101,24 +102,37 @@ module ModGid
     subroutine WritePostProcessorResult_GiD(this, FEA)
 
             use FEMAnalysis
+            use Parser
 
             implicit none
 
             class (ClassGiD)          :: this
             class( ClassFEMAnalysis ) :: FEA
-            real(8), allocatable, dimension(:,:) :: NodalValues
+            real(8), allocatable, dimension(:,:)   :: NodalValues
             real(8), allocatable, dimension(:,:,:) :: GaussPointlValues
+            real(8) :: Tensor(3,3), Tensor_voigt(6)
             integer :: i, j, v, e, gp, nelem, ngp
+            class(ClassConstitutiveModel) , pointer :: GaussPoint
 
+            type (ClassParser) :: Comp
+
+            real(8) , dimension(9)            :: UD_Variable
+            integer                           :: UD_ID, UD_Length, UD_VariableType
+            character(len=255)                :: UD_Name
+            logical :: FoundUserVariable
+
+        call Comp%Setup()
+            
         do v = 1,size(this%VariableNames)
 
-            select case (this%VariableNameID(v))
 
+            select case (this%VariableNameID(v))
 
 
                 case (VariableNames%Displacements)
 
                     allocate ( NodalValues(size(FEA%GlobalNodesList),FEA%AnalysisSettings%NDOFnode) )
+
                     do i = 1 , size(NodalValues,1)
                         do j = 1, size(NodalValues,2)
                             NodalValues(i,j) = FEA%U( FEA%AnalysisSettings%NDOFnode*(i -1) + j )
@@ -126,13 +140,12 @@ module ModGid
                     enddo
 
                     call this%ExportOnNodes ( trim(this%VariableNames(v)) , FEA%Time , NodalValues , 2)
+
                     deallocate(NodalValues)
 
 
-
-
                 case (VariableNames%CauchyStress)
-                ! TODO (Thiago#1#11/17/15): GiD - não exporta resultados com resultados de malha mista
+                ! TODO (Thiago#1#11/17/15): GiD - não exporta resultados com malha mista e tensores não simétricos
 
                     nelem = size( FEA%ElementList )
                     ngp = size(FEA%ElementList(1)%el%GaussPoints)
@@ -140,11 +153,82 @@ module ModGid
 
                     do e=1,nelem
                         do gp=1,ngp
-                            GaussPointlValues(e,gp,1:FEA%AnalysisSettings%StressSize) = FEA%ElementList(e)%El%GaussPoints(gp)%Stress
+                            GaussPoint => FEA%ElementList(e)%El%GaussPoints(gp)
+                            GaussPointlValues(e,gp,1:FEA%AnalysisSettings%StressSize) = GaussPoint%Stress
                         enddo
                     enddo
 
                     call this%ExportOnGaussPoints( this%VariableNames(v) , FEA%Time , GaussPointlValues(:,:,1:FEA%AnalysisSettings%StressSize)  , 3 )
+
+                    deallocate(GaussPointlValues)
+
+
+
+                case (VariableNames%LogarithmicStrain)
+
+                    nelem = size( FEA%ElementList )
+                    ngp = size(FEA%ElementList(1)%el%GaussPoints)
+                    allocate( GaussPointlValues( nelem , ngp , 6 ) )
+
+                    do e=1,nelem
+                        do gp=1,ngp
+                            GaussPoint => FEA%ElementList(e)%El%GaussPoints(gp)
+                            Tensor_voigt = 0.0d0
+                            Tensor = 0.0d0
+                            Tensor = StrainMeasure(GaussPoint%F,StrainMeasures%Logarithmic)
+                            Tensor_voigt = Convert_to_Voigt_3D_Sym( Tensor )
+                            GaussPointlValues(e,gp,1:FEA%AnalysisSettings%StrainSize) =  Tensor_voigt
+                        enddo
+                    enddo
+
+                    call this%ExportOnGaussPoints( this%VariableNames(v) , FEA%Time , GaussPointlValues(:,:,1:FEA%AnalysisSettings%StressSize)  , 3 )
+
+                    deallocate(GaussPointlValues)
+
+
+
+                 case (VariableNames%UserDefined)
+
+                    nelem = size( FEA%ElementList )
+                    ngp = size(FEA%ElementList(1)%el%GaussPoints)
+                    allocate( GaussPointlValues( nelem , ngp , 6 ) )
+
+                    GaussPoint => FEA%ElementList(1)%El%GaussPoints(1)
+
+                    UD_ID = 0 !Pegar o numero de variaveis implementadas no ponto de gauss
+                    call GaussPoint%GetResult( UD_ID, UD_Name, UD_Length, UD_Variable, UD_VariableType )
+
+                   ! Loop sobre as numero de variaveis do ponto de gauss
+                    !Primeiramente vamos encontrar a variável que o usuário quer
+                    FoundUserVariable = .false.
+                    LOOP_USER_DEFINED: do UD_ID = 1,UD_Length
+
+                        GaussPoint => FEA%ElementList(1)%El%GaussPoints(1)
+
+                        call GaussPoint%GetResult( UD_ID, UD_Name, UD_Length, UD_Variable, UD_VariableType )
+
+                        FoundUserVariable = Comp%CompareStrings( this%VariableNames(v),UD_Name)
+
+                        if (FoundUserVariable) then
+
+                            do e=1,nelem
+                                do gp=1,ngp
+                                    GaussPoint => FEA%ElementList(e)%El%GaussPoints(gp)
+                                    call GaussPoint%GetResult( UD_ID, UD_Name, UD_Length, UD_Variable, UD_VariableType )
+                                    GaussPointlValues(e,gp,1:UD_Length) = UD_Variable(1:UD_Length)
+                                enddo
+                            enddo
+
+                            call this%ExportOnGaussPoints( this%VariableNames(v), FEA%Time, GaussPointlValues(:,:,1:UD_Length), UD_VariableType )
+
+                            deallocate(GaussPointlValues)
+
+                        endif
+
+                    enddo LOOP_USER_DEFINED
+                    ! TODO (Thiago#1#11/18/15): Todos os modelos materiais usados na análise devem ter implementados as variáveis do usuário.
+
+
 
 
             end select

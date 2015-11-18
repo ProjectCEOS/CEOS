@@ -110,6 +110,7 @@
 		<File RelativePath="..\..\SourceCode\Tools\MathTools\SparseMatrixRoutines\ModSparseVectorRoutines.f90"/></Filter>
 		<File RelativePath="..\..\SourceCode\Tools\MathTools\ModMathRoutines.f90"/>
 		<File RelativePath="..\..\SourceCode\Tools\MathTools\ModNonLinearSystemOfEquations.f90"/></Filter>
+		<File RelativePath="..\..\SourceCode\Tools\ModContinuumMechanics.f90"/>
 		<File RelativePath="..\..\SourceCode\Tools\ModParser.f90"/>
 		<File RelativePath="..\..\SourceCode\Tools\modStatus.f90"/>
 		<File RelativePath="..\..\SourceCode\Tools\ModStringLib.f90"/>

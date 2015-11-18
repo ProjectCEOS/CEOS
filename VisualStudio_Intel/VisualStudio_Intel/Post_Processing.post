@@ -5,8 +5,8 @@
 POST PROCESSOR 
 
 	Post Processor = GiD 7 !None
-	Results = Displacements , Cauchy Stress
-	File Name = mesh_block.post.res
+	Results = Displacements , Cauchy Stress , Logarithmic Strain , von Mises Cauchy Stress
+	File Name = Block_GiD.post.res
 	
 END POST PROCESSOR 
 
@@ -27,7 +27,7 @@ END POST PROCESSOR
 ! Components: 1=XX ; 2=YX ; 3=ZX ; 4=XY ; 5=YY ; 6=ZY ; 7=XZ ; 8=YZ ; 9=ZZ ; All
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-NUMBER OF PROBES = 6
+NUMBER OF PROBES = 8
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -67,7 +67,7 @@ END PROBE
 
 PROBE
 	Location = Gauss Point
-	File Name = Strain_Gauss_Point.probe
+	File Name = Log_Strain_Gauss_Point.probe
 	Variable Name = Logarithmic Strain   
 	Element = 60
 	Gauss Point = 1
@@ -81,5 +81,23 @@ PROBE
 	Element = 60
 	Gauss Point = 1
 	Components = 9 
-END PROBE 		
+END PROBE 
+
+PROBE
+	Location = Gauss Point
+	File Name = Almansi_Strain_Gauss_Point.probe
+	Variable Name = Almansi Strain   
+	Element = 60
+	Gauss Point = 1
+	Components = 3  
+END PROBE 	
+
+PROBE
+	Location = Gauss Point
+	File Name = VonMises_Stress_Gauss_Point.probe
+	Variable Name = von Mises Cauchy Stress  
+	Element = 60
+	Gauss Point = 1
+	Components = 1  
+END PROBE 	
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
