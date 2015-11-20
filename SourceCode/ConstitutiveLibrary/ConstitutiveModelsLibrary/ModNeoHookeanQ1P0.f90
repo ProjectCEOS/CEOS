@@ -252,7 +252,7 @@ module NeoHookeanQ1P0
 
             ! Internal variables
             ! -----------------------------------------------------------------------------------
-            real(8) :: J, trb, pbar, BulkModulus, C10
+            real(8) :: J, trb, pbar, BulkModulus, C10, Jbar
 
 		    !************************************************************************************
 
@@ -275,8 +275,10 @@ module NeoHookeanQ1P0
             trb = b(1,1) + b(2,2) + b(3,3)
 
             J = det(this%F)
+            
+            Jbar = this%AdditionalVariables%Jbar
 
-            pbar = 3.0d0*BulkModulus*( this%Jbar**(-2.0d0/3.0d0) )*( this%Jbar**(1.0d0/3.0d0) - 1.0d0 )
+            pbar = 3.0d0*BulkModulus*( Jbar**(-2.0d0/3.0d0) )*( Jbar**(1.0d0/3.0d0) - 1.0d0 )
             !pbar = 9.0d0*BulkModulus*( this%Jbar - 1.0d0 )
 
             S = 2.0d0*C10*(J**(-5.0d0/3.0d0))*( b - (trb/3.0d0)*I ) + pbar*I
@@ -320,7 +322,7 @@ module NeoHookeanQ1P0
 
             ! Internal variables
             ! -----------------------------------------------------------------------------------
-            real(8) :: J, pbar, D2psiDJ2, BulkModulus, C10
+            real(8) :: J, pbar, D2psiDJ2, BulkModulus, C10, Jbar
             real(8) :: C(3,3),Cinv(3,3)
 
 
@@ -347,9 +349,11 @@ module NeoHookeanQ1P0
             CinvV = Convert_to_Voigt(Cinv)
 
             J = det(this%F)
+            
+            Jbar = this%AdditionalVariables%Jbar
 
             !p = 3.0d0*BulkModulus*( J**(-2.0d0/3.0d0) )*( J**(1.0d0/3.0d0) - 1.0d0 )
-            pbar = 3.0d0*BulkModulus*( this%Jbar**(-2.0d0/3.0d0) )*( this%Jbar**(1.0d0/3.0d0) - 1.0d0 )
+            pbar = 3.0d0*BulkModulus*( Jbar**(-2.0d0/3.0d0) )*( Jbar**(1.0d0/3.0d0) - 1.0d0 )
             !pbar = 9.0d0*BulkModulus*( this%Jbar - 1.0d0 )
 
             SfricV = 2.0d0*C10*[1.0d0, 1.0d0, 1.0d0, 0.0d0, 0.0d0, 0.0d0]
@@ -408,7 +412,7 @@ module NeoHookeanQ1P0
 
             ! Internal variables
             ! -----------------------------------------------------------------------------------
-            real(8) :: J, trb, pbar, BulkModulus, C10
+            real(8) :: J, trb, pbar, BulkModulus, C10, Jbar
 
 		    !************************************************************************************
 
@@ -431,8 +435,10 @@ module NeoHookeanQ1P0
             trb = b(1,1) + b(2,2) + b(3,3)
 
             J = det(this%F)
+            
+            Jbar = this%AdditionalVariables%Jbar
 
-            pbar = 3.0d0*BulkModulus*( this%Jbar**(-2.0d0/3.0d0) )*( this%Jbar**(1.0d0/3.0d0) - 1.0d0 )
+            pbar = 3.0d0*BulkModulus*( Jbar**(-2.0d0/3.0d0) )*( Jbar**(1.0d0/3.0d0) - 1.0d0 )
             !pbar = 9.0d0*BulkModulus*( this%Jbar - 1.0d0 )
 
             S = 2.0d0*C10*(J**(-5.0d0/3.0d0))*( b - (trb/3.0d0)*I ) + pbar*I
@@ -516,7 +522,7 @@ module NeoHookeanQ1P0
 
             ! Internal variables
             ! -----------------------------------------------------------------------------------
-            real(8) :: J, pbar, D2psiDJ2, BulkModulus, C10
+            real(8) :: J, pbar, D2psiDJ2, BulkModulus, C10, Jbar
             real(8) :: C(3,3),Cinv(3,3)
 
 
@@ -543,9 +549,11 @@ module NeoHookeanQ1P0
             CinvV = Convert_to_Voigt(Cinv)
 
             J = det(this%F)
+            
+            Jbar = this%AdditionalVariables%Jbar
 
             !p = 3.0d0*BulkModulus*( J**(-2.0d0/3.0d0) )*( J**(1.0d0/3.0d0) - 1.0d0 )
-            pbar = 3.0d0*BulkModulus*( this%Jbar**(-2.0d0/3.0d0) )*( this%Jbar**(1.0d0/3.0d0) - 1.0d0 )
+            pbar = 3.0d0*BulkModulus*( Jbar**(-2.0d0/3.0d0) )*( Jbar**(1.0d0/3.0d0) - 1.0d0 )
             !pbar = 9.0d0*BulkModulus*( this%Jbar - 1.0d0 )
 
             SfricV = 2.0d0*C10*[1.0d0, 1.0d0, 1.0d0, 0.0d0, 0.0d0, 0.0d0]
@@ -591,13 +599,15 @@ module NeoHookeanQ1P0
             class(ClassNeoHookeanQ1P0) :: this
             ! Input/Output variables
             ! -----------------------------------------------------------------------------------
-            real (8) :: d2PSIvol_dJbar2
+            real (8) :: d2PSIvol_dJbar2, Jbar
 
             !************************************************************************************
             ! TANGENT MODULUS
 		    !************************************************************************************
+            
+            Jbar = this%AdditionalVariables%Jbar
 
-		    d2PSIvol_dJbar2 = ( -this%Properties%BulkModulus*this%Jbar**(-5.0d0/3.0d0) ) * ( this%Jbar**(1.0d0/3.0d0) - 2.0d0  )
+		    d2PSIvol_dJbar2 = ( -this%Properties%BulkModulus*Jbar**(-5.0d0/3.0d0) ) * ( Jbar**(1.0d0/3.0d0) - 2.0d0  )
             !d2PSIvol_dJbar2 =  9*this%Properties%BulkModulus
 
 

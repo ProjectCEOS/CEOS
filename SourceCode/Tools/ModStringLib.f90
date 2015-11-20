@@ -53,26 +53,27 @@ module StringLib
         logical :: status
 
         Subs=>Split(String,Delim)
-        
+
         if (.not.associated(subs)) then
             res=>null()
             return
         endif
-        
-        
+
+
         status = ASSOCIATED(res)
         if ( status == .true. ) then
             deallocate(res,STAT=er)
-            write(*,*)'erro',er
-            pause
+! TODO (Thiago#1#11/19/15): rotina SplitSub: deallocate devolve error 173????
+            !write(*,*)'erro',er
+            !pause
         endif
-        
-        
+
+
         allocate(res(size(subs)))
-        
-                
-        
-        
+
+
+
+
         do i=1,size(subs)
             res(i)=trim(subs(i)%String)
         enddo
