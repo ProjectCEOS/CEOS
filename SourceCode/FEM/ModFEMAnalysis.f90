@@ -369,6 +369,10 @@ subroutine QuasiStaticAnalysisFEM( ElementList , AnalysisSettings , GlobalNodesL
 
     nLoadCases = BC%GetNumberOfLoadCases()
 
+    ! Escrevendo os resultados para o tempo zero
+! TODO (Thiago#1#11/19/15): OBS.: As condições de contorno iniciais devem sair do tempo zero.
+    call WriteFEMResults( U, 0.0d0, 0, 0, 0, 0, FileID_FEMAnalysisResults )
+
     !LOOP - LOAD CASES
     LOAD_CASE:  do LC = 1 , nLoadCases
 
@@ -439,8 +443,6 @@ subroutine QuasiStaticAnalysisFEM( ElementList , AnalysisSettings , GlobalNodesL
 
                     !---------------------------------------------------------------------------
                 ELSEIF (alpha==1.0d0) then
-! TODO (Thiago#1#11/09/15): Salvar os resultados no tempo ZERO
-
                     call WriteFEMResults( U, FEMSoE%Time, LC, ST, CutBack, SubStep, FileID_FEMAnalysisResults )
                     exit SUBSTEPS
                     !---------------------------------------------------------------------------

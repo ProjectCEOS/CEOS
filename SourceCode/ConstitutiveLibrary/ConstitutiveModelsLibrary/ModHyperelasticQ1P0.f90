@@ -385,7 +385,7 @@ module HyperelasticQ1P0
 
             ! Output variables
             ! -----------------------------------------------------------------------------------
-            real (8) ::  d2PSIvol_dJbar2
+            real (8) ::  d2PSIvol_dJbar2, Jbar
 
             ! Internal variables
             ! -----------------------------------------------------------------------------------
@@ -404,8 +404,9 @@ module HyperelasticQ1P0
 
             ! Second Derivative with respect to Mean Dilatation
             !--------------------------------------------------------------------
-		    d2PSIvol_dJbar2 = ( -this%Properties%BulkModulus*this%Jbar**(-5.0d0/3.0d0) ) * &
-                              ( this%Jbar**(1.0d0/3.0d0) - 2.0d0  )
+            Jbar = this%AdditionalVariables%Jbar
+		    d2PSIvol_dJbar2 = ( -this%Properties%BulkModulus*Jbar**(-5.0d0/3.0d0) ) * &
+                              ( Jbar**(1.0d0/3.0d0) - 2.0d0  )
 
             !--------------------------------------------------------------------
 
@@ -464,7 +465,7 @@ module HyperelasticQ1P0
             BulkModulus = this%Properties%BulkModulus
             C10         = this%Properties%C10
             F           = this%F
-            Jbar        = this%Jbar
+            Jbar        = this%AdditionalVariables%Jbar
             ! -----------------------------------------------------------------------------------
 
             ! Right-Cauchy Green Strain - Calculated in 3D Tensorial Format
@@ -576,7 +577,7 @@ module HyperelasticQ1P0
             BulkModulus = this%Properties%BulkModulus
             C10         = this%Properties%C10
             F           = this%F
-            Jbar        = this%Jbar
+            Jbar        = this%AdditionalVariables%Jbar
             ! -----------------------------------------------------------------------------------
 
             ! Quantities calculated in 3D Tensorial Format
@@ -718,7 +719,7 @@ module HyperelasticQ1P0
             BulkModulus = this%Properties%BulkModulus
             C10         = this%Properties%C10
             F           = this%F
-            Jbar        = this%Jbar
+            Jbar        = this%AdditionalVariables%Jbar
             ! -----------------------------------------------------------------------------------
 
             ! Right-Cauchy Green Strain - Calculated in 3D Tensorial Format
@@ -824,7 +825,7 @@ module HyperelasticQ1P0
             BulkModulus = this%Properties%BulkModulus
             C10         = this%Properties%C10
             F           = this%F
-            Jbar        = this%Jbar
+            Jbar        = this%AdditionalVariables%Jbar
             ! -----------------------------------------------------------------------------------
 
             ! Quantities calculated in 3D Tensorial Format

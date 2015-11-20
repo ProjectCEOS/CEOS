@@ -13,6 +13,15 @@
 module ConstitutiveModel
 
 
+    type ClassAdditionalVariables
+
+        real(8) :: Jbar
+
+    endtype
+
+
+
+
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     ! ClassConstitutiveModel: Common definitions to all Constitutive Models
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -21,10 +30,10 @@ module ConstitutiveModel
         real(8) , pointer , dimension(:)    :: Stress => null()
         real(8)                             :: F(3,3)=0.0d0
         real(8)                             :: T
-        real(8)                             :: Jbar
+        !real(8)                             :: Jbar
         real(8)                             :: Time = 0.0d0
 
-
+        type (ClassAdditionalVariables), pointer :: AdditionalVariables => null()
 
         contains
 
