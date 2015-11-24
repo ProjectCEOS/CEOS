@@ -1,5 +1,5 @@
 module modFEMSystemOfEquations
-    
+
     use ModNonLinearSystemOfEquations
     use Analysis
     use BoundaryConditions
@@ -32,26 +32,26 @@ module modFEMSystemOfEquations
     contains
 !--------------------------------------------------------------------------------------------------
     subroutine EvaluateR(this,X,R)
+
         use Interfaces
         class(ClassFEMSystemOfEquations) :: this
         real(8),dimension(:) :: X,R
 
         ! Update stress and internal variables
-        call SolveConstitutiveModel( this%ElementList , this%AnalysisSettings , this%Time, X)
+        call SolveConstitutiveModel( this%ElementList , this%AnalysisSettings , this%Time, X, this%Status)
 
-                ! Used for Cut Back Strategy
-                !if (AnalysisSettings%ErrorNumber < 0 ) then
-                    !call this%Status%SetError()
-                  !  return
-                !endif
+            ! Constitutive Model Failed. Used for Cut Back Strategy
+            if (this%Status%Error ) then
+                return
+            endif
 
                 ! Internal Force
-        call InternalForce(this%ElementList , this%AnalysisSettings , this%Fint)
+        call InternalForce(this%ElementList , this%AnalysisSettings , this%Fint, this%Status)
 
-                ! Used for Cut Back Strategy
-               ! if (AnalysisSettings%ErrorNumber < 0 ) then
-               !     return
-               ! endif
+            ! det(Jacobian Matrix)<=0 .Used for Cut Back Strategy
+            if (this%Status%Error ) then
+                return
+            endif
 
             ! Residual
             R = this%Fint - this%Fext

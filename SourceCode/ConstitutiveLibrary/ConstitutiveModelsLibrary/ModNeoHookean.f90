@@ -18,7 +18,7 @@ module NeoHookean
     ! Modules and implicit declarations
     ! --------------------------------------------------------------------------------------------
     use ConstitutiveModel
-    
+
     implicit none
 
 
@@ -51,7 +51,7 @@ module NeoHookean
              procedure :: ConstitutiveModelConstructor => ConstitutiveModelConstructor_NeoHookean
              procedure :: ReadMaterialParameters       => ReadMaterialParameters_NeoHookean
              procedure :: GetResult                    => GetResult_NeoHookean
-             procedure :: SaveConvergedState           => SaveConvergedState_NeoHookean
+             procedure :: SwitchConvergedState           => SwitchConvergedState_NeoHookean
              procedure :: CopyProperties               => CopyProperties_NeoHookean
 
     end type
@@ -230,7 +230,7 @@ module NeoHookean
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-        subroutine UpdateStressAndStateVariables_NeoHookean_Axisymmetric(this)
+        subroutine UpdateStressAndStateVariables_NeoHookean_Axisymmetric(this, Status)
 
 		    !************************************************************************************
             ! DECLARATIONS OF VARIABLES
@@ -240,6 +240,7 @@ module NeoHookean
             use MathRoutines
 
             class(ClassNeoHookean_Axisymmetric) :: this
+            type(ClassStatus) :: Status
 
             ! Input variables
             ! -----------------------------------------------------------------------------------
@@ -376,7 +377,7 @@ module NeoHookean
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-        subroutine UpdateStressAndStateVariables_NeoHookean_3D(this)
+        subroutine UpdateStressAndStateVariables_NeoHookean_3D(this,Status)
 
 		    !************************************************************************************
             ! DECLARATIONS OF VARIABLES
@@ -386,6 +387,7 @@ module NeoHookean
             use MathRoutines
 
             class(ClassNeoHookean_3D) :: this
+            type(ClassStatus) :: Status
 
             ! Input variables
             ! -----------------------------------------------------------------------------------
@@ -588,7 +590,7 @@ module NeoHookean
 
 
         !==========================================================================================
-        subroutine SaveConvergedState_NeoHookean(this)
+        subroutine SwitchConvergedState_NeoHookean(this)
             class(ClassNeoHookean) :: this
         end subroutine
         !==========================================================================================

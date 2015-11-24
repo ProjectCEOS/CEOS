@@ -19,7 +19,7 @@ module modXXXXXX
 
             procedure :: UpdateStressAndStateVariables => UpdateStressAndStateVariables_XXXXXX
             procedure :: GetTangentModulus             => GetTangentModulus_XXXXXX
-            procedure :: SaveConvergedState            => SaveConvergedState_XXXXXX
+            procedure :: SwitchConvergedState           => SwitchConvergedState_XXXXXX
             procedure :: ConstitutiveModelConstructor  => ConstitutiveModelConstructor_XXXXXX
             procedure :: ReadMaterialParameters        => ReadMaterialParameters_XXXXXX
             procedure :: GetResult                     => GetResult_XXXXXX
@@ -63,8 +63,9 @@ module modXXXXXX
         allocate( this%Stress( AnalysisSettings%StressSize ) ) ; this%Stress= 0.0d0
     end subroutine
 
-    subroutine UpdateStressAndStateVariables_XXXXXX(this)
+    subroutine UpdateStressAndStateVariables_XXXXXX(this,Status)
         class(ClassXXXXXX) :: this
+        type(ClassStatus)  :: Status
     end subroutine
 
     subroutine GetTangentModulus_XXXXXX(this, D)
@@ -72,7 +73,7 @@ module modXXXXXX
         real(8) , dimension(:,:) , intent(inout) :: D
     end subroutine
 
-    subroutine SaveConvergedState_XXXXXX(this)
+    subroutine SwitchConvergedState_XXXXXX(this)
         class(ClassXXXXXX) :: this
     end subroutine
 

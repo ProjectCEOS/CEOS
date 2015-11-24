@@ -18,6 +18,7 @@ module J2Plasticity
     ! Modules and implicit declarations
     ! --------------------------------------------------------------------------------------------
     use ConstitutiveModel
+    use ModStatus
 
     implicit none
 
@@ -57,7 +58,7 @@ module J2Plasticity
              procedure :: ConstitutiveModelConstructor => ConstitutiveModelConstructor_J2Plasticity
              procedure :: ReadMaterialParameters       => ReadMaterialParameters_J2Plasticity
              procedure :: GetResult                    => GetResult_J2Plasticity
-             procedure :: SaveConvergedState           => SaveConvergedState_J2
+             procedure :: SwitchConvergedState           => SwitchConvergedState_J2
 
     end type
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -226,7 +227,7 @@ module J2Plasticity
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-        subroutine UpdateStressAndStateVariables_J2Plasticity_PlaneStrain(this)
+        subroutine UpdateStressAndStateVariables_J2Plasticity_PlaneStrain(this,Status)
 
 		    !************************************************************************************
             ! DECLARATIONS OF VARIABLES
@@ -234,6 +235,7 @@ module J2Plasticity
             ! Object
             ! ---------------------------------------------------------------------------------
             class(ClassJ2Plasticity_PlaneStrain) :: this
+            type(ClassStatus) :: Status
 
             ! Input variables
             ! -----------------------------------------------------------------------------------
@@ -318,7 +320,7 @@ module J2Plasticity
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-        subroutine UpdateStressAndStateVariables_J2Plasticity_3D(this)
+        subroutine UpdateStressAndStateVariables_J2Plasticity_3D(this,Status)
 
 		    !************************************************************************************
             ! DECLARATIONS OF VARIABLES
@@ -326,6 +328,7 @@ module J2Plasticity
             ! Object
             ! ---------------------------------------------------------------------------------
             class(ClassJ2Plasticity_3D) :: this
+            type(ClassStatus) :: Status
 
             ! Input variables
             ! -----------------------------------------------------------------------------------
@@ -544,7 +547,7 @@ module J2Plasticity
         end subroutine
         !==========================================================================================
 
-        subroutine SaveConvergedState_J2(this)
+        subroutine SwitchConvergedState_J2(this)
 
             class(ClassJ2Plasticity) :: this
             this%OldPlasticStrain = this%PlasticStrain

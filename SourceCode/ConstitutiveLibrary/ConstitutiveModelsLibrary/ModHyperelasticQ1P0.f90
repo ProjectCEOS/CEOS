@@ -18,6 +18,7 @@ module HyperelasticQ1P0
     ! Modules and implicit declarations
     ! --------------------------------------------------------------------------------------------
     use ConstitutiveModel
+    use ModStatus
     implicit none
 
 
@@ -62,7 +63,7 @@ module HyperelasticQ1P0
              procedure :: ConstitutiveModelConstructor => ConstitutiveModelConstructor_HyperelasticQ1P0
              procedure :: ReadMaterialParameters       => ReadMaterialParameters_HyperelasticQ1P0
              procedure :: GetResult                    => GetResult_HyperelasticQ1P0
-             procedure :: SaveConvergedState           => SaveConvergedState_HyperelasticQ1P0
+             procedure :: SwitchConvergedState           => SwitchConvergedState_HyperelasticQ1P0
              procedure :: SecondDerivativesOfPSI_Jbar  => SecondDerivativesOfPSI_Jbar_HyperelasticQ1P0
              procedure :: CopyProperties               => CopyProperties_HyperelasticQ1P0
 
@@ -423,7 +424,7 @@ module HyperelasticQ1P0
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-        subroutine UpdateStressAndStateVariables_HyperelasticQ1P0_Axisymmetric(this)
+        subroutine UpdateStressAndStateVariables_HyperelasticQ1P0_Axisymmetric(this,Status)
 
 		    !************************************************************************************
             ! DECLARATIONS OF VARIABLES
@@ -435,6 +436,7 @@ module HyperelasticQ1P0
             ! Object
             ! ---------------------------------------------------------------------------------
             class(ClassHyperelasticQ1P0_Axisymmetric) :: this
+            type(ClassStatus) :: Status
 
             ! Internal variables
             ! -----------------------------------------------------------------------------------
@@ -681,7 +683,7 @@ module HyperelasticQ1P0
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-        subroutine UpdateStressAndStateVariables_HyperelasticQ1P0_3D(this)
+        subroutine UpdateStressAndStateVariables_HyperelasticQ1P0_3D(this,Status)
 
 		    !************************************************************************************
             ! DECLARATIONS OF VARIABLES
@@ -693,6 +695,7 @@ module HyperelasticQ1P0
             ! Object
             ! ---------------------------------------------------------------------------------
             class(ClassHyperelasticQ1P0_3D) :: this
+            type(ClassStatus) :: Status
 
             ! Internal variables
             ! -----------------------------------------------------------------------------------
@@ -920,18 +923,17 @@ module HyperelasticQ1P0
 
 
         !==========================================================================================
-        ! Method SaveConvergedState_"NameOfTheMaterialModel": Routine that save de converged state.
+        ! Method SwitchConvergedState_"NameOfTheMaterialModel": Routine that save de converged state.
         !------------------------------------------------------------------------------------------
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-        subroutine SaveConvergedState_HyperelasticQ1P0(this)
+        subroutine SwitchConvergedState_HyperelasticQ1P0(this)
             class(ClassHyperelasticQ1P0) :: this
         end subroutine
         !==========================================================================================
 
 
-! TODO (Thiago#1#02/13/15): Ver no GiD a ordem de exportar as tensões (notação de Voigt)
         !==========================================================================================
         ! Method GetTangentModulus_"NameOfTheMaterialModel"_3D: Routine that evaluates the
         ! Tangente Modulus.

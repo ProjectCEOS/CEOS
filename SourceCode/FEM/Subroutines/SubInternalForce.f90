@@ -10,7 +10,7 @@
 ! Modifications:
 ! Date:         Author:
 !##################################################################################################
-subroutine InternalForce( ElementList, AnalysisSettings, Fint )
+subroutine InternalForce( ElementList, AnalysisSettings, Fint, Status )
 
     !************************************************************************************
     ! DECLARATIONS OF VARIABLES
@@ -19,6 +19,7 @@ subroutine InternalForce( ElementList, AnalysisSettings, Fint )
     ! -----------------------------------------------------------------------------------
     use Analysis
     use ElementLibrary
+    use ModStatus
 
     implicit none
 
@@ -26,6 +27,7 @@ subroutine InternalForce( ElementList, AnalysisSettings, Fint )
     ! -----------------------------------------------------------------------------------
     type(ClassElementsWrapper) , dimension(:) , intent(in) :: ElementList
     type(ClassAnalysis)                       , intent(inout) :: AnalysisSettings
+    type(ClassStatus)  :: Status
 
     ! Output variables
     ! -----------------------------------------------------------------------------------
@@ -54,7 +56,11 @@ subroutine InternalForce( ElementList, AnalysisSettings, Fint )
 
         call ElementList(e)%El%GetGlobalMapping(AnalysisSettings,GM)
 
-        call ElementList(e)%El%ElementInternalForce(AnalysisSettings,Fe)
+        call ElementList(e)%El%ElementInternalForce(AnalysisSettings, Fe, Status)
+
+        if (Status%Error) then
+            return
+        endif
 
         Fint(GM) = Fint(GM) + Fe
 

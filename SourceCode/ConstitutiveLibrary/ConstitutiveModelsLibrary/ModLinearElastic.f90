@@ -18,6 +18,8 @@ module LinearElastic
     ! Modules and implicit declarations
     ! --------------------------------------------------------------------------------------------
     use ConstitutiveModel
+    use ModStatus
+
     implicit none
 
 
@@ -51,7 +53,7 @@ module LinearElastic
              procedure :: ConstitutiveModelConstructor => ConstitutiveModelConstructor_LinearElastic
              procedure :: ReadMaterialParameters       => ReadMaterialParameters_LinearElastic
              procedure :: GetResult                    => GetResult_LinearElastic
-             procedure :: SaveConvergedState           => SaveConvergedState_LinearElastic
+             procedure :: SwitchConvergedState           => SwitchConvergedState_LinearElastic
              procedure :: CopyProperties               => CopyProperties_LinearElastic
 
     end type
@@ -231,12 +233,12 @@ module LinearElastic
              class(ClassConstitutiveModel) :: Reference
 
              select type ( Reference )
-            
+
                  class is ( ClassLinearElastic )
                     this%Properties => Reference%Properties
                  class default
                      stop "erro na subroutine CopyProperties_LinearElastic"
-            
+
             end select
 
         end subroutine
@@ -250,7 +252,7 @@ module LinearElastic
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-!        subroutine UpdateStressAndStateVariables_LinearElastic_PlaneStrain(this)
+!        subroutine UpdateStressAndStateVariables_LinearElastic_PlaneStrain(this,Status)
 !
 !		    !************************************************************************************
 !            ! DECLARATIONS OF VARIABLES
@@ -449,7 +451,7 @@ module LinearElastic
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-        subroutine UpdateStressAndStateVariables_LinearElastic_ThreeDimensional(this)
+        subroutine UpdateStressAndStateVariables_LinearElastic_ThreeDimensional(this,Status)
 
 		    !************************************************************************************
             ! DECLARATIONS OF VARIABLES
@@ -459,6 +461,7 @@ module LinearElastic
             use MathRoutines
 
             class(ClassLinearElastic_ThreeDimensional) :: this
+            type(ClassStatus) :: Status
 
             ! Internal variables
             ! -----------------------------------------------------------------------------------
@@ -547,7 +550,7 @@ module LinearElastic
 
 
         !==========================================================================================
-        subroutine SaveConvergedState_LinearElastic(this)
+        subroutine SwitchConvergedState_LinearElastic(this)
             class(ClassLinearElastic) :: this
         end subroutine
         !==========================================================================================

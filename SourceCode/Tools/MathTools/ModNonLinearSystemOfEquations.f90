@@ -1,15 +1,20 @@
 module modNonLinearSystemOfEquations
+
     use modStatus
     use GlobalSparseMatrix
 
     type ClassNonLinearSystemOfEquations
+
         type(ClassStatus) :: Status
+
     contains
+
         procedure :: EvaluateSystem => EvaluateSystemBase
         procedure :: EvaluateGradientFull => EvaluateGradientBase
         procedure :: EvaluateGradientSparse => EvaluateGradientSparseBase
         generic   :: EvaluateGradient => EvaluateGradientFull , EvaluateGradientSparse
         procedure :: RotinaExtra => RotinaExtraBase
+
     end type
 
     contains

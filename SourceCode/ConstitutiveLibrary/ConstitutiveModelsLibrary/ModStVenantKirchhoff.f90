@@ -51,7 +51,7 @@ module StVenantKirchhoff
              procedure :: ConstitutiveModelConstructor => ConstitutiveModelConstructor_StVenantKirchhoff
              procedure :: ReadMaterialParameters       => ReadMaterialParameters_StVenantKirchhoff
              procedure :: GetResult                    => GetResult_StVenantKirchhoff
-             procedure :: SaveConvergedState           => SaveConvergedState_StVenantKirchhoff
+             procedure :: SwitchConvergedState           => SwitchConvergedState_StVenantKirchhoff
              procedure :: CopyProperties               => CopyProperties_StVenantKirchhoff
 
     end type
@@ -235,7 +235,7 @@ module StVenantKirchhoff
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-        subroutine UpdateStressAndStateVariables_StVenantKirchhoff_Axisymmetric(this)
+        subroutine UpdateStressAndStateVariables_StVenantKirchhoff_Axisymmetric(this,Status)
 
 		    !************************************************************************************
             ! DECLARATIONS OF VARIABLES
@@ -245,6 +245,7 @@ module StVenantKirchhoff
             use MathRoutines
 
             class(ClassStVenantKirchhoff_Axisymmetric) :: this
+            type(ClassStatus) :: Status
 
             ! Input variables
             ! -----------------------------------------------------------------------------------
@@ -360,7 +361,7 @@ module StVenantKirchhoff
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-        subroutine UpdateStressAndStateVariables_StVenantKirchhoff_3D(this)
+        subroutine UpdateStressAndStateVariables_StVenantKirchhoff_3D(this,Status)
 
 		    !************************************************************************************
             ! DECLARATIONS OF VARIABLES
@@ -370,6 +371,7 @@ module StVenantKirchhoff
             use MathRoutines
 
             class(ClassStVenantKirchhoff_3D) :: this
+            type(ClassStatus) :: Status
 
             ! Input variables
             ! -----------------------------------------------------------------------------------
@@ -495,7 +497,7 @@ module StVenantKirchhoff
         !==========================================================================================
 
         !==========================================================================================
-        subroutine SaveConvergedState_StVenantKirchhoff(this)
+        subroutine SwitchConvergedState_StVenantKirchhoff(this)
             class(ClassStVenantKirchhoff) :: this
         end subroutine
         !==========================================================================================

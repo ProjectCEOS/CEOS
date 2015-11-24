@@ -10,7 +10,7 @@
 ! Modifications:
 ! Date:         Author:
 !##################################################################################################
-subroutine SolveConstitutiveModel( ElementList , AnalysisSettings, Time, U)
+subroutine SolveConstitutiveModel( ElementList , AnalysisSettings, Time, U, Status)
 
     !************************************************************************************
     ! DECLARATIONS OF VARIABLES
@@ -20,6 +20,7 @@ subroutine SolveConstitutiveModel( ElementList , AnalysisSettings, Time, U)
     use ElementLibrary
     use Analysis
     use ConstitutiveModel
+    use ModStatus
 
 
     implicit none
@@ -28,6 +29,7 @@ subroutine SolveConstitutiveModel( ElementList , AnalysisSettings, Time, U)
     ! -----------------------------------------------------------------------------------
     type(ClassElementsWrapper) , dimension(:)  :: ElementList
     type(ClassAnalysis)                        :: AnalysisSettings
+    type(ClassStatus)                          :: Status
     real(8)                    , dimension(:)  :: U
     real(8)                                    :: Time
 
@@ -58,7 +60,9 @@ subroutine SolveConstitutiveModel( ElementList , AnalysisSettings, Time, U)
 
         call ElementList(e)%El%GetGlobalMapping(AnalysisSettings,GM)
 
-        call ElementList(e)%El%ElementVolume(AnalysisSettings,Volume,VolumeX)
+        call ElementList(e)%El%ElementVolume(AnalysisSettings,Volume,VolumeX,Status)
+
+        if (Status%Error) return
 
         ! Armazendo o volume de cada elemento
         ElementList(e)%El%Volume  = Volume
@@ -68,7 +72,7 @@ subroutine SolveConstitutiveModel( ElementList , AnalysisSettings, Time, U)
         do gp = 1 , size(ElementList(e)%El%GaussPoints)
 
             call ElementList(e)%El%DeformationGradient( NaturalCoord(gp,:) , U(GM) , &
-                                                        AnalysisSettings , F )
+                                                        AnalysisSettings , F, Status )
 
             ElementList(e)%El%GaussPoints(gp)%F = F
 
@@ -84,7 +88,7 @@ subroutine SolveConstitutiveModel( ElementList , AnalysisSettings, Time, U)
 
             ElementList(e)%El%GaussPoints(gp)%Time = Time
 
-            call ElementList(e)%El%GaussPoints(gp)%UpdateStressAndStateVariables
+            call ElementList(e)%El%GaussPoints(gp)%UpdateStressAndStateVariables(Status)
 
         enddo
 

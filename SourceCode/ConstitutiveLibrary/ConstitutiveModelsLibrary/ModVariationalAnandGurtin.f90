@@ -30,7 +30,7 @@ module modVariationalAnandGurtin2003
 
             procedure :: UpdateStressAndStateVariables => UpdateStressAndStateVariables_VAG
             procedure :: GetTangentModulus => GetTangentModulus_VAG
-            procedure :: SaveConvergedState => SaveConvergedState_VAG
+            procedure :: SwitchConvergedState => SwitchConvergedState_VAG
             procedure :: ConstitutiveModelConstructor => ConstitutiveModelConstructor_VAG
             procedure :: ReadMaterialParameters => ReadMaterialParameters_VAG
             procedure :: GetResult => GetResult_VAG
@@ -102,8 +102,10 @@ contains
         this%OldState%Fp=IdentityMatrix(3)
     end subroutine
 
-    subroutine UpdateStressAndStateVariables_VAG(this)
+    subroutine UpdateStressAndStateVariables_VAG(this,Status)
         class(ClassVariationalAnandGurtin2003) :: this
+        type(ClassStatus) :: Status
+
     end subroutine
 
     subroutine GetTangentModulus_VAG(this, D)
@@ -111,7 +113,7 @@ contains
         real(8) , dimension(:,:) , intent(inout) :: D
     end subroutine
 
-    subroutine SaveConvergedState_VAG(this)
+    subroutine SwitchConvergedState_VAG(this)
         class(ClassVariationalAnandGurtin2003) :: this
         this%OldState=this%NewState
     end subroutine

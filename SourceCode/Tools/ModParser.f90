@@ -334,6 +334,7 @@ module Parser
 
             read(this%FileNumber,'(A255)',IOSTAT=status,err=998,end=999) string !this%CurrentLine
             this%CurrentLine = string
+            this%EndOfFile = EOF(this%FileNumber)
 
             return
         !**********************
