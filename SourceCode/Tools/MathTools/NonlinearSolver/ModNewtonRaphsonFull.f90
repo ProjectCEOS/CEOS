@@ -71,7 +71,7 @@ contains
             endif
 
 
-
+            ! TODO (Jan#1#11/21/15): Verificar como fazer o solver nao-linear com matriz cheia
             call SOE%EvaluateGradient(X,R,GSparse)
 
             if (SOE%Status%error) then

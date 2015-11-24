@@ -2,20 +2,17 @@ module modVariationalAnandGurtin2003
 
     use ConstitutiveModel
     use MathRoutines
+    use modNonLinearSystemOfEquations
 
     implicit none
 
     private
 
     type VAGProperties
-
         real(8) :: G , K , mu
-
         real(8) :: m , nu0
-
         !Flux Resistance
         real(8) :: s0,scv,zeta,beta,gamma
-
     end type
 
     type ClassState
@@ -37,12 +34,23 @@ module modVariationalAnandGurtin2003
             procedure :: ConstitutiveModelConstructor => ConstitutiveModelConstructor_VAG
             procedure :: ReadMaterialParameters => ReadMaterialParameters_VAG
             procedure :: GetResult => GetResult_VAG
-            procedure :: SecondDerivativesOfPSI_Jbar => SecondDerivativesOfPSI_Jbar_VAG
             procedure :: CopyProperties => CopyProperties_VAG
 
     end type
 
+    type , extends (ClassNonLinearSystemOfEquations) :: VAGSystem
+
+        type(ClassVariationalAnandGurtin2003),pointer :: model => null()
+
     contains
+        procedure :: EvaluateSystem => EvaluateSystem_VAG
+        procedure :: EvaluateGradientFull => EvaluateGradient_VAG
+    end type
+
+
+    real(8) , dimension(8,8) , target :: GRAD_VAGSystem
+
+contains
 
     subroutine ReadMaterialParameters_VAG(this ,DataFile)
         use Parser
@@ -131,16 +139,97 @@ module modVariationalAnandGurtin2003
         end select
     end subroutine
 !--------------------------------------------------------------------------------------------------------------------------------
+!--------------------------------------------------------------------------------------------------------------------------------
+!--------------------------------------------------------------------------------------------------------------------------------
+!--------------------------------------------------------------------------------------------------------------------------------
+!--------------------------------------------------------------------------------------------------------------------------------
     function FluxResistance(p,r) result(s)
         type(VAGProperties)::p
         real(8) :: r , s
         s = p%scv + dexp(-p%zeta*r) * ( (p%s0-p%scv)*dcosh(p%beta*r) + p%gamma*dsinh(p%beta*r))
     end function
 
+    subroutine ConvertTO(X,r,N,l)
+        real(8) :: r,l
+        real(8) , dimension(:) :: X
+        real(8),dimension(:,:) :: N
+        X(1) = r
+        X(2) = l
+        X(3:8) = Convert_to_Voigt_3D_Sym(N)
+    end subroutine
+    subroutine ConvertFROM(X,r,N,l)
+        real(8) :: r,l
+        real(8) , dimension(:) :: X
+        real(8),dimension(:,:) :: N
+        r = X(1)
+        l = X(2)
+        N = Convert_to_Tensor_3D_Sym(X(3:8))
+    end subroutine
+
+    subroutine EvaluateSystem_VAG(this,x,R)
+        use ModContinuumMechanics
+        class(VAGSystem)::this
+        real(8),dimension(:)::x,R
+
+        real(8) :: l , racum , N(3,3)
+        real(8) :: EqRacum, EqdetFp , EqN
+
+        call ConvertFROM(X,r,N,l)
+
+        !Fp_new  = *this%model%OldState%Fp
+
+        Fe_new = matmul( this%F , inverse(Fp_new) )
+        Ee_new = StrainMeasure(Fe_new,StrainMeasures%GreenLagrange)
+        Se_new = this%model%Properties%K * trace(Ee_new) * IdentityMatrix(3)  + 2.0d0*this%model%Properties%G*Deviatoric(Ee_new)
+
+        EqdetFp = det(Fp_new) - 1.0d0
+
+        call ConvertTO(R,EqRacum,EqN,EqdetFp)
+
+
+    end subroutine
+
+    subroutine EvaluateGradient_VAG(this,x,R,G)
+        class(VAGSystem)::this
+        real(8),dimension(:)::x,R
+        real(8),dimension(:,:),pointer::G
+
+        real(8) , dimension(size(R)) :: Rfront , Xfront
+        real(8) :: eps
+
+        G=>GRAD_VAGSystem
+
+        eps = 1.0d-6
+
+        do i=1,size(R)
+            Xfront = x
+            Xfront(i) = Xfront(i) + eps
+
+            call this%EvaluateSystem(Xfront,Rfront)
+
+            G(:,i) = (Rfront-R) / eps
+        enddo
+
+    end subroutine
+
     subroutine SolveNewStress(model,stress)
-        class(ClassVariationalAnandGurtin2003)::model
+        use NonlinearSolverLibrary
+        class(ClassVariationalAnandGurtin2003),target::model
         real(8), dimension(:) :: stress
-        !ou sair em forma de tensor ?
+
+        type(VAGSystem) :: VAGSys
+        type(ClassNewtonRaphsonFull) :: Solver
+
+        real(8) , dimension(8) :: Xguess , X
+
+
+        VAGSys % model => model
+        Solver % MatrixType = NewtonRaphsonFull_MatrixTypes%Full
+
+
+
+        !call Solver %Solve(VAGSys,)
+
 
     end subroutine
 
