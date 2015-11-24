@@ -65,7 +65,7 @@ module Microstructure
              procedure :: ConstitutiveModelConstructor => ConstitutiveModelConstructor_Microstructure
              procedure :: ReadMaterialParameters       => ReadMaterialParameters_Microstructure
              procedure :: GetResult                    => GetResult_Microstructure
-             procedure :: SaveConvergedState           => SaveConvergedState_Microstructure
+             procedure :: SwitchConvergedState           => SwitchConvergedState_Microstructure
              procedure :: SecondDerivativesOfPSI_Jbar  => SecondDerivativesOfPSI_Jbar_Microstructure
              procedure :: CopyProperties               => CopyProperties_Microstructure
 
@@ -921,18 +921,17 @@ module Microstructure
 
 
         !==========================================================================================
-        ! Method SaveConvergedState_"NameOfTheMaterialModel": Routine that save de converged state.
+        ! Method SwitchConvergedState_"NameOfTheMaterialModel": Routine that save de converged state.
         !------------------------------------------------------------------------------------------
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-        subroutine SaveConvergedState_HyperelasticQ1P0(this)
+        subroutine SwitchConvergedState_HyperelasticQ1P0(this)
             class(ClassHyperelasticQ1P0) :: this
         end subroutine
         !==========================================================================================
 
 
-! TODO (Thiago#1#02/13/15): Ver no GiD a ordem de exportar as tensões (notação de Voigt)
         !==========================================================================================
         ! Method GetTangentModulus_"NameOfTheMaterialModel"_3D: Routine that evaluates the
         ! Tangente Modulus.

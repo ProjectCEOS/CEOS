@@ -51,7 +51,7 @@ module LinearElastic
              procedure :: ConstitutiveModelConstructor => ConstitutiveModelConstructor_LinearElastic
              procedure :: ReadMaterialParameters       => ReadMaterialParameters_LinearElastic
              procedure :: GetResult                    => GetResult_LinearElastic
-             procedure :: SaveConvergedState           => SaveConvergedState_LinearElastic
+             procedure :: SwitchConvergedState           => SwitchConvergedState_LinearElastic
              procedure :: CopyProperties               => CopyProperties_LinearElastic
 
     end type
@@ -231,12 +231,12 @@ module LinearElastic
              class(ClassConstitutiveModel) :: Reference
 
              select type ( Reference )
-            
+
                  class is ( ClassLinearElastic )
                     this%Properties => Reference%Properties
                  class default
                      stop "erro na subroutine CopyProperties_LinearElastic"
-            
+
             end select
 
         end subroutine
@@ -547,7 +547,7 @@ module LinearElastic
 
 
         !==========================================================================================
-        subroutine SaveConvergedState_LinearElastic(this)
+        subroutine SwitchConvergedState_LinearElastic(this)
             class(ClassLinearElastic) :: this
         end subroutine
         !==========================================================================================

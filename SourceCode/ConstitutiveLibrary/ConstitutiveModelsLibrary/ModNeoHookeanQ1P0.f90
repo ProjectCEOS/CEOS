@@ -51,7 +51,7 @@ module NeoHookeanQ1P0
              procedure :: ConstitutiveModelConstructor => ConstitutiveModelConstructor_NeoHookeanQ1P0
              procedure :: ReadMaterialParameters       => ReadMaterialParameters_NeoHookeanQ1P0
              procedure :: GetResult                    => GetResult_NeoHookeanQ1P0
-             procedure :: SaveConvergedState           => SaveConvergedState_NeoHookeanQ1P0
+             procedure :: SwitchConvergedState           => SwitchConvergedState_NeoHookeanQ1P0
              procedure :: SecondDerivativesOfPSI_Jbar  => SecondDerivativesOfPSI_Jbar_NeoHookeanQ1P0
              procedure :: CopyProperties               => CopyProperties_NeoHookeanQ1P0
 
@@ -275,7 +275,7 @@ module NeoHookeanQ1P0
             trb = b(1,1) + b(2,2) + b(3,3)
 
             J = det(this%F)
-            
+
             Jbar = this%AdditionalVariables%Jbar
 
             pbar = 3.0d0*BulkModulus*( Jbar**(-2.0d0/3.0d0) )*( Jbar**(1.0d0/3.0d0) - 1.0d0 )
@@ -349,7 +349,7 @@ module NeoHookeanQ1P0
             CinvV = Convert_to_Voigt(Cinv)
 
             J = det(this%F)
-            
+
             Jbar = this%AdditionalVariables%Jbar
 
             !p = 3.0d0*BulkModulus*( J**(-2.0d0/3.0d0) )*( J**(1.0d0/3.0d0) - 1.0d0 )
@@ -435,7 +435,7 @@ module NeoHookeanQ1P0
             trb = b(1,1) + b(2,2) + b(3,3)
 
             J = det(this%F)
-            
+
             Jbar = this%AdditionalVariables%Jbar
 
             pbar = 3.0d0*BulkModulus*( Jbar**(-2.0d0/3.0d0) )*( Jbar**(1.0d0/3.0d0) - 1.0d0 )
@@ -549,7 +549,7 @@ module NeoHookeanQ1P0
             CinvV = Convert_to_Voigt(Cinv)
 
             J = det(this%F)
-            
+
             Jbar = this%AdditionalVariables%Jbar
 
             !p = 3.0d0*BulkModulus*( J**(-2.0d0/3.0d0) )*( J**(1.0d0/3.0d0) - 1.0d0 )
@@ -604,7 +604,7 @@ module NeoHookeanQ1P0
             !************************************************************************************
             ! TANGENT MODULUS
 		    !************************************************************************************
-            
+
             Jbar = this%AdditionalVariables%Jbar
 
 		    d2PSIvol_dJbar2 = ( -this%Properties%BulkModulus*Jbar**(-5.0d0/3.0d0) ) * ( Jbar**(1.0d0/3.0d0) - 2.0d0  )
@@ -617,12 +617,11 @@ module NeoHookeanQ1P0
 
 
 
-        subroutine SaveConvergedState_NeoHookeanQ1P0(this)
+        subroutine SwitchConvergedState_NeoHookeanQ1P0(this)
             class(ClassNeoHookeanQ1P0) :: this
         end subroutine
 
 
-! TODO (Thiago#1#02/13/15): Ver no GiD a ordem de exportar as tensões (notação de Voigt)
         subroutine GetResult_NeoHookeanQ1P0(this, ID , Name , Length , Variable , VariableType  )
 
             implicit none

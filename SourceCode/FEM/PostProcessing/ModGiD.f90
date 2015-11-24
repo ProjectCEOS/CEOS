@@ -145,7 +145,7 @@ module ModGid
 
 
                 case (VariableNames%CauchyStress)
-                ! TODO (Thiago#1#11/17/15): GiD - não exporta resultados com malha mista e tensores não simétricos
+                !NOTE (Thiago#1#11/17/15): GiD - não exporta resultados com malha mista e tensores não simétricos
 
                     nelem = size( FEA%ElementList )
                     ngp = size(FEA%ElementList(1)%el%GaussPoints)
@@ -228,8 +228,6 @@ module ModGid
                         endif
 
                     enddo LOOP_USER_DEFINED
-                    ! TODO (Thiago#1#11/18/15): Todos os modelos materiais usados na análise devem ter implementados as variáveis do usuário.
-
 
 
 

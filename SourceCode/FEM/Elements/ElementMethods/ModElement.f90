@@ -636,7 +636,7 @@ module Element
             integer :: i , j , n , nNodes , DimProb , nDOFel
             real(8) , dimension(:,:) , pointer :: DifSF
             real(8) , dimension(AnalysisSettings%AnalysisDimension,AnalysisSettings%AnalysisDimension) :: Jacob
-            
+
  		    !************************************************************************************
 
 		    !************************************************************************************
@@ -668,18 +668,18 @@ module Element
             if (detJ<=0.0d0 ) then
                 !AnalysisSettings%ErrorNumber = -1
                 !AnalysisSettings%ErrorDescription = 'Determinant of Jacobian Matrix <=0. - 3D'
-! TODO (Thiago#1#11/03/15): Abilitar o teste do jacobiano negativo. Colacar na rotina de integração do elemento.
+! TODO (Thiago#2#11/03/15): Abilitar o teste do jacobiano negativo. Colacar na rotina de integração do elemento.
 
                 return
             endif
-            
+
             !Inverse of the Jacobian
             Jacob = inverse(Jacob)
 
             !Convert the derivatives in the natural coordinates to global coordinates.
-            do i=1,size(DifSf,dim=1)       
+            do i=1,size(DifSf,dim=1)
                 !call MatrixVectorMultiply ( 'N', Jacob, DifSf(i,:) , DifSf(i,:), 1.0d0, 0.0d0 ) !y := alpha*op(A)*x + beta*y
-                DifSf(i,:) = matmul( Jacob , DifSf(i,:) )    
+                DifSf(i,:) = matmul( Jacob , DifSf(i,:) )
             enddo
 
 

@@ -309,7 +309,7 @@ module ModExportResultFile
             ! ----------------------------------------------------------------------------------
             do el=1,size(FEA%ElementList)
                 do gp=1,size(FEA%ElementList(el)%el%GaussPoints)
-                    call FEA%ElementList(el)%el%GaussPoints(gp)%SaveConvergedState()
+                    call FEA%ElementList(el)%el%GaussPoints(gp)%SwitchConvergedState()
                 enddo
             enddo
 

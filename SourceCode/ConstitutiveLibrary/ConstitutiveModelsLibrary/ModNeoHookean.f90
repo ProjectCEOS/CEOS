@@ -18,7 +18,7 @@ module NeoHookean
     ! Modules and implicit declarations
     ! --------------------------------------------------------------------------------------------
     use ConstitutiveModel
-    
+
     implicit none
 
 
@@ -51,7 +51,7 @@ module NeoHookean
              procedure :: ConstitutiveModelConstructor => ConstitutiveModelConstructor_NeoHookean
              procedure :: ReadMaterialParameters       => ReadMaterialParameters_NeoHookean
              procedure :: GetResult                    => GetResult_NeoHookean
-             procedure :: SaveConvergedState           => SaveConvergedState_NeoHookean
+             procedure :: SwitchConvergedState           => SwitchConvergedState_NeoHookean
              procedure :: CopyProperties               => CopyProperties_NeoHookean
 
     end type
@@ -588,7 +588,7 @@ module NeoHookean
 
 
         !==========================================================================================
-        subroutine SaveConvergedState_NeoHookean(this)
+        subroutine SwitchConvergedState_NeoHookean(this)
             class(ClassNeoHookean) :: this
         end subroutine
         !==========================================================================================

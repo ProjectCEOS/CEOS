@@ -57,7 +57,7 @@ module J2Plasticity
              procedure :: ConstitutiveModelConstructor => ConstitutiveModelConstructor_J2Plasticity
              procedure :: ReadMaterialParameters       => ReadMaterialParameters_J2Plasticity
              procedure :: GetResult                    => GetResult_J2Plasticity
-             procedure :: SaveConvergedState           => SaveConvergedState_J2
+             procedure :: SwitchConvergedState           => SwitchConvergedState_J2
 
     end type
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -544,7 +544,7 @@ module J2Plasticity
         end subroutine
         !==========================================================================================
 
-        subroutine SaveConvergedState_J2(this)
+        subroutine SwitchConvergedState_J2(this)
 
             class(ClassJ2Plasticity) :: this
             this%OldPlasticStrain = this%PlasticStrain

@@ -44,7 +44,7 @@ module ConstitutiveModel
             !------------------------------------------------------------------------------------
             procedure :: UpdateStressAndStateVariables => UpdateStressAndStateVariablesBase
             procedure :: GetTangentModulus => GetTangentModulusBase
-            procedure :: SaveConvergedState => SaveConvergedStateBase
+            procedure :: SwitchConvergedState => SwitchConvergedStateBase
             procedure :: ConstitutiveModelConstructor => ConstitutiveModelConstructorBase
             procedure :: ReadMaterialParameters => ReadMaterialParametersBase
             procedure :: GetResult => GetResultBase
@@ -98,7 +98,7 @@ module ConstitutiveModel
                 stop "Error: ConstitutiveAnalysis "
             end subroutine
             !==========================================================================================
-            subroutine SaveConvergedStateBase(this)
+            subroutine SwitchConvergedStateBase(this)
                 class(ClassConstitutiveModel)::this
                 stop "Error: UpdateStateVariables "
             end subroutine
@@ -111,9 +111,7 @@ module ConstitutiveModel
                 stop "Error: ReadMaterialParameters"
             end subroutine
             !==========================================================================================
-            ! TODO (Thiago#1#03/11/15): Passar o Analysis Settings - obter informações dependendo do tipo de análise
-! TODO (Thiago#1#11/03/15): Implementar uma classe de Resultados
-!
+            ! TODO (Thiago#1#03/11/15): Passar o Analysis Settings - obter informações dependendo do tipo de análise!
 
             subroutine GetResultBase(this, ID , Name , Length , Variable , VariableType )
                 class(ClassConstitutiveModel) :: this

@@ -54,11 +54,6 @@ module FEMAnalysis
             procedure :: AllocateGlobalSparseStiffnessMatrix
             procedure :: Solve => SolveFEMAnalysis
 
-
-! TODO (Thiago#1#03/27/15): Escrever resultados especificos pedidos - PROBE.
-
-
-
     end type
 
     contains
@@ -370,7 +365,7 @@ subroutine QuasiStaticAnalysisFEM( ElementList , AnalysisSettings , GlobalNodesL
     nLoadCases = BC%GetNumberOfLoadCases()
 
     ! Escrevendo os resultados para o tempo zero
-! TODO (Thiago#1#11/19/15): OBS.: As condições de contorno iniciais devem sair do tempo zero.
+    ! NOTE (Thiago#1#11/19/15): OBS.: As condições de contorno iniciais devem sair do tempo zero.
     call WriteFEMResults( U, 0.0d0, 0, 0, 0, 0, FileID_FEMAnalysisResults )
 
     !LOOP - LOAD CASES
@@ -470,13 +465,11 @@ subroutine QuasiStaticAnalysisFEM( ElementList , AnalysisSettings , GlobalNodesL
 
 
             ! -----------------------------------------------------------------------------------
-            ! SAVING THE CONVERGED STATE
+            ! SWITCH THE CONVERGED STATE: StateVariable_n := StateVariable_n+1
             ! -----------------------------------------------------------------------------------
-! TODO (Thiago#1#11/03/15): Trocar o nome da rotina SaveConvergedState - Switch?!
-
             do e=1,size(elementlist)
                 do gp=1,size(elementlist(e)%el%GaussPoints)
-                    call ElementList(e)%el%GaussPoints(gp)%SaveConvergedState()
+                    call ElementList(e)%el%GaussPoints(gp)%SwitchConvergedState()
                 enddo
             enddo
             ! -----------------------------------------------------------------------------------

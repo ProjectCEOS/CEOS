@@ -51,7 +51,7 @@ module StVenantKirchhoff
              procedure :: ConstitutiveModelConstructor => ConstitutiveModelConstructor_StVenantKirchhoff
              procedure :: ReadMaterialParameters       => ReadMaterialParameters_StVenantKirchhoff
              procedure :: GetResult                    => GetResult_StVenantKirchhoff
-             procedure :: SaveConvergedState           => SaveConvergedState_StVenantKirchhoff
+             procedure :: SwitchConvergedState           => SwitchConvergedState_StVenantKirchhoff
              procedure :: CopyProperties               => CopyProperties_StVenantKirchhoff
 
     end type
@@ -495,7 +495,7 @@ module StVenantKirchhoff
         !==========================================================================================
 
         !==========================================================================================
-        subroutine SaveConvergedState_StVenantKirchhoff(this)
+        subroutine SwitchConvergedState_StVenantKirchhoff(this)
             class(ClassStVenantKirchhoff) :: this
         end subroutine
         !==========================================================================================

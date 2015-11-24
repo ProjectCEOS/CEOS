@@ -63,7 +63,6 @@ module StringLib
         status = ASSOCIATED(res)
         if ( status == .true. ) then
             deallocate(res,STAT=er)
-! TODO (Thiago#1#11/19/15): rotina SplitSub: deallocate devolve error 173????
             !write(*,*)'erro',er
             !pause
         endif
