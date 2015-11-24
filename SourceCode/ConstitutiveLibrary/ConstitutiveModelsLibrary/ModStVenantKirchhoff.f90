@@ -235,7 +235,7 @@ module StVenantKirchhoff
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-        subroutine UpdateStressAndStateVariables_StVenantKirchhoff_Axisymmetric(this)
+        subroutine UpdateStressAndStateVariables_StVenantKirchhoff_Axisymmetric(this,Status)
 
 		    !************************************************************************************
             ! DECLARATIONS OF VARIABLES
@@ -245,6 +245,7 @@ module StVenantKirchhoff
             use MathRoutines
 
             class(ClassStVenantKirchhoff_Axisymmetric) :: this
+            type(ClassStatus) :: Status
 
             ! Input variables
             ! -----------------------------------------------------------------------------------
@@ -360,7 +361,7 @@ module StVenantKirchhoff
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-        subroutine UpdateStressAndStateVariables_StVenantKirchhoff_3D(this)
+        subroutine UpdateStressAndStateVariables_StVenantKirchhoff_3D(this,Status)
 
 		    !************************************************************************************
             ! DECLARATIONS OF VARIABLES
@@ -370,6 +371,7 @@ module StVenantKirchhoff
             use MathRoutines
 
             class(ClassStVenantKirchhoff_3D) :: this
+            type(ClassStatus) :: Status
 
             ! Input variables
             ! -----------------------------------------------------------------------------------

@@ -232,7 +232,7 @@ module NeoHookeanQ1P0
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-        subroutine UpdateStressAndStateVariables_NeoHookeanQ1P0_Axisymmetric(this)
+        subroutine UpdateStressAndStateVariables_NeoHookeanQ1P0_Axisymmetric(this,Status)
 
 		    !************************************************************************************
             ! DECLARATIONS OF VARIABLES
@@ -240,6 +240,7 @@ module NeoHookeanQ1P0
             ! Object
             ! ---------------------------------------------------------------------------------
             use MathRoutines
+            type(ClassStatus) :: Status
 
             class(ClassNeoHookeanQ1P0_Axisymmetric) :: this
 
@@ -395,7 +396,7 @@ module NeoHookeanQ1P0
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-        subroutine UpdateStressAndStateVariables_NeoHookeanQ1P0_ThreeDimensional(this)
+        subroutine UpdateStressAndStateVariables_NeoHookeanQ1P0_ThreeDimensional(this,Status)
 
 		    !************************************************************************************
             ! DECLARATIONS OF VARIABLES
@@ -405,6 +406,7 @@ module NeoHookeanQ1P0
             use MathRoutines
 
             class(ClassNeoHookeanQ1P0_ThreeDimensional) :: this
+            type(ClassStatus) :: Status
 
             ! Input variables
             ! -----------------------------------------------------------------------------------

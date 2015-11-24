@@ -12,6 +12,8 @@
 !##################################################################################################
 module ConstitutiveModel
 
+    use ModStatus
+
 
     type ClassAdditionalVariables
 
@@ -93,8 +95,9 @@ module ConstitutiveModel
                 stop "Error: GetTangentModulus"
             end subroutine
             !==========================================================================================
-            subroutine UpdateStressAndStateVariablesBase(this)
+            subroutine UpdateStressAndStateVariablesBase(this,Status)
                 class(ClassConstitutiveModel)::this
+                type(ClassStatus) :: Status
                 stop "Error: ConstitutiveAnalysis "
             end subroutine
             !==========================================================================================

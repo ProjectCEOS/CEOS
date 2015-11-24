@@ -107,7 +107,7 @@ module Interfaces
         !==========================================================================================
 
         !==========================================================================================
-        subroutine SolveConstitutiveModel( ElementList , AnalysisSettings , Time, U)
+        subroutine SolveConstitutiveModel( ElementList , AnalysisSettings , Time, U, Status)
 
             !************************************************************************************
             ! DECLARATIONS OF VARIABLES
@@ -116,6 +116,7 @@ module Interfaces
             ! -----------------------------------------------------------------------------------
             use ElementLibrary
             use Analysis
+            use ModStatus
 
             implicit none
 
@@ -123,6 +124,7 @@ module Interfaces
             ! -----------------------------------------------------------------------------------
             type(ClassElementsWrapper) , dimension(:) :: ElementList
             type(ClassAnalysis)                       :: AnalysisSettings
+            type(ClassStatus)                         :: Status
             real(8)                    , dimension(:) :: U
 
             real(8)                                   :: Time
@@ -132,7 +134,7 @@ module Interfaces
         !==========================================================================================
 
         !==========================================================================================
-        subroutine InternalForce( ElementList, AnalysisSettings, Fint )
+        subroutine InternalForce( ElementList, AnalysisSettings, Fint, Status )
 
             !************************************************************************************
             ! DECLARATIONS OF VARIABLES
@@ -141,6 +143,7 @@ module Interfaces
             ! -----------------------------------------------------------------------------------
             use Analysis
             use ElementLibrary
+            use ModStatus
 
             implicit none
 
@@ -148,6 +151,7 @@ module Interfaces
             ! -----------------------------------------------------------------------------------
             type(ClassElementsWrapper) , dimension(:) , intent(in) :: ElementList
             type(ClassAnalysis)                       , intent(in) :: AnalysisSettings
+            type(ClassStatus)                                      :: Status
 
             ! Output variables
             ! -----------------------------------------------------------------------------------

@@ -202,6 +202,7 @@ module ModExportResultFile
         ! -----------------------------------------------------------------------------------
         use Parser
         use Interfaces
+        use ModStatus
         implicit none
 
 
@@ -214,6 +215,7 @@ module ModExportResultFile
         ! Internal variables
         ! -----------------------------------------------------------------------------------
         type(ClassParser) :: ResultFile
+        type(ClassStatus)                         :: Status
         integer :: TotalNDOF, LoadCase, Step, CutBack, SubStep, el, gp, i, FileNumber
         real(8) :: Time
         real(8) , allocatable, target, dimension(:) :: U
@@ -293,7 +295,7 @@ module ModExportResultFile
             FEA%Time = Time
             FEA%U => U
             ! Update stress and internal variables
-            call SolveConstitutiveModel( FEA%ElementList , FEA%AnalysisSettings, Time, U)
+            call SolveConstitutiveModel( FEA%ElementList , FEA%AnalysisSettings, Time, U, Status)
 
             ! Escrevendo os pontos pedidos. Excluindo soluções dos Cut Backs.
             if (CutBack .eq. 0) then

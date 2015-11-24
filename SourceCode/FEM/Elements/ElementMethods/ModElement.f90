@@ -21,6 +21,7 @@ module Element
     use Nodes
     use ConstitutiveModel
     use MathRoutines
+    use ModStatus
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
@@ -210,7 +211,7 @@ module Element
             ! Input variables
             ! -----------------------------------------------------------------------------------
             type(ClassAnalysis) , intent(inout) :: AnalysisSettings
-            type(ClassTimer)                 :: Tempo
+            type(ClassTimer)                    :: Tempo
 
             ! Output variables
             ! -----------------------------------------------------------------------------------
@@ -380,7 +381,7 @@ module Element
 
 
 
-        subroutine ElementInternalForce(this,AnalysisSettings,Fe)
+        subroutine ElementInternalForce(this,AnalysisSettings, Fe, Status)
 
 		    !************************************************************************************
             ! DECLARATIONS OF VARIABLES
@@ -397,6 +398,7 @@ module Element
             ! Input variables
             ! -----------------------------------------------------------------------------------
             type(ClassAnalysis) , intent(inout) :: AnalysisSettings
+            type(ClassStatus) :: Status
 
             ! Output variables
             ! -----------------------------------------------------------------------------------
@@ -443,6 +445,11 @@ module Element
 
                 !Get matrix B and the Jacobian determinant
                 call this%Matrix_B_and_G(AnalysisSettings, NaturalCoord(gp,:) , B, G, detJ , FactorAxi)
+
+                if (detJ <= 1.0d-13) then
+                    call Status%SetError(-1, 'Subroutine ElementInternalForce in ModElement.f90. Error: Determinant of the Jacobian Matrix <= 0.0d0')
+                    return
+                endif
 
                 !Element internal force vector
                 call MatrixVectorMultiply ( 'T', B, Cauchy( 1:size(B,1) ), Fe, FactorAxi*Weight(gp)*detJ, 1.0d0 ) !y := alpha*op(A)*x + beta*y
@@ -572,7 +579,9 @@ module Element
 
             !Determinant of the Jacobian
             detJ = det(Jacob)
-            if (detJ<=0.0d0 ) stop "Error: Determinant of the Jacobian <= 0.0d0"
+            if (detJ<=0.0d0 ) then
+                return
+            endif
 
             !Inverse of the Jacobian
             Jacob = inverse(Jacob)
@@ -664,12 +673,7 @@ module Element
 
             !Determinant of the Jacobian
             detJ = det(Jacob)
-
             if (detJ<=0.0d0 ) then
-                !AnalysisSettings%ErrorNumber = -1
-                !AnalysisSettings%ErrorDescription = 'Determinant of Jacobian Matrix <=0. - 3D'
-! TODO (Thiago#2#11/03/15): Abilitar o teste do jacobiano negativo. Colacar na rotina de integração do elemento.
-
                 return
             endif
 
@@ -791,8 +795,6 @@ module Element
             detJ = det(Jacob)
 
             if (detJ<=0.0d0 ) then
-                !AnalysisSettings%ErrorNumber = -1
-                !AnalysisSettings%ErrorDescription = 'Determinant of Jacobian Matrix <=0 - Axisymmetric'
                 return
             endif
 
@@ -840,14 +842,14 @@ module Element
 
 
 
-        subroutine DeformationGradient(this,NaturalCoord,U,AnalysisSettings,F)
+        subroutine DeformationGradient(this,NaturalCoord,U,AnalysisSettings,F, Status)
 
             use Analysis
-            !use MathRoutines
 
             implicit none
 
             class(ClassElement)  :: this
+            type(ClassStatus) :: Status
             real(8),dimension(:) :: NaturalCoord , U
             real(8) :: F(3,3)
             type(ClassAnalysis)::AnalysisSettings
@@ -885,8 +887,7 @@ module Element
             detJ = det(Jacob)
 
             if (detJ<=0.0d0 ) then
-                !AnalysisSettings%ErrorNumber = -1
-                !AnalysisSettings%ErrorDescription = 'Determinant of Jacobian Matrix <=0 - Deformation Gradient'
+                call Status%SetError(-1, 'Subroutine DeformationGradient in ModElement.f90. Error: Determinant of the Jacobian Matrix <= 0.0d0')
                 return
             endif
 
@@ -941,7 +942,7 @@ module Element
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-        subroutine ElementVolume( this, AnalysisSettings, Volume, VolumeX )
+        subroutine ElementVolume( this, AnalysisSettings, Volume, VolumeX, Status )
 
 		    !************************************************************************************
             ! DECLARATIONS OF VARIABLES
@@ -949,7 +950,7 @@ module Element
             ! Modules and implicit declarations
             ! -----------------------------------------------------------------------------------
             use Analysis
-            !use MathRoutines
+
 
             implicit none
 
@@ -960,6 +961,8 @@ module Element
             ! Input/Output variables
             ! -----------------------------------------------------------------------------------
             type(ClassAnalysis) , intent(inout) :: AnalysisSettings
+            type(ClassStatus) :: Status
+
 
             ! Output variables
             ! -----------------------------------------------------------------------------------
@@ -1023,8 +1026,7 @@ module Element
                 detJX = det(JacobX)
 
                 if (detJ<=0.0d0 ) then
-                    !AnalysisSettings%ErrorNumber = -1
-                    !AnalysisSettings%ErrorDescription = 'Determinant of Jacobian Matrix <=0 - Element Volume '
+                    call Status%SetError(-1, 'Subroutine ElementVolume in ModElement.f90. Error: Determinant of the Jacobian Matrix <= 0.0d0')
                     return
                 endif
 

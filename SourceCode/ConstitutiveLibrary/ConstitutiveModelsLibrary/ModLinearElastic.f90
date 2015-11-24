@@ -18,6 +18,8 @@ module LinearElastic
     ! Modules and implicit declarations
     ! --------------------------------------------------------------------------------------------
     use ConstitutiveModel
+    use ModStatus
+
     implicit none
 
 
@@ -250,7 +252,7 @@ module LinearElastic
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-!        subroutine UpdateStressAndStateVariables_LinearElastic_PlaneStrain(this)
+!        subroutine UpdateStressAndStateVariables_LinearElastic_PlaneStrain(this,Status)
 !
 !		    !************************************************************************************
 !            ! DECLARATIONS OF VARIABLES
@@ -449,7 +451,7 @@ module LinearElastic
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-        subroutine UpdateStressAndStateVariables_LinearElastic_ThreeDimensional(this)
+        subroutine UpdateStressAndStateVariables_LinearElastic_ThreeDimensional(this,Status)
 
 		    !************************************************************************************
             ! DECLARATIONS OF VARIABLES
@@ -459,6 +461,7 @@ module LinearElastic
             use MathRoutines
 
             class(ClassLinearElastic_ThreeDimensional) :: this
+            type(ClassStatus) :: Status
 
             ! Internal variables
             ! -----------------------------------------------------------------------------------

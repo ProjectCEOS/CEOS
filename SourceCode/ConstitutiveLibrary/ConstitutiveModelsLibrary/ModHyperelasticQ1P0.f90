@@ -18,6 +18,7 @@ module HyperelasticQ1P0
     ! Modules and implicit declarations
     ! --------------------------------------------------------------------------------------------
     use ConstitutiveModel
+    use ModStatus
     implicit none
 
 
@@ -423,7 +424,7 @@ module HyperelasticQ1P0
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-        subroutine UpdateStressAndStateVariables_HyperelasticQ1P0_Axisymmetric(this)
+        subroutine UpdateStressAndStateVariables_HyperelasticQ1P0_Axisymmetric(this,Status)
 
 		    !************************************************************************************
             ! DECLARATIONS OF VARIABLES
@@ -435,6 +436,7 @@ module HyperelasticQ1P0
             ! Object
             ! ---------------------------------------------------------------------------------
             class(ClassHyperelasticQ1P0_Axisymmetric) :: this
+            type(ClassStatus) :: Status
 
             ! Internal variables
             ! -----------------------------------------------------------------------------------
@@ -681,7 +683,7 @@ module HyperelasticQ1P0
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-        subroutine UpdateStressAndStateVariables_HyperelasticQ1P0_3D(this)
+        subroutine UpdateStressAndStateVariables_HyperelasticQ1P0_3D(this,Status)
 
 		    !************************************************************************************
             ! DECLARATIONS OF VARIABLES
@@ -693,6 +695,7 @@ module HyperelasticQ1P0
             ! Object
             ! ---------------------------------------------------------------------------------
             class(ClassHyperelasticQ1P0_3D) :: this
+            type(ClassStatus) :: Status
 
             ! Internal variables
             ! -----------------------------------------------------------------------------------
