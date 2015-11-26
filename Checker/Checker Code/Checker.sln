@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "Checker", "Checker\Checker.vfproj", "{309C1937-6F10-477F-B1C4-A308BA659A66}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{309C1937-6F10-477F-B1C4-A308BA659A66}.Debug|Win32.ActiveCfg = Debug|Win32
+		{309C1937-6F10-477F-B1C4-A308BA659A66}.Debug|Win32.Build.0 = Debug|Win32
+		{309C1937-6F10-477F-B1C4-A308BA659A66}.Release|Win32.ActiveCfg = Release|Win32
+		{309C1937-6F10-477F-B1C4-A308BA659A66}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
