@@ -89,10 +89,11 @@
 		<Unit filename="../SourceCode/Tools/MathTools/modNonLinearSystemOfEquations.f90" />
 		<Unit filename="../SourceCode/Tools/ModContinuumMechanics.f90" />
 		<Unit filename="../SourceCode/Tools/ModParser.f90" />
-		<Unit filename="../SourceCode/Tools/ModStringLib.f90" />
 		<Unit filename="../SourceCode/Tools/ModTimer.f90" />
 		<Unit filename="../SourceCode/Tools/ModTools.f90" />
 		<Unit filename="../SourceCode/Tools/SubError.f90" />
+		<Unit filename="../SourceCode/Tools/modCharacter.f90" />
+		<Unit filename="../SourceCode/Tools/modIO.f90" />
 		<Unit filename="../SourceCode/Tools/modStatus.f90" />
 		<Extensions>
 			<code_completion />

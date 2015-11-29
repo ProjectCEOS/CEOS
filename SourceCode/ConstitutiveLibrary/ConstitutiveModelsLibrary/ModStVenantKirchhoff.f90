@@ -175,19 +175,12 @@ module StVenantKirchhoff
                 endif
             enddo
 
-            call DataFile%ConvertToDouble(ListOfValues(1),this%Properties%YoungModulus)
+            this%Properties%YoungModulus = ListOfValues(1)
 
-            if (DataFile%Error) then
-                write(*,*) "Could Not read YoungModulus. Found: "//trim(ListOfValues(1))
-                stop
-            endif
 
-            call DataFile%ConvertToDouble(ListOfValues(2),this%Properties%Poisson)
+            this%Properties%Poisson = ListOfValues(2)
 
-            if (DataFile%Error) then
-                write(*,*) "Could Not read Poisson. Found: "//trim(ListOfValues(2))
-                stop
-            endif
+
 
             this%Properties%Lambda = this%Properties%Poisson*this%Properties%YoungModulus /( (1.0d0 + this%Properties%Poisson)*(1.0d0-2.0d0*this%Properties%Poisson) )
             this%Properties%Mu = this%Properties%YoungModulus / (2.0d0*(1.0d0+this%Properties%Poisson))

@@ -184,26 +184,14 @@ module J2Plasticity
                     stop
                 endif
             enddo
-            call DataFile%ConvertToDouble(ListOfValues(1),YoungModulus)
-            if (DataFile%Error) then
-                write(*,*) "Could Not read YoungModulus. Found: "//trim(ListOfValues(1))
-                stop
-            endif
-            call DataFile%ConvertToDouble(ListOfValues(2),Poisson)
-            if (DataFile%Error) then
-                write(*,*) "Could Not read Poisson. Found: "//trim(ListOfValues(2))
-                stop
-            endif
-            call DataFile%ConvertToDouble(ListOfValues(3),YieldStress)
-            if (DataFile%Error) then
-                write(*,*) "Could Not read YieldStress. Found: "//trim(ListOfValues(3))
-                stop
-            endif
-            call DataFile%ConvertToDouble(ListOfValues(4),HardeningModulus)
-            if (DataFile%Error) then
-                write(*,*) "Could Not read HardeningModulus. Found: "//trim(ListOfValues(4))
-                stop
-            endif
+
+            YoungModulus=ListOfValues(1)
+
+            Poisson = ListOfValues(2)
+
+            YieldStress = ListOfValues(3)
+
+            HardeningModulus = ListOfValues(4)
 
 
 		    !************************************************************************************

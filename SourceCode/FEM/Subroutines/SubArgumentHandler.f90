@@ -1,5 +1,3 @@
-
-
 subroutine ArgumentHandler(TaskSolve , TaskPostProcess ,SettingsFileName , PostProcessingFileName)
     use modTools
     use Parser
@@ -26,7 +24,7 @@ subroutine ArgumentHandler(TaskSolve , TaskPostProcess ,SettingsFileName , PostP
         stop
     endif
 
-    call SplitString(CommandLine,Commands , "/")
+    call Split(CommandLine,Commands,"/")
     if (size(commands)<=1) then
         stop "ERROR :: CommandLine not consistent"
     endif
@@ -42,7 +40,7 @@ subroutine ArgumentHandler(TaskSolve , TaskPostProcess ,SettingsFileName , PostP
             call Help
         endif
 
-        call SplitString( Commands(i) , aux , " ")
+        call split(Commands(i),aux," ")
 
         if (size(aux).ne.2) then
             write(*,*) 'WARNING :: Invalid Argument: '//trim(commands(i))

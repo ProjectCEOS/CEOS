@@ -174,17 +174,10 @@ module NeoHookeanQ1P0
                 endif
             enddo
 
-            call DataFile%ConvertToDouble(ListOfValues(1),this%Properties%C10)
-            if (DataFile%Error) then
-                write(*,*) "Could Not read C10. Found: "//trim(ListOfValues(1))
-                stop
-            endif
+            this%Properties%C10 = ListOfValues(1)
 
-            call DataFile%ConvertToDouble(ListOfValues(2),this%Properties%BulkModulus)
-            if (DataFile%Error) then
-                write(*,*) "Could Not read BulkModulus. Found: "//trim(ListOfValues(2))
-                stop
-            endif
+            this%Properties%BulkModulus = ListOfValues(2)
+
 
             !************************************************************************************
             ! READ THE MATERIAL PARAMETERS

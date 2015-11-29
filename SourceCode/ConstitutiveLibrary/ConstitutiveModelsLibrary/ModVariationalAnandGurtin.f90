@@ -65,16 +65,16 @@ contains
 
         call DataFile%FillListOfOptions(ListOfOptions,ListOfValues)
 
-        call DataFile%ConvertToDouble(ListOfValues(1),this%Properties%K)
-        call DataFile%ConvertToDouble(ListOfValues(2),this%Properties%G)
-        call DataFile%ConvertToDouble(ListOfValues(3),this%Properties%mu)
-        call DataFile%ConvertToDouble(ListOfValues(4),this%Properties%m)
-        call DataFile%ConvertToDouble(ListOfValues(5),this%Properties%nu0)
-        call DataFile%ConvertToDouble(ListOfValues(6),this%Properties%s0)
-        call DataFile%ConvertToDouble(ListOfValues(7),this%Properties%scv)
-        call DataFile%ConvertToDouble(ListOfValues(8),this%Properties%zeta)
-        call DataFile%ConvertToDouble(ListOfValues(9),this%Properties%beta)
-        call DataFile%ConvertToDouble(ListOfValues(10),this%Properties%gamma)
+        this%Properties%K = ListOfValues(1)
+        this%Properties%G = ListOfValues(2)
+        this%Properties%mu = ListOfValues(3)
+        this%Properties%m = ListOfValues(4)
+        this%Properties%nu0 = ListOfValues(5)
+        this%Properties%s0 = ListOfValues(6)
+        this%Properties%scv = ListOfValues(7)
+        this%Properties%zeta = ListOfValues(8)
+        this%Properties%beta = ListOfValues(9)
+        this%Properties%gamma = ListOfValues(10)
 
     end subroutine
 

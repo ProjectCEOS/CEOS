@@ -143,8 +143,9 @@ contains
 
 		    call DataFile%FillListOfOptions(ListOfOptions,ListOfValues)
 
-            call DataFile%ConvertToDouble(ListOfValues(1),this%tol)
-            call DataFile%ConvertToInteger(ListOfValues(2),this%itmax)
+
+            this%tol = ListOfValues(1)
+            this%itmax = ListOfValues(2)
 
         end subroutine
         !==========================================================================================
