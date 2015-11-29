@@ -69,8 +69,8 @@ module ModExportResultFile
                 if ( .not. File%CompareStrings(OptionName,'Results') ) then
                     call File%RaiseError('Expecting Word Results in '//trim(FileName))
                 end if
-                call SplitString(OptionValue, PostProcessorResults, ',')
 
+                call Split( OptionValue , PostProcessorResults , ",")
 
                 call File%GetNextOption(OptionName,OptionValue)
                 if ( .not. File%CompareStrings(OptionName,'File Name') ) then
@@ -104,16 +104,13 @@ module ModExportResultFile
             call File%RaiseError('Expecting Word END POST PROCESSOR in '//trim(FileName))
         end if
 
-
-
-
-
         !Começo da leitura do arquivo
         call File%GetNextOption(OptionName,OptionValue)
 
 
         if (File%CompareStrings(OptionName,'Number of Probes')) then
-            call File%ConvertToInteger(OptionValue,NumberOfProbes)
+
+            NumberOfProbes = OptionValue
         else
             call File%RaiseError('Expecting Number of Probes in '//trim(FileName))
         end if
@@ -150,18 +147,25 @@ module ModExportResultFile
 
                 if (File%CompareStrings(OptionName,'Location')) then
                     ProbeLocation = OptionValue
+
                 elseif (File%CompareStrings(OptionName,'File Name')) then
                     ProbeFileName = OptionValue
+
                 elseif (File%CompareStrings(OptionName,'Variable Name')) then
                     ProbeVariableName = OptionValue
+
                 elseif (File%CompareStrings(OptionName,'Node')) then
-                    call File%ConvertToInteger(OptionValue,ProbeNode)
+                    ProbeNode = OptionValue
+
                 elseif (File%CompareStrings(OptionName,'Components')) then
                     ProbeComponentsString = OptionValue
+
                 elseif (File%CompareStrings(OptionName,'Element')) then
-                    call File%ConvertToInteger(OptionValue,ProbeElement)
+                    ProbeElement = OptionValue
+
                 elseif (File%CompareStrings(OptionName,'Gauss Point')) then
-                    call File%ConvertToInteger(OptionValue,ProbeGaussPoint)
+                    ProbeGaussPoint = OptionValue
+
                 else
                     call File%RaiseError('Expression not identified in '//trim(FileName))
                 endif
@@ -244,7 +248,8 @@ module ModExportResultFile
         call ResultFile%Setup(FileName,FileNumber)
 
         call ResultFile%GetNextOption(OptionName,OptionValue)
-        call ResultFile%ConvertToInteger(OptionValue,TotalNDOF)
+
+        TotalNDOF = OptionValue
 
         allocate( U(TotalNDOF) )
 
@@ -264,34 +269,34 @@ module ModExportResultFile
         enddo
 
 
-        LOOP_TIME :do while (.not.EOF(ResultFile))
+        LOOP_TIME :do while (.true.)
 
 
             call ResultFile%GetNextOption(OptionName,OptionValue)
-!            if (OptionValue == '1.00000000000000') then
-!                write(*,*)''
-!            endif
-            ! Evita a o processamento de uma linha em branco (última linha do arquivo)
-            if (ResultFile%isEmptyString(OptionValue)) then
-                exit LOOP_TIME
-            endif
-            call ResultFile%ConvertToDouble(OptionValue,Time)
+
+            if (EOF(ResultFile)) exit LOOP_TIME
+
+            Time = OptionValue
 
             call ResultFile%GetNextOption(OptionName,OptionValue)
-            call ResultFile%ConvertToInteger(OptionValue,LoadCase)
+
+            LoadCase = OptionValue
 
             call ResultFile%GetNextOption(OptionName,OptionValue)
-            call ResultFile%ConvertToInteger(OptionValue,Step)
+
+            Step = OptionValue
 
             call ResultFile%GetNextOption(OptionName,OptionValue)
-            call ResultFile%ConvertToInteger(OptionValue,CutBack)
+
+            CutBack = OptionValue
 
             call ResultFile%GetNextOption(OptionName,OptionValue)
-            call ResultFile%ConvertToInteger(OptionValue,SubStep)
+
+            Substep = OptionValue
 
             do i = 1, TotalNDOF
                 call ResultFile%GetNextString(String)
-                call ResultFile%ConvertToDouble(String,U(i))
+                U(i) = String
             enddo
 
             FEA%Time = Time

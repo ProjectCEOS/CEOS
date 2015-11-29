@@ -195,8 +195,8 @@ module HyperelasticQ1P0
             ! Set the material properties: this%Properties%"NameOfTheProperty"
             ! Obs.: ListOfValues index must match with ListOfOptions index
             !------------------------------------------------------------------------------------
-            call DataFile%ConvertToDouble(ListOfValues(1),this%Properties% C10)
-            call DataFile%ConvertToDouble(ListOfValues(2),this%Properties% BulkModulus)
+            this%Properties% C10 = ListOfValues(1)
+            this%Properties% BulkModulus = ListOfValues(2)
             !------------------------------------------------------------------------------------
 
 

@@ -71,31 +71,28 @@ module ModProbe
     contains
 !==========================================================================================
     subroutine ParseComponents( ComponentsString , Components )
-        use StringLib
         use Parser
         character(len=*) :: ComponentsString
         integer , allocatable , dimension(:) :: Components
         type(ClassParser) :: Comp
-        character(len=len(ComponentsString)) , pointer , dimension(:) :: SubStrings
+        character(len=len(ComponentsString)) , allocatable , dimension(:) :: SubStrings
         integer::i
 
         call Comp%Setup()
 
         if (allocated(Components)) deallocate(Components)
 
-        ! TODO (Jan#1#11/18/15): Colocar rotina de split no modulo Tools ou Parser e depois  ...
-!arrumar esta rotina
+        call Split(ComponentsString, SubStrings,",")
 
-        call SplitSub(ComponentsString,",", SubStrings)
-
-        if (.not.associated(SubStrings)) then
+        if (.not.allocated(SubStrings)) then
             return
         endif
 
         allocate(Components(size(SubStrings)))
 
         do i=1,size(SubStrings)
-            call Comp%ConvertToInteger( SubStrings(i) , Components(i) )
+
+            Components(i) = SubStrings(i)
         enddo
 
         deallocate(SubStrings)

@@ -63,7 +63,8 @@ module LoadHistoryData
         if ( TimeData%CompareStrings(String,'Number of Load Cases') ) then
 
             call TimeData%GetNextString(string) ; call TimeData%CheckError
-            call TimeData%ConvertToInteger(string,nLC)
+
+            nLC=string
             allocate(InitialTimes(nLC), FinalTimes(nLC), Steps(nLC))
 
             call TimeData%GetNextString(string) ; call TimeData%CheckError
@@ -152,40 +153,31 @@ module LoadHistoryData
 
         call TimeData%Setup(FileName,31)
 
-        call TimeData%GetNextString(string) ; call TimeData%CheckError
-
         ! contar a quantidade de números da tabela informada
         cont = 0
-        do while (.not. EOF(TimeData))
+        do while(.true.)
+            call TimeData%GetNextString(string) ; call TimeData%CheckError
+            if (EOF(TimeData)) exit
             if ( .not. TimeData%CompareStrings(String,'Time	Value') ) then
                 cont = cont + 1
             endif
-
-            call TimeData%GetNextString(string) ; call TimeData%CheckError
         enddo
 
         call TimeData%CloseFile
 
         allocate( TimeAndValue(cont,2))
 
-
-
         ! Leitura da Tabela Informada
         call TimeData%Setup(FileName,31)
-
-        call TimeData%GetNextString(string) ; call TimeData%CheckError
-
         cont = 0
-        do while (.not. EOF(TimeData))
-
+        do while(.true.)
+            call TimeData%GetNextString(string) ; call TimeData%CheckError
+            if(eof(TimeData)) exit
             if ( .not. TimeData%CompareStrings(String,'Time	Value') ) then
                 cont = cont + 1
                 call TimeData%GetOriginalLine(String)
                 read(String,*) TimeAndValue(cont,1) , TimeAndValue(cont,2)
             endif
-
-            call TimeData%GetNextString(string) ; call TimeData%CheckError
-
         enddo
 
         call TimeData%CloseFile

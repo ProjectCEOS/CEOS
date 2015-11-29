@@ -10,13 +10,15 @@ module ModStatus
 
         procedure :: SetError
         procedure :: SetSuccess
+        procedure :: Reset
+
 
     end type
 
 contains
 
     subroutine SetError(this,ErrorID,ErrorDescription)
-
+        ! TODO (Jan#1#11/24/15): Colocar o ErrorID como opcional
         class(ClassStatus)::this
         integer::ErrorID
         character(len=*)::ErrorDescription
@@ -27,6 +29,15 @@ contains
     end subroutine
 
     subroutine SetSuccess(this)
+
+        class(ClassStatus)::this
+        this%Error=.false.
+        this%ErrorDescription = ''
+        this%ErrorID = 0
+
+    end subroutine
+
+    subroutine Reset(this)
 
         class(ClassStatus)::this
         this%Error=.false.

@@ -128,7 +128,7 @@ subroutine ReadInputFile( FileName, AnalysisSettings , GlobalNodesList , Element
         endif
 
         call DataFile%CloseFile
-        call DataFile%EndParser
+
         write(*,*) 'Input File Closed'
         write(*,*) ''
 
@@ -190,9 +190,7 @@ subroutine ReadAnalysisSettings(DataFile,AnalysisSettings)
         call Error( "Problem Type not identified" )
     endif
 
-    ! Option Analysis Type 
-!FoundOption(1) = DataFile%CompareStrings(ListOfValues(2),"Quasi                Static")
-
+    ! Option Analysis Type
     if (DataFile%CompareStrings(ListOfValues(2),"Quasi Static")) then
         AnalysisSettings%AnalysisType = AnalysisTypes%Quasi_Static
     elseif (DataFile%CompareStrings(ListOfValues(2),"Transient")) then
@@ -236,7 +234,9 @@ subroutine ReadAnalysisSettings(DataFile,AnalysisSettings)
         call Error( "Element Technology not identified" )
     endif
 
-    call DataFile%ConvertToInteger(ListOfValues(6),AnalysisSettings%MaxCutBack)
+
+    AnalysisSettings%MaxCutBack = ListOfValues(6)
+
 
     BlockFound(iAnalysisSettings)=.true.
     call DataFile%GetNextString(string)
@@ -314,7 +314,8 @@ subroutine ReadMaterialModel(AnalysisSettings,MaterialList,DataFile)
         call DataFile%RaiseError("Expected Number of Materials")
     endif
 
-    call DataFile%ConvertToInteger(OptionValue,NumberOfMaterials)
+
+    NumberOfMaterials = OptionValue
     call DataFile%CheckError
 
     allocate( MaterialList(NumberOfMaterials) )
@@ -328,7 +329,8 @@ subroutine ReadMaterialModel(AnalysisSettings,MaterialList,DataFile)
             call DataFile%RaiseError("Expected Material ID")
         endif
 
-        call DataFile%ConvertToInteger(OptionValue,MaterialID)
+
+        MaterialID = OptionValue
         call DataFile%CheckError
 
         MaterialList(i)%MaterialID = MaterialID
@@ -407,8 +409,6 @@ subroutine ReadMeshAndBC(DataFile,GlobalNodesList,ElementList,AnalysisSettings,M
 
     call DataMeshBC%CloseFile
 
-    call DataMeshBC%EndParser
-
    call DataFile%GetNextString(string)
 
     IF (.not.DataFile%CompareStrings(string,'end'//trim(BlockName(iMeshAndBC)))) then
@@ -449,15 +449,18 @@ subroutine ReadMesh(DataFile,GlobalNodesList,ElementList,AnalysisSettings,Materi
             stop
         end if
         if (DataFile%CompareStrings(OptionName,"nnodes")) then
-            call DataFile%ConvertToInteger(OptionValue,nnodes)
+
+            nnodes = OptionValue
             call DataFile%CheckError
             if (nnodes<=0) call DataFile%RaiseError("Nnodes must be positive")
         elseif (DataFile%CompareStrings(OptionName,"ndime")) then
-            call DataFile%ConvertToInteger(OptionValue,ndime)
+
+            ndime = OptionValue
             call DataFile%CheckError
             if (ndime<=0) call DataFile%RaiseError("Ndime must be positive")
         elseif (DataFile%CompareStrings(OptionName,"nelem")) then
-            call DataFile%ConvertToInteger(OptionValue,nelem)
+
+            nelem = OptionValue
             call DataFile%CheckError
             if (nelem<=0) call DataFile%RaiseError("Nelem must be positive")
         else
@@ -490,7 +493,9 @@ subroutine ReadMesh(DataFile,GlobalNodesList,ElementList,AnalysisSettings,Materi
     if (.not.DataFile%CompareStrings(string,"MATERIAL ID")) call DataFile%RaiseError("MATERIAL ID was not found")
 
     call DataFile%GetNextString(string) ; call DataFile%CheckError
-    call DataFile%ConvertToInteger(string,NumberOfMaterialIDs) ; call DataFile%CheckError
+
+    NumberOfMaterialIDs = string
+    call DataFile%CheckError
 
     if (NumberOfMaterialIDs .ne. nelem ) then
         call DataFile%RaiseError("Elements without material were found")
@@ -606,7 +611,8 @@ subroutine ReadBoundaryConditions(TimeFileName,DataFile,BC,AnalysisSettings)
             if (DataFile%CompareStrings(string,"fixed supports")) then
 
                 call DataFile%GetNextString(string) ; call DataFile%CheckError
-                call DataFile%ConvertToInteger(string,nFS)
+
+                nFS = string
 
                 if (DataFile%Error) then
                     call DataFile%ShowError
@@ -626,7 +632,8 @@ subroutine ReadBoundaryConditions(TimeFileName,DataFile,BC,AnalysisSettings)
             elseif (DataFile%CompareStrings(string,"Nodal Load")) then
 
                 call DataFile%GetNextString(string) ; call DataFile%CheckError
-                call DataFile%ConvertToInteger(string,nNF)
+
+                nNF = string
 
                 if (DataFile%Error) then
                     call DataFile%ShowError
@@ -646,7 +653,8 @@ subroutine ReadBoundaryConditions(TimeFileName,DataFile,BC,AnalysisSettings)
             elseif (DataFile%CompareStrings(string,"nodal displacement")) then
 
                 call DataFile%GetNextString(string) ; call DataFile%CheckError
-                call DataFile%ConvertToInteger(string,nND)
+
+                nND=string
 
                 if (DataFile%Error) then
                     call DataFile%ShowError

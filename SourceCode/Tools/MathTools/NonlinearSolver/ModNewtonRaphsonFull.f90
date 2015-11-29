@@ -71,7 +71,7 @@ contains
             endif
 
 
-
+            ! TODO (Jan#1#11/21/15): Verificar como fazer o solver nao-linear com matriz cheia
             call SOE%EvaluateGradient(X,R,GSparse)
 
             if (SOE%Status%error) then
@@ -143,8 +143,9 @@ contains
 
 		    call DataFile%FillListOfOptions(ListOfOptions,ListOfValues)
 
-            call DataFile%ConvertToDouble(ListOfValues(1),this%tol)
-            call DataFile%ConvertToInteger(ListOfValues(2),this%itmax)
+
+            this%tol = ListOfValues(1)
+            this%itmax = ListOfValues(2)
 
         end subroutine
         !==========================================================================================
