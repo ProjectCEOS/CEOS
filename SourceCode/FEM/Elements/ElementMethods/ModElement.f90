@@ -332,6 +332,7 @@ module Element
                 enddo
 
             elseif (AnalysisSettings%ElementTech == ElementTechnologies%Mean_Dilatation) then
+! TODO (Thiago#3#11/29/15): Mean Dilatation não mantém taxa de convergência.
 
 
                 do gp = 1, size(NaturalCoord,dim=1)
@@ -370,7 +371,6 @@ module Element
 
                 !Computes Ke = Kg + Km + kd
                 call MatrixMatrixMultiply_Trans ( Bdiv, Bdiv, Ke, DpDJbar/this%VolumeX, 1.0d0 ) !C := alpha*(A^T)*B + beta*C
-
 
             endif
 

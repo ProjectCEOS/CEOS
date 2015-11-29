@@ -5,8 +5,8 @@ program Checker
     
     implicit none
 
-    integer :: i, status, FileNumber
-    character(len=255)::CommandLine, File1, File2
+    integer :: i, status, FileNumber, it
+    character(len=255)::CommandLine, File1, File2, dummy
     character(len=255) , allocatable , dimension(:) :: Commands, aux
     type(ClassParser) :: Comp
     logical :: FoundFile1, FoundFile2
@@ -63,7 +63,13 @@ program Checker
     write(*,*) "******************************************************* "   
     write(*,*) " Comparing File: ",trim(File1)," with File: ",trim(File2)   
    
+   it = 1 
    do while ( .not. EOF(1) )
+       
+        if (it == 1) then
+            read(1,*) dummy
+            read(2,*) dummy
+        endif       
        
         read(1,*) a1, b1
 
@@ -89,6 +95,8 @@ program Checker
 
             stop         
         endif
+        
+        it = it + 1
         
    end do
 

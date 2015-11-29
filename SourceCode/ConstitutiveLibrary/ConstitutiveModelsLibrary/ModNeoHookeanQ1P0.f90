@@ -439,9 +439,10 @@ module NeoHookeanQ1P0
             J = det(this%F)
 
             Jbar = this%AdditionalVariables%Jbar
-
-            pbar = 3.0d0*BulkModulus*( Jbar**(-2.0d0/3.0d0) )*( Jbar**(1.0d0/3.0d0) - 1.0d0 )
-            !pbar = 9.0d0*BulkModulus*( this%Jbar - 1.0d0 )
+            
+            pbar = ( 3.0d0*BulkModulus*( Jbar**(1.0d0/3.0d0) - 1.0d0 ) )/( Jbar**(2.0d0/3.0d0) )           
+            !pbar = 3.0d0*BulkModulus*( Jbar**(-2.0d0/3.0d0) )*( Jbar**(1.0d0/3.0d0) - 1.0d0 )
+            !pbar = 9.0d0*BulkModulus*( Jbar - 1.0d0 )
 
             S = 2.0d0*C10*(J**(-5.0d0/3.0d0))*( b - (trb/3.0d0)*I ) + pbar*I
 
@@ -554,9 +555,9 @@ module NeoHookeanQ1P0
 
             Jbar = this%AdditionalVariables%Jbar
 
-            !p = 3.0d0*BulkModulus*( J**(-2.0d0/3.0d0) )*( J**(1.0d0/3.0d0) - 1.0d0 )
-            pbar = 3.0d0*BulkModulus*( Jbar**(-2.0d0/3.0d0) )*( Jbar**(1.0d0/3.0d0) - 1.0d0 )
-            !pbar = 9.0d0*BulkModulus*( this%Jbar - 1.0d0 )
+            pbar = ( 3.0d0*BulkModulus*( Jbar**(1.0d0/3.0d0) - 1.0d0 ) )/( Jbar**(2.0d0/3.0d0) ) 
+            !pbar = 3.0d0*BulkModulus*( Jbar**(-2.0d0/3.0d0) )*( Jbar**(1.0d0/3.0d0) - 1.0d0 )
+            !pbar = 9.0d0*BulkModulus*( Jbar - 1.0d0 )
 
             SfricV = 2.0d0*C10*[1.0d0, 1.0d0, 1.0d0, 0.0d0, 0.0d0, 0.0d0]
 
@@ -601,15 +602,19 @@ module NeoHookeanQ1P0
             class(ClassNeoHookeanQ1P0) :: this
             ! Input/Output variables
             ! -----------------------------------------------------------------------------------
-            real (8) :: d2PSIvol_dJbar2, Jbar
+            real (8) :: d2PSIvol_dJbar2, Jbar , BulkModulus
 
             !************************************************************************************
             ! TANGENT MODULUS
 		    !************************************************************************************
-
+            BulkModulus = this%Properties%BulkModulus
+            
             Jbar = this%AdditionalVariables%Jbar
+            
 
-		    d2PSIvol_dJbar2 = ( -this%Properties%BulkModulus*Jbar**(-5.0d0/3.0d0) ) * ( Jbar**(1.0d0/3.0d0) - 2.0d0  )
+            d2PSIvol_dJbar2 = - ( BulkModulus*(Jbar**(1.0d0/3.0d0) - 2.0d0) )/( Jbar**(5.0d0/3.0d0) ) 
+            
+		    !d2PSIvol_dJbar2 = ( -this%Properties%BulkModulus*Jbar**(-5.0d0/3.0d0) ) * ( Jbar**(1.0d0/3.0d0) - 2.0d0  )
             !d2PSIvol_dJbar2 =  9*this%Properties%BulkModulus
 
 

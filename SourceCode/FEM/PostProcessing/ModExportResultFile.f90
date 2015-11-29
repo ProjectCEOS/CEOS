@@ -86,6 +86,8 @@ module ModExportResultFile
 
             elseif ( File%CompareStrings(OptionValue,'None') ) then
                 !?????
+! TODO (Thiago#2#11/28/15): Ver o que fazer quando não se deseja que seja escrito um arquivo de Pos Processamento.
+
 
             endif
             !--------------------------------------------------------------------------------

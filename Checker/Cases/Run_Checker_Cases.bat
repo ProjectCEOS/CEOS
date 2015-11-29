@@ -6,7 +6,9 @@ echo %%a
 
 cd "%%a" 
 
-call Run_Case.bat
+call Run_CEOS.bat
+
+call Run_Checker.bat
 
 cd..
 
