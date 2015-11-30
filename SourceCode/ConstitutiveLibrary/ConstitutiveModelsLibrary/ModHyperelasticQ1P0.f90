@@ -302,9 +302,9 @@ module HyperelasticQ1P0
 
             ! Fist Derivative with respect to Mean Dilatation
             !--------------------------------------------------------------------
-		    !dPSIvol_dJbar = 3.0d0*BulkModulus*( Jbar**(-2.0d0/3.0d0) )*( Jbar**(1.0d0/3.0d0) - 1.0d0 )
+		    dPSIvol_dJbar = 3.0d0*BulkModulus*( Jbar**(-2.0d0/3.0d0) )*( Jbar**(1.0d0/3.0d0) - 1.0d0 )
             
-             dPSIvol_dJbar = BulkModulus*( Jbar - 1.0d0 )
+             !dPSIvol_dJbar = BulkModulus*( Jbar - 1.0d0 )
             !--------------------------------------------------------------------
 
 		    !************************************************************************************
@@ -408,10 +408,11 @@ module HyperelasticQ1P0
             ! Second Derivative with respect to Mean Dilatation
             !--------------------------------------------------------------------
             Jbar = this%AdditionalVariables%Jbar
-		    !d2PSIvol_dJbar2 = ( -this%Properties%BulkModulus*(Jbar**(-5.0d0/3.0d0)) ) * &
-            !                  ( Jbar**(1.0d0/3.0d0) - 2.0d0  )
             
-            d2PSIvol_dJbar2 = BulkModulus 
+		    d2PSIvol_dJbar2 = ( -this%Properties%BulkModulus*Jbar**(-5.0d0/3.0d0) ) * &
+                              ( Jbar**(1.0d0/3.0d0) - 2.0d0  )
+            
+            !d2PSIvol_dJbar2 = BulkModulus 
             !--------------------------------------------------------------------
 
 		    !************************************************************************************
@@ -864,105 +865,105 @@ module HyperelasticQ1P0
 
             ! -----------------------------------------------------------------------------------
 
-            ! TESTE DO TENSOR CONSTITUTIVO EM FORMATO TENSORIAL
-            
-            Isym_T4 = Isym()
-            
-            ! Deviatoric part of the Second Piola-Kirchhoff Frictional
-            devSfric = Sfric - (1.0d0/3.0d0)*Tensor_Inner_Product(Sfric,C)*Cinv
+            !! TESTE DO TENSOR CONSTITUTIVO EM FORMATO TENSORIAL
+            !
+            !Isym_T4 = Isym()
+            !
+            !! Deviatoric part of the Second Piola-Kirchhoff Frictional
+            !devSfric = Sfric - (1.0d0/3.0d0)*Tensor_Inner_Product(Sfric,C)*Cinv
+            !
+            !! Modified Second Piola-Kirchhoff Stress
+            !Siso = (J**(-2.0d0/3.0d0))*devSfric
+            !
+            !! Modified Projection Operator
+            !Pm_T4 = Tensor_4_Double_Contraction(Isym_T4,Tensor_Product_Square(Cinv,Cinv)) - (1.0d0/3.0d0)*Tensor_Product_Ball(Cinv,Cinv)
+            !
+            !
+            !! Isochoric part of the material tangent modulus in referential configuration
+            !Diso_T4 = (2.0d0/3.0d0)*(J**(-2.0d0/3.0d0))*Tensor_Inner_Product(Sfric,C)*Pm_T4 -           &
+            !          (2.0d0/3.0d0)*( Tensor_Product_Ball(Siso,Cinv) + Tensor_Product_Ball(Cinv,Siso) )
+            !
+            !
+            !! Pressure component of the material tangent modulus in referential configuration
+            !Dpbar_T4  = pbar*J*( Tensor_Product_Ball(Cinv,Cinv) - &
+            !            2.0d0*Tensor_4_Double_Contraction(Isym_T4 ,Tensor_Product_Square(Cinv,Cinv)))
+            !
+            !! Modified material tangent modulus in referential configuration
+            !Dbar_T4 = Diso_T4 + Dpbar_T4
+            !
+            !!Dbar_T4 =  Push_Forward_Tensor_4 (Dbar_T4,F)
+            !
+            !! Voigt Mapping
+            !! -----------------------------------------------------------------------------------
+            !! Upper Triangular!!!
+            !D(1,1:6) = [ Dbar_T4(1,1,1,1) , Dbar_T4(1,1,2,2)  , Dbar_T4(1,1,3,3)  , Dbar_T4(1,1,1,2) , Dbar_T4(1,1,2,3) , Dbar_T4(1,1,1,3)  ]
+            !D(2,2:6) = [                    Dbar_T4(2,2,2,2)  , Dbar_T4(2,2,3,3)  , Dbar_T4(2,2,1,2) , Dbar_T4(2,2,2,3) , Dbar_T4(2,2,1,3)  ]
+            !D(3,3:6) = [                                        Dbar_T4(3,3,3,3)  , Dbar_T4(3,3,1,2) , Dbar_T4(3,3,2,3) , Dbar_T4(3,3,1,3)  ]
+            !D(4,4:6) = [                                                            Dbar_T4(1,2,1,2) , Dbar_T4(1,2,2,3) , Dbar_T4(1,2,1,3)  ]
+            !D(5,5:6) = [                                                                               Dbar_T4(2,3,2,3) , Dbar_T4(2,3,1,3)  ]
+            !D(6,6)   =                                                                                                    Dbar_T4(1,3,1,3)
+            !
+            !! Push-Forward:
+            !D = Push_Forward_Voigt(D,F)
+            !! -----------------------------------------------------------------------------------
 
-            ! Modified Second Piola-Kirchhoff Stress
-            Siso = (J**(-2.0d0/3.0d0))*devSfric
+
+
+            ! -----------------------------------------------------------------------------------
+            ! The subsequent computations are made in Voigt notation
+            ! -----------------------------------------------------------------------------------
+
+
+            ! Material tangent modulus in referential configuration
+            ! -----------------------------------------------------------------------------------
+
+            ! Right-Cauchy Green Strain
+            CV = Convert_to_Voigt(C)
+
+            ! Inverse of Right-Cauchy Green Strain
+            CinvV = Convert_to_Voigt(Cinv)
+
+            ! Isochoric part of the Right-Cauchy Green Strain
+            CisoV = Convert_to_Voigt(Ciso)
+
+            ! Second Piola-Kirchhoff Frictional
+            SfricV = Convert_to_Voigt(Sfric)
+
+            ! Deviatoric part of the Second Piola-Kirchhoff Frictional
+            devSfricV = SfricV - (1.0d0/3.0d0)*Inner_Product_Voigt(SfricV,CV)*CinvV
+
+            ! Isochoric part of the Second Piola-Kirchhoff
+            SisoV = (J**(-2.0d0/3.0d0))*devSfricV
+
+            ! Projection Operator
+            PV = IsymV() - (1.0d0/3.0d0)*Ball_Voigt(CinvV,CV)
 
             ! Modified Projection Operator
-            Pm_T4 = Tensor_4_Double_Contraction(Isym_T4,Tensor_Product_Square(Cinv,Cinv)) - (1.0d0/3.0d0)*Tensor_Product_Ball(Cinv,Cinv)
+            PmV = Square_Voigt(CinvV,CinvV) - (1.0d0/3.0d0)*Ball_Voigt(CinvV,CinvV)
+
+            ! Computations of the first derivatives of isochoric Strain Energy function with respected to:
+            ! dPSIiso_dCiso = Isochoric Right-Cauchy Green Strain
+            ! dPSIvol_dJbar = Mean Dilatation
+            call SecondDerivativesOfPSI_Ciso ( this%Properties, CisoV, d2PSIiso_dCiso2 )
 
 
             ! Isochoric part of the material tangent modulus in referential configuration
-            Diso_T4 = (2.0d0/3.0d0)*(J**(-2.0d0/3.0d0))*Tensor_Inner_Product(Sfric,C)*Pm_T4 -           &
-                      (2.0d0/3.0d0)*( Tensor_Product_Ball(Siso,Cinv) + Tensor_Product_Ball(Cinv,Siso) )
-
+            Diso = Tensor_4_Double_Contraction_Voigt( Tensor_4_Double_Contraction_Voigt(PV,d2PSIiso_dCiso2),transpose(Pv)) + &
+                    (2.0d0/3.0d0)*(J**(-2.0d0/3.0d0))*Inner_Product_Voigt(SfricV,CV)*PmV - &
+                    (2.0d0/3.0d0)*( Ball_Voigt(SisoV,CinvV) + Ball_Voigt(CinvV,SisoV) )
 
             ! Pressure component of the material tangent modulus in referential configuration
-            Dpbar_T4  = pbar*J*( Tensor_Product_Ball(Cinv,Cinv) - &
-                        2.0d0*Tensor_4_Double_Contraction(Isym_T4 ,Tensor_Product_Square(Cinv,Cinv)))
+            Dp  = J*pbar*( Ball_Voigt(CinvV,CinvV) - 2.0d0*Square_Voigt(CinvV,CinvV)  )
 
             ! Modified material tangent modulus in referential configuration
-            Dbar_T4 = Diso_T4 + Dpbar_T4
-
-            !Dbar_T4 =  Push_Forward_Tensor_4 (Dbar_T4,F)
-            
-            ! Voigt Mapping
+            Dbar = Diso + Dp
             ! -----------------------------------------------------------------------------------
-            ! Upper Triangular!!!
-            D(1,1:6) = [ Dbar_T4(1,1,1,1) , Dbar_T4(1,1,2,2)  , Dbar_T4(1,1,3,3)  , Dbar_T4(1,1,1,2) , Dbar_T4(1,1,2,3) , Dbar_T4(1,1,1,3)  ]
-            D(2,2:6) = [                    Dbar_T4(2,2,2,2)  , Dbar_T4(2,2,3,3)  , Dbar_T4(2,2,1,2) , Dbar_T4(2,2,2,3) , Dbar_T4(2,2,1,3)  ]
-            D(3,3:6) = [                                        Dbar_T4(3,3,3,3)  , Dbar_T4(3,3,1,2) , Dbar_T4(3,3,2,3) , Dbar_T4(3,3,1,3)  ]
-            D(4,4:6) = [                                                            Dbar_T4(1,2,1,2) , Dbar_T4(1,2,2,3) , Dbar_T4(1,2,1,3)  ]
-            D(5,5:6) = [                                                                               Dbar_T4(2,3,2,3) , Dbar_T4(2,3,1,3)  ]
-            D(6,6)   =                                                                                                    Dbar_T4(1,3,1,3)
 
             ! Push-Forward:
-            D = Push_Forward_Voigt(D,F)
+            ! Computation of the modified spatial tangent modulus
             ! -----------------------------------------------------------------------------------
-
-
-
-!            ! -----------------------------------------------------------------------------------
-!            ! The subsequent computations are made in Voigt notation
-!            ! -----------------------------------------------------------------------------------
-!
-!
-!            ! Material tangent modulus in referential configuration
-!            ! -----------------------------------------------------------------------------------
-!
-!            ! Right-Cauchy Green Strain
-!            CV = Convert_to_Voigt(C)
-!
-!            ! Inverse of Right-Cauchy Green Strain
-!            CinvV = Convert_to_Voigt(Cinv)
-!
-!            ! Isochoric part of the Right-Cauchy Green Strain
-!            CisoV = Convert_to_Voigt(Ciso)
-!
-!            ! Second Piola-Kirchhoff Frictional
-!            SfricV = Convert_to_Voigt(Sfric)
-!
-!            ! Deviatoric part of the Second Piola-Kirchhoff Frictional
-!            devSfricV = SfricV - (1.0d0/3.0d0)*Inner_Product_Voigt(SfricV,CV)*CinvV
-!
-!            ! Isochoric part of the Second Piola-Kirchhoff
-!            SisoV = (J**(-2.0d0/3.0d0))*devSfricV
-!
-!            ! Projection Operator
-!            PV = IsymV() - (1.0d0/3.0d0)*Ball_Voigt(CinvV,CV)
-!
-!            ! Modified Projection Operator
-!            PmV = Square_Voigt(CinvV,CinvV) - (1.0d0/3.0d0)*Ball_Voigt(CinvV,CinvV)
-!
-!            ! Computations of the first derivatives of isochoric Strain Energy function with respected to:
-!            ! dPSIiso_dCiso = Isochoric Right-Cauchy Green Strain
-!            ! dPSIvol_dJbar = Mean Dilatation
-!            call SecondDerivativesOfPSI_Ciso ( this%Properties, CisoV, d2PSIiso_dCiso2 )
-!
-!
-!            ! Isochoric part of the material tangent modulus in referential configuration
-!            Diso = Tensor_4_Double_Contraction_Voigt( Tensor_4_Double_Contraction_Voigt(PV,d2PSIiso_dCiso2),transpose(Pv)) + &
-!                    (2.0d0/3.0d0)*(J**(-2.0d0/3.0d0))*Inner_Product_Voigt(SfricV,CV)*PmV - &
-!                    (2.0d0/3.0d0)*( Ball_Voigt(SisoV,CinvV) + Ball_Voigt(CinvV,SisoV) )
-!
-!            ! Pressure component of the material tangent modulus in referential configuration
-!            Dp  = J*pbar*( Ball_Voigt(CinvV,CinvV) - 2.0d0*Square_Voigt(CinvV,CinvV)  )
-!
-!            ! Modified material tangent modulus in referential configuration
-!            Dbar = Diso + Dp
-!            ! -----------------------------------------------------------------------------------
-!
-!            ! Push-Forward:
-!            ! Computation of the modified spatial tangent modulus
-!            ! -----------------------------------------------------------------------------------
-!            D = Push_Forward_Voigt(Dbar,F)
-!            ! -----------------------------------------------------------------------------------
+            D = Push_Forward_Voigt(Dbar,F)
+            ! -----------------------------------------------------------------------------------
 
 
 		    !************************************************************************************

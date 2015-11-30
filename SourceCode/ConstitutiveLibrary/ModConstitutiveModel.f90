@@ -35,8 +35,8 @@ module ConstitutiveModel
         !real(8)                             :: Jbar
         real(8)                             :: Time = 0.0d0
 
-        type (ClassAdditionalVariables), pointer :: AdditionalVariables => null()
-
+        type (ClassAdditionalVariables) :: AdditionalVariables
+        
         contains
 
             ! Class Methods

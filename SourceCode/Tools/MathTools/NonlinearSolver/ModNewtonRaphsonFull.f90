@@ -49,8 +49,8 @@ contains
         class(ClassNonLinearSystemOfEquations)      :: SOE
         real(8),dimension(:)          :: Xguess , X
 
-        integer :: it
-        real(8) :: normR , R(size(X)) , DX(size(X))
+        integer :: it, i
+        real(8) :: normR , R(size(X)) , DX(size(X)), norma
         real(8),dimension(:,:),pointer :: GFull
         class(ClassGlobalSparseMatrix),pointer :: GSparse
 
@@ -61,6 +61,7 @@ contains
         it = 0
         X=Xguess
 
+        
         LOOP: do while (.true.)
 
             call SOE%EvaluateSystem(X,R)
@@ -73,6 +74,7 @@ contains
 
             ! TODO (Jan#1#11/21/15): Verificar como fazer o solver nao-linear com matriz cheia
             call SOE%EvaluateGradient(X,R,GSparse)
+            
 
             if (SOE%Status%error) then
                 call this%Status%SetError(NewtonRaphsonFull_Errors%UserEvaluateGradientReportedError,'Error Evaluating Gradient')
@@ -104,7 +106,7 @@ contains
             it=it+1
 
             call this%LinearSolver%Solve(GSparse, -R, DX)
-
+            
            ! if erro sistema linear
                 !call this%Status%SetError(NewtonRaphsonFull_Errors%LinearSystemError,'Error Solving Linear System')
             !    return

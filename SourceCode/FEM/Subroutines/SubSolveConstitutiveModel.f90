@@ -41,7 +41,6 @@ subroutine SolveConstitutiveModel( ElementList , AnalysisSettings, Time, U, Stat
     integer , pointer , dimension(:)   :: GM
     real(8) , pointer , dimension(:,:) :: NaturalCoord
     real(8) , pointer , dimension(:)   :: Weight
-    type (ClassAdditionalVariables), target :: AdditionalVariables
 
     !************************************************************************************
 
@@ -79,10 +78,7 @@ subroutine SolveConstitutiveModel( ElementList , AnalysisSettings, Time, U, Stat
 
             ! AdditionalVariables
             !----------------------------------------------------------------------------
-            AdditionalVariables%Jbar = Volume/VolumeX
-
-            !----------------------------------------------------------------------------
-            ElementList(e)%El%GaussPoints(gp)%AdditionalVariables => AdditionalVariables
+            ElementList(e)%El%GaussPoints(gp)%AdditionalVariables%Jbar = Volume/VolumeX
             !----------------------------------------------------------------------------
 
 

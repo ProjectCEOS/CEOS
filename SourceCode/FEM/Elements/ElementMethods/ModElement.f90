@@ -332,7 +332,6 @@ module Element
                 enddo
 
             elseif (AnalysisSettings%ElementTech == ElementTechnologies%Mean_Dilatation) then
-! TODO (Thiago#3#11/29/15): Mean Dilatation não mantém taxa de convergência.
 
 
                 do gp = 1, size(NaturalCoord,dim=1)
