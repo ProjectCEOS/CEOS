@@ -7,7 +7,7 @@ module modReadInputFile
 
     use ConstitutiveModelLibrary
     use NonLinearSolverLibrary
-    use SparseLinearSolverLibrary
+    use LinearSolverLibrary
     use Parser
     use ConstitutiveModel
 
@@ -38,10 +38,11 @@ subroutine ReadInputFile( FileName, AnalysisSettings , GlobalNodesList , Element
     character(len=*) :: FileName
 
 
-    integer :: ModelID , LinearSolverID , i
+    integer :: ModelID , i
     character(len=255) :: string , endstring, DataFileName
     Type(ClassParser) :: DataFile
     type(ClassConstitutiveModelWrapper) , pointer , dimension(:) :: MaterialList
+    class(ClassLinearSolver) , pointer :: LinearSolver
 
 
     BlockName(1)="Analysis Settings"
@@ -86,12 +87,12 @@ subroutine ReadInputFile( FileName, AnalysisSettings , GlobalNodesList , Element
 
 !---------------------------------------------------------------------------------------------------------------------------------------------------------
             case (iLinearSolver)
-                call ReadLinearSolver(DataFile,LinearSolverID)
+                call ReadLinearSolver(DataFile,LinearSolver)
 
 !---------------------------------------------------------------------------------------------------------------------------------------------------------
             case (iNonLinearSolver)
                 if (.not.BlockFound(iLinearSolver)) call DataFile%RaiseError("Linear Solver must be specified before the NonLinear solver")
-                call ReadNonLinearSolver(DataFile,LinearSolverID,NLSolver)
+                call ReadNonLinearSolver(DataFile,LinearSolver,NLSolver)
 
 !---------------------------------------------------------------------------------------------------------------------------------------------------------
             case (iMaterial)
@@ -249,16 +250,20 @@ subroutine ReadAnalysisSettings(DataFile,AnalysisSettings)
 end subroutine
 !____________________________________________________________________________________________________________________________________________________
 
-subroutine ReadLinearSolver(DataFile,LinearSolverID)
+subroutine ReadLinearSolver(DataFile,LinearSolver)
     implicit none
     type(ClassParser)::DataFile
-    integer::LinearSolverID
+    class(ClassLinearSolver),pointer :: LinearSolver
 
+
+    integer::LinearSolverID
     character(len=100)::Stype,string
 
     call DataFile%GetNextString(Stype)
     call datafile%CheckError
     call LinearSolverIdentifier( SType , LinearSolverID )
+    call AllocateNewLinearSolver( LinearSolver , LinearSOlverID )
+    call LinearSolver%ReadSolverParameters(DataFile)
 
     BlockFound(iLinearSolver)=.true.
     call DataFile%GetNextString(string)
@@ -269,11 +274,11 @@ subroutine ReadLinearSolver(DataFile,LinearSolverID)
 end subroutine
 !____________________________________________________________________________________________________________________________________________________
 
-subroutine ReadNonLinearSolver(DataFile,LinearSolverID,NLSolver)
+subroutine ReadNonLinearSolver(DataFile,LinearSolver,NLSolver)
     implicit none
 
     type(ClassParser)::DataFile
-    integer::LinearSolverID
+    class(ClassLinearSolver) , pointer :: LinearSolver
     class(ClassNonlinearSolver) , pointer  :: NLSolver
 
     character(len=100)::SType,string
@@ -285,7 +290,8 @@ subroutine ReadNonLinearSolver(DataFile,LinearSolverID,NLSolver)
     call SolverIdentifier( SType , SolverID )
     call AllocateNewNonLinearSolver( NLSolver , SolverID )
     call NLSolver%ReadSolverParameters(DataFile)
-    call AllocateNewSparseLinearSolver( NLSolver%LinearSolver , LinearSolverID )
+    NLSolver % LinearSolver => LinearSolver
+
 
     BlockFound(iNonLinearSolver)=.true.
     call DataFile%GetNextString(string)

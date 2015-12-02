@@ -18,7 +18,7 @@ module PardisoSolver
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 	! Modules and implicit declarations
 	! ---------------------------------------------------------------------------------------------
-    use SparseLinearSolver
+    use LinearSolver
 
     ! Phase Parameters of the Pardiso Solver. Controls the execution of the solver. The first digit
     ! indicates the starting phase of execution and the second digit indicates the ending phase.
@@ -47,17 +47,19 @@ module PardisoSolver
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     ! ClassPardisoSolver: Attributes and methods of the Pardiso Solver
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    type , extends(ClassSparseLinearSolver) :: ClassPardisoSolver
+    type , extends(ClassLinearSolver) :: ClassPardisoSolver
 
 		! Class Attributes
 		!----------------------------------------------------------------------------------------
+        ! TODO (Jan#1#12/02/15): Estes atributos precisam ser ponteiros? Talvez allocatable seja suficiente
         integer , pointer , dimension(:) :: pt=>null() , iparm=>null() , perm=>null()
         integer ::  maxfct, mnum, mtype, phase, n, nrhs, error , MSGLVL
 
         contains
             ! Class Methods
             !----------------------------------------------------------------------------------
-            procedure :: Solve       => PardisoSolve
+            procedure :: SolveSparse => PardisoSolve
+            procedure :: ReadSolverParameters => PardisoReadParameters
             procedure :: Constructor => PardisoConstructor
             procedure :: Destructor  => PardisoDestructor
 
@@ -461,7 +463,12 @@ module PardisoSolver
             end select
         end function
 
-
+        subroutine PardisoReadParameters(this,DataFile)
+            use Parser
+            class(ClassPardisoSolver)::this
+            class(ClassParser) :: DataFile
+            !Does nothing
+        end subroutine
 
 
 

@@ -17,7 +17,7 @@ module NonlinearSolver
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 	! Modules and implicit declarations
 	! --------------------------------------------------------------------------------------------
-    use SparseLinearSolverLibrary
+    use LinearSolverLibrary
     use modNonLinearSystemOfEquations
     use modStatus
 
@@ -38,19 +38,20 @@ module NonlinearSolver
             !----------------------------------------------------------------------------------
             procedure(NonLinearSolve) , deferred :: Solve
             !procedure , deferred :: Constructor
-            procedure (ReadParameters) , deferred :: ReadSolverParameters
+            procedure (ReadParameters_NonLinear) , deferred :: ReadSolverParameters
 
     end type
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 	abstract interface
-        subroutine ReadParameters(this,DataFile)
+        subroutine ReadParameters_NonLinear(this,DataFile)
+            use parser    
             import
-            use parser
             class(ClassNonLinearSolver) :: this
             type(ClassParser)::DataFile
-        end interface
+        end subroutine
         subroutine NonLinearSolve(this,SOE,Xguess,X)
+            import
             class(ClassNonLinearSolver) :: this
             class(ClassNonLinearSystemOfEquations):: SOE
             real(8),dimension(:)          :: Xguess , X

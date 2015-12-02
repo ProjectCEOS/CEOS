@@ -6,7 +6,7 @@ module modNewtonRaphsonFull
     type, extends(ClassNonlinearSolver) :: ClassNewtonRaphsonFull
         real(8) :: tol
         integer :: itmax
-        integer :: NormType = 2 , MatrixType
+        integer :: NormType = 2 , MatrixType = 2
         logical :: ShowInfo = .true.
 
     contains
