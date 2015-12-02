@@ -300,6 +300,8 @@ module NeoHookeanQ1P0
         !==========================================================================================
         subroutine GetTangentModulus_NeoHookeanQ1P0_Axisymmetric(this,D)
 
+! TODO (Thiago#3#12/01/15): Axi Q1P0 não Converge!!!
+
 
 		    !************************************************************************************
             ! DECLARATIONS OF VARIABLES
@@ -432,8 +434,8 @@ module NeoHookeanQ1P0
             J = det(this%F)
 
             Jbar = this%AdditionalVariables%Jbar
-            
-            pbar = ( 3.0d0*BulkModulus*( Jbar**(1.0d0/3.0d0) - 1.0d0 ) )/( Jbar**(2.0d0/3.0d0) )           
+
+            pbar = ( 3.0d0*BulkModulus*( Jbar**(1.0d0/3.0d0) - 1.0d0 ) )/( Jbar**(2.0d0/3.0d0) )
             !pbar = 3.0d0*BulkModulus*( Jbar**(-2.0d0/3.0d0) )*( Jbar**(1.0d0/3.0d0) - 1.0d0 )
             !pbar = 9.0d0*BulkModulus*( Jbar - 1.0d0 )
 
@@ -548,7 +550,7 @@ module NeoHookeanQ1P0
 
             Jbar = this%AdditionalVariables%Jbar
 
-            pbar = ( 3.0d0*BulkModulus*( Jbar**(1.0d0/3.0d0) - 1.0d0 ) )/( Jbar**(2.0d0/3.0d0) ) 
+            pbar = ( 3.0d0*BulkModulus*( Jbar**(1.0d0/3.0d0) - 1.0d0 ) )/( Jbar**(2.0d0/3.0d0) )
             !pbar = 3.0d0*BulkModulus*( Jbar**(-2.0d0/3.0d0) )*( Jbar**(1.0d0/3.0d0) - 1.0d0 )
             !pbar = 9.0d0*BulkModulus*( Jbar - 1.0d0 )
 
@@ -601,12 +603,12 @@ module NeoHookeanQ1P0
             ! TANGENT MODULUS
 		    !************************************************************************************
             BulkModulus = this%Properties%BulkModulus
-            
-            Jbar = this%AdditionalVariables%Jbar
-            
 
-            d2PSIvol_dJbar2 = - ( BulkModulus*(Jbar**(1.0d0/3.0d0) - 2.0d0) )/( Jbar**(5.0d0/3.0d0) ) 
-            
+            Jbar = this%AdditionalVariables%Jbar
+
+
+            d2PSIvol_dJbar2 = - ( BulkModulus*(Jbar**(1.0d0/3.0d0) - 2.0d0) )/( Jbar**(5.0d0/3.0d0) )
+
 		    !d2PSIvol_dJbar2 = ( -this%Properties%BulkModulus*Jbar**(-5.0d0/3.0d0) ) * ( Jbar**(1.0d0/3.0d0) - 2.0d0  )
             !d2PSIvol_dJbar2 =  9*this%Properties%BulkModulus
 

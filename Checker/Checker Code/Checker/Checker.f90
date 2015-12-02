@@ -58,10 +58,12 @@ program Checker
     
    open(1, file=File1, status='old')
    open(2, file=File2, status='old')
+
+   open(3, file='Log_CHECKER.txt', Access='append', status='unknown')
   
    
-    write(*,*) "******************************************************* "   
-    write(*,*) " Comparing File: ",trim(File1)," with File: ",trim(File2)   
+    write(3,*) "    ---------------------------------------------------------------------- "   
+    write(3,*) "    Comparing File: ",trim(File1)," with File: ",trim(File2)   
    
    it = 1 
    do while ( .not. EOF(1) )
@@ -76,22 +78,24 @@ program Checker
         read(2,*) a2, b2
         
         if ( dabs(a1-a2) .gt. tol ) then
-            write(*,*) " "
-            write(*,*) "Absolute difference in first column greater than the tolerance." 
-            write(*,*) "Tolerance = ", tol
-            write(*,*) "File 1 :: point = ", a1
-            write(*,*) "File 2 :: point = ", a2
-            write(*,*) "******************************************************* " 
+            write(3,*) " "
+            write(3,*) "    Absolute difference in first column greater than the tolerance." 
+            write(3,*) "    Tolerance = ", tol
+            write(3,*) "    File 1 :: point = ", a1
+            write(3,*) "    File 2 :: point = ", a2
+            write(3,*) "    ---------------------------------------------------------------------- " 
+            write(*,*)"CHECKER Analysis: FAILED!"
             stop         
         endif
  
         if ( dabs(b1-b2) .gt. tol ) then
-            write(*,*) " "
-            write(*,*) "Absolute difference in second column greater than the tolerance"
-            write(*,*) "Tolerance = ", tol
-            write(*,*) "File 1 :: point = ", b1
-            write(*,*) "File 2 :: point = ", b2
-            write(*,*) "******************************************************* " 
+            write(3,*) " "
+            write(3,*) "    Absolute difference in second column greater than the tolerance"
+            write(3,*) "    Tolerance = ", tol
+            write(3,*) "    File 1 :: point = ", b1
+            write(3,*) "    File 2 :: point = ", b2
+            write(3,*) "    ---------------------------------------------------------------- ------ " 
+            write(*,*)"CHECKER Analysis: FAILED!"
 
             stop         
         endif
@@ -100,9 +104,10 @@ program Checker
         
    end do
 
-   write(*,*) " "
-   write(*,*) "Success!" 
-   write(*,*) "******************************************************* " 
+   write(3,*) " "
+   write(3,*) "    SUCCESS!" 
+   write(3,*) "    ---------------------------------------------------------------------- " 
+   write(*,*)"CHECKER Analysis: SUCCESS!"
 
 end program Checker
 

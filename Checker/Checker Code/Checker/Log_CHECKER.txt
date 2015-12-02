@@ -1,0 +1,24 @@
+     ---------------------------------------------------------------------- 
+     Comparing File: curve_marc.dat with File: curve_ceos.dat
+  
+     Absolute difference in first column greater than the tolerance.
+     Tolerance =   1.000000000000000E-009
+     File 1 :: point =  -3.238108000000000E-004
+     File 2 :: point =  -3.517858000000000E-004
+     ---------------------------------------------------------------------- 
+     ---------------------------------------------------------------------- 
+     Comparing File: curve_marc.dat with File: curve_ceos.dat
+  
+     Absolute difference in first column greater than the tolerance.
+     Tolerance =   1.000000000000000E-009
+     File 1 :: point =  -3.238108000000000E-004
+     File 2 :: point =  -3.517858000000000E-004
+     ---------------------------------------------------------------------- 
+     ---------------------------------------------------------------------- 
+     Comparing File: curve_marc.dat with File: curve_ceos.dat
+  
+     Absolute difference in first column greater than the tolerance.
+     Tolerance =   1.000000000000000E-009
+     File 1 :: point =  -3.238108000000000E-004
+     File 2 :: point =  -3.517858000000000E-004
+     ---------------------------------------------------------------------- 
