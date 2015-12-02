@@ -457,7 +457,7 @@ module PardisoSolver
                 case(-11)
                  string='read/write problems with the OOC data file'
                 case default
-                string='Error in Pardiso not found.'
+                string='Error description not available.'
             end select
         end function
 

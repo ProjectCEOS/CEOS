@@ -75,9 +75,11 @@
 		<Unit filename="../SourceCode/MultiScale/SubMacrocopicKinematics.f90" />
 		<Unit filename="../SourceCode/MultiScale/SubMicroscopicDisplacement.f90" />
 		<Unit filename="../SourceCode/MultiScale/SubStressHomogenisation.f90" />
+		<Unit filename="../SourceCode/Tools/MathTools/LinearSolver/ModLinearSolverLibrary.f90" />
 		<Unit filename="../SourceCode/Tools/MathTools/LinearSolver/ModPardisoSolver.f90" />
 		<Unit filename="../SourceCode/Tools/MathTools/LinearSolver/ModSparseLinearSolver.f90" />
 		<Unit filename="../SourceCode/Tools/MathTools/LinearSolver/ModSparseLinearSolverLibrary.f90" />
+		<Unit filename="../SourceCode/Tools/MathTools/LinearSolver/modFullLinearSolver.f90" />
 		<Unit filename="../SourceCode/Tools/MathTools/LinearSolver/modLinearSolver.f90" />
 		<Unit filename="../SourceCode/Tools/MathTools/ModMathRoutines.f90" />
 		<Unit filename="../SourceCode/Tools/MathTools/NonlinearSolver/ModNonLinearSolver.f90" />

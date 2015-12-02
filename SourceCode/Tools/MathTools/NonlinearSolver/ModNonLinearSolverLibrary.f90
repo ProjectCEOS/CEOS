@@ -96,6 +96,7 @@ module NonlinearSolverLibrary
 		    !************************************************************************************
             ! Modules and implicit declarations
             ! -----------------------------------------------------------------------------------
+            use Parser
             implicit none
 
             ! Input variables
@@ -107,22 +108,20 @@ module NonlinearSolverLibrary
             integer , intent(out) :: solverID
 
             !************************************************************************************
+            type(ClassParser) :: Comp
+
+            call Comp%Setup
 
 
             !************************************************************************************
             ! DECODE THE STRING SUPPLIED BY GiD
 		    !************************************************************************************
-            select case (trim(solver))
+		    if (Comp%CompareStrings(solver,"newton_raphson_full")) then
+                solverID = NonLinearSolvers % NewtonRaphsonFull
 
-                case ("newton_raphson_full")
-
-                    solverID = NonLinearSolvers % NewtonRaphsonFull
-
-                case default
-                    call Error("Error: Nonlinear Solver not identified")
-
-            end select
-		    !************************************************************************************
+            else
+                call Error("Error: Nonlinear Solver not identified")
+            endif
 
         end subroutine
         !==========================================================================================

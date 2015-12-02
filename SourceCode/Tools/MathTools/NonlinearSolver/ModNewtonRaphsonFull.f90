@@ -11,7 +11,7 @@ module modNewtonRaphsonFull
 
     contains
         procedure :: Solve => NewtonRaphsonFull_Solve
-        procedure :: Constructor => NewtonRaphsonFull_Constructor
+        !procedure :: Constructor => NewtonRaphsonFull_Constructor
         procedure :: ReadSolverParameters => NewtonRaphsonFull_ReadSolverParameters
     end type
 
@@ -51,6 +51,7 @@ contains
 
         integer :: it, i
         real(8) :: normR , R(size(X)) , DX(size(X)), norma
+
         real(8),dimension(:,:),pointer :: GFull
         class(ClassGlobalSparseMatrix),pointer :: GSparse
 
@@ -61,7 +62,7 @@ contains
         it = 0
         X=Xguess
 
-        
+
         LOOP: do while (.true.)
 
             call SOE%EvaluateSystem(X,R)
@@ -71,10 +72,13 @@ contains
                 return
             endif
 
-
-            ! TODO (Jan#1#11/21/15): Verificar como fazer o solver nao-linear com matriz cheia
-            call SOE%EvaluateGradient(X,R,GSparse)
-            
+            select case (this%MatrixType)
+                case (NewtonRaphsonFull_MatrixTypes%Full)
+                    call SOE%EvaluateGradient(X,R,GFull)
+                case (NewtonRaphsonFull_MatrixTypes%Sparse)
+                    call SOE%EvaluateGradient(X,R,GSparse)
+                case default
+            end select
 
             if (SOE%Status%error) then
                 call this%Status%SetError(NewtonRaphsonFull_Errors%UserEvaluateGradientReportedError,'Error Evaluating Gradient')
@@ -105,10 +109,17 @@ contains
 
             it=it+1
 
-            call this%LinearSolver%Solve(GSparse, -R, DX)
-            
-           ! if erro sistema linear
-                !call this%Status%SetError(NewtonRaphsonFull_Errors%LinearSystemError,'Error Solving Linear System')
+
+            select case (this%MatrixType)
+                case (NewtonRaphsonFull_MatrixTypes%Full)
+                    call this%LinearSolver%Solve(GFull, -R, DX)
+                case (NewtonRaphsonFull_MatrixTypes%Sparse)
+                    call this%LinearSolver%Solve(GSparse, -R, DX)
+                case default
+            end select
+
+            !if (this%LinearSolver%status%error) then
+            !    call this%Status%SetError(NewtonRaphsonFull_Errors%LinearSystemError,'Error Solving Linear System')
             !    return
             !endif
 
@@ -151,16 +162,16 @@ contains
 
         end subroutine
         !==========================================================================================
-        subroutine NewtonRaphsonFull_Constructor (this)
-		    !************************************************************************************
-            ! DECLARATIONS OF VARIABLES
-		    !************************************************************************************
-            ! Object
-            ! ---------------------------------------------------------------------------------
-            class(ClassNewtonRaphsonFull) :: this
-		    !************************************************************************************
-
-        endsubroutine
+!        subroutine NewtonRaphsonFull_Constructor (this)
+!		    !************************************************************************************
+!            ! DECLARATIONS OF VARIABLES
+!		    !************************************************************************************
+!            ! Object
+!            ! ---------------------------------------------------------------------------------
+!            class(ClassNewtonRaphsonFull) :: this
+!		    !************************************************************************************
+!
+!        endsubroutine
 
     end module
 

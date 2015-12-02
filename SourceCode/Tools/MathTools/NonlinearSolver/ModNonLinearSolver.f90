@@ -24,44 +24,60 @@ module NonlinearSolver
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     ! ClassNonlinearSolver: definitions of the nonlinear solver
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    type ClassNonlinearSolver
+    type , abstract :: ClassNonlinearSolver
 
 		! Class Attributes
 		!-----------------------------------------------------------------------------------------
-        class(ClassSparseLinearSolver) , pointer :: LinearSolver => null()
+        !class(ClassSparseLinearSolver) , pointer :: LinearSolver => null()
+        class(ClassLinearSolver) , pointer :: LinearSolver => null()
         type(ClassStatus) :: Status
 
         contains
 
             ! Class Methods
             !----------------------------------------------------------------------------------
-            procedure :: Solve => NonlinearSolveBase
-            procedure :: Constructor => ConstructorBase
-            procedure :: ReadSolverParameters => ReadSolverParametersBase
+            procedure(NonLinearSolve) , deferred :: Solve
+            !procedure , deferred :: Constructor
+            procedure (ReadParameters) , deferred :: ReadSolverParameters
 
     end type
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-    contains
-
-        subroutine ReadSolverParametersBase(this,DataFile)
+	abstract interface
+        subroutine ReadParameters(this,DataFile)
+            import
             use parser
             class(ClassNonLinearSolver) :: this
             type(ClassParser)::DataFile
-            stop "Error: Non Linear Solver not defined."
-        END subroutine
-
-        subroutine ConstructorBase (this)
-            class(ClassNonLinearSolver) :: this
-            stop "Error: Non Linear Solver not defined."
-        end subroutine
-
-        subroutine NonLinearSolveBase(this,SOE,Xguess,X)
+        end interface
+        subroutine NonLinearSolve(this,SOE,Xguess,X)
             class(ClassNonLinearSolver) :: this
             class(ClassNonLinearSystemOfEquations):: SOE
             real(8),dimension(:)          :: Xguess , X
-            stop "Error: Non Linear Solver not defined"
         end subroutine
+    end interface
+
+
+    contains
+
+!        subroutine ReadSolverParametersBase(this,DataFile)
+!            use parser
+!            class(ClassNonLinearSolver) :: this
+!            type(ClassParser)::DataFile
+!            stop "Error: Non Linear Solver not defined."
+!        END subroutine
+!
+!        subroutine ConstructorBase (this)
+!            class(ClassNonLinearSolver) :: this
+!            stop "Error: Non Linear Solver not defined."
+!        end subroutine
+!
+!        subroutine NonLinearSolveBase(this,SOE,Xguess,X)
+!            class(ClassNonLinearSolver) :: this
+!            class(ClassNonLinearSystemOfEquations):: SOE
+!            real(8),dimension(:)          :: Xguess , X
+!            stop "Error: Non Linear Solver not defined"
+!        end subroutine
 
 ! TODO (Thiago#2#11/15/15): Como ficaria o código ao criar um solver não linear para resolver um ponto de gauss usando a classe de solvers não lineares? Criar um tamplate para ver se iria valer a pena. A ideia seria manter todas as rotinas necessárias do modelo material contidas em um único módulo.
 
