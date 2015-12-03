@@ -16,8 +16,8 @@ ANALYSIS SETTINGS
 	Problem Type = Mechanical
 	Analysis Type = Quasi Static
 	Nonlinear Analysis = True !False !
-	Hypothesis of Analysis = Axisymmetric !3D !
-	Element Technology =  Mean Dilatation ! Full Integration !
+	Hypothesis of Analysis = 3D !Axisymmetric !
+	Element Technology = Mean Dilatation !  Full Integration !
 	Maximum Cut Backs = 10
 	
 END ANALYSIS SETTINGS
@@ -47,11 +47,11 @@ END NONLINEAR SOLVER
 MATERIAL
 
 	Number of Materials = 1
-
+	
 	Material ID = 1
 	Neo_Hookean
-	C10 = 5.0E10
-	Bulk Modulus = 5.0E13
+	C10 = 5.0d10
+	Bulk Modulus = 5.0d13
 	
 	!Material ID = 1
 	!St_Venant_Kirchhoff
@@ -74,6 +74,7 @@ MATERIAL
 	!Neo_Hookean
 	!C10 = 1.0e0
 	!Bulk Modulus = 1.0e2
+
 	
 	
 END MATERIAL 

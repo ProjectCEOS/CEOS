@@ -305,6 +305,9 @@ module ModExportResultFile
             call SolveConstitutiveModel( FEA%ElementList , FEA%AnalysisSettings, Time, U, Status)
 
             ! Escrevendo os pontos pedidos. Excluindo soluções dos Cut Backs.
+! TODO (Thiago#3#12/01/15): Arrumar os cutbacks. Não estão zerando.
+! TODO (Thiago#3#12/01/15): Escrever as iterações para comparação de convergência no Checker.
+
             if (CutBack .eq. 0) then
                 do i = 1, size(ProbeList)
                     call ProbeList(i)%Pr%WriteProbeResult(FEA)
