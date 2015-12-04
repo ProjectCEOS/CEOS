@@ -94,9 +94,6 @@ contains
         class(ClassVariationalAnandGurtin2003) :: this
         type(ClassAnalysis) :: AnalysisSettings
 
-        ! TODO (Jan#2#11/18/15): O usuário não precisa se preocupar com a tensão...  ...
-!Colocar para alocar a tensão na rotina que chama o construtor. Ele deve apenas inicializar as suas variáveis internas
-        allocate( this%Stress( AnalysisSettings%StressSize ) ) ; this%Stress= 0.0d0
 
         this%OldState%r=0.0d0
         this%OldState%Fp=IdentityMatrix(3)

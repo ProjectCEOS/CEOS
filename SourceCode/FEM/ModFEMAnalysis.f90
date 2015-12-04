@@ -239,7 +239,7 @@ module FEMAnalysis
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-        subroutine  WriteFEMResults( U, Time, LC, ST, CutBack, SubStep, FileID )
+        subroutine  WriteFEMResults( U, Time, LC, ST, CutBack, SubStep, Flag_EndStep, FileID, NumberOfIterations )
 
 		    !************************************************************************************
             ! DECLARATIONS OF VARIABLES
@@ -256,7 +256,7 @@ module FEMAnalysis
             ! -----------------------------------------------------------------------------------
             real(8) :: Time
             real(8), dimension(:) :: U
-            integer :: i, FileID, LC, ST, CutBack, SubStep
+            integer :: i, FileID, LC, ST, CutBack, SubStep, Flag_EndStep, NumberOfIterations
 
  		    !************************************************************************************
             ! WRITING RESULTS
@@ -266,7 +266,8 @@ module FEMAnalysis
             write(FileID,*) 'STEP =', ST
             write(FileID,*) 'CUT BACK =', CutBack
             write(FileID,*) 'SUBSTEP =', SubStep
-
+            write(FileID,*) 'FLAG END STEP =', Flag_EndStep
+            write(FileID,*) 'NUMBER OF ITERATIONS TO CONVERGE =', NumberOfIterations
             do i = 1,size(U)
                 write(FileID,*) U(i)
             enddo
@@ -327,7 +328,7 @@ subroutine QuasiStaticAnalysisFEM( ElementList , AnalysisSettings , GlobalNodesL
     real(8) , allocatable , dimension(:) :: U , R , DeltaFext, DeltaUPresc, Fext_alpha0, Ubar_alpha0, Uconverged
     real(8) ::   DeltaTime , Time_alpha0
     real(8) ::  alpha, alpha_max, alpha_min, alpha_aux
-    integer :: LC , ST , nSteps, nLoadCases ,  CutBack, SubStep, e,gp, nDOF, FileID_FEMAnalysisResults
+    integer :: LC , ST , nSteps, nLoadCases ,  CutBack, SubStep, e,gp, nDOF, FileID_FEMAnalysisResults, Flag_EndStep
     real(8),parameter::GR= (1.0d0 + dsqrt(5.0d0))/2.0d0
 
     type(ClassFEMSystemOfEquations) :: FEMSoE
@@ -366,7 +367,8 @@ subroutine QuasiStaticAnalysisFEM( ElementList , AnalysisSettings , GlobalNodesL
 
     ! Escrevendo os resultados para o tempo zero
     ! NOTE (Thiago#1#11/19/15): OBS.: As condições de contorno iniciais devem sair do tempo zero.
-    call WriteFEMResults( U, 0.0d0, 0, 0, 0, 0, FileID_FEMAnalysisResults )
+    Flag_EndStep = 1
+    call WriteFEMResults( U, 0.0d0, 0, 0, 0, 0, Flag_EndStep, FileID_FEMAnalysisResults, NumberOfIterations=0  )
 
     !LOOP - LOAD CASES
     LOAD_CASE:  do LC = 1 , nLoadCases
@@ -438,8 +440,15 @@ subroutine QuasiStaticAnalysisFEM( ElementList , AnalysisSettings , GlobalNodesL
 
                     !---------------------------------------------------------------------------
                 ELSEIF (alpha==1.0d0) then
-                    call WriteFEMResults( U, FEMSoE%Time, LC, ST, CutBack, SubStep, FileID_FEMAnalysisResults )
+
+                    SubStep = SubStep + 1
+
+                    Flag_EndStep = 1
+                    call WriteFEMResults( U, FEMSoE%Time, LC, ST, CutBack, SubStep, Flag_EndStep, &
+                                          FileID_FEMAnalysisResults, NLSolver%NumberOfIterations )
+
                     exit SUBSTEPS
+
                     !---------------------------------------------------------------------------
                 ELSE
 
@@ -455,7 +464,9 @@ subroutine QuasiStaticAnalysisFEM( ElementList , AnalysisSettings , GlobalNodesL
 
                     write(*,'(12x,a,i3,a,f7.4,a)') 'SubStep: ',SubStep,' (Alpha: ',alpha,')'
 
-                    call WriteFEMResults( U, FEMSoE % Time, LC, ST, CutBack, SubStep, FileID_FEMAnalysisResults )
+                    Flag_EndStep = 0
+                    call WriteFEMResults( U, FEMSoE % Time, LC, ST, CutBack, SubStep, Flag_EndStep, &
+                                          FileID_FEMAnalysisResults,  NLSolver%NumberOfIterations  )
 
                 ENDIF
 

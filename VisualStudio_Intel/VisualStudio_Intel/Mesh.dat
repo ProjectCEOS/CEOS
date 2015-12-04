@@ -427,7 +427,7 @@ END MESH
 BOUNDARY CONDITIONS 
 
         FIXED SUPPORTS
-              6
+          6
           121      1      1      0
           127      1      1      0
           133      1      1      0

@@ -60,7 +60,6 @@ module modXXXXXX
         use Analysis
         class(ClassXXXXXX) :: this
         type(ClassAnalysis) :: AnalysisSettings
-        allocate( this%Stress( AnalysisSettings%StressSize ) ) ; this%Stress= 0.0d0
     end subroutine
 
     subroutine UpdateStressAndStateVariables_XXXXXX(this,Status)

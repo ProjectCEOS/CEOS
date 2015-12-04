@@ -109,6 +109,7 @@ contains
 
             it=it+1
 
+            this%NumberOfIterations = it
 
             select case (this%MatrixType)
                 case (NewtonRaphsonFull_MatrixTypes%Full)
@@ -125,7 +126,7 @@ contains
 
             X = X + DX
 
-            call SOE%RotinaExtra(X)
+            call SOE%PostUpdate(X)
 
         end do LOOP
 

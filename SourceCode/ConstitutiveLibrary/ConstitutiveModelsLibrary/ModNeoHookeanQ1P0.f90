@@ -51,7 +51,7 @@ module NeoHookeanQ1P0
              procedure :: ConstitutiveModelConstructor => ConstitutiveModelConstructor_NeoHookeanQ1P0
              procedure :: ReadMaterialParameters       => ReadMaterialParameters_NeoHookeanQ1P0
              procedure :: GetResult                    => GetResult_NeoHookeanQ1P0
-             procedure :: SwitchConvergedState           => SwitchConvergedState_NeoHookeanQ1P0
+             procedure :: SwitchConvergedState         => SwitchConvergedState_NeoHookeanQ1P0
              procedure :: SecondDerivativesOfPSI_Jbar  => SecondDerivativesOfPSI_Jbar_NeoHookeanQ1P0
              procedure :: CopyProperties               => CopyProperties_NeoHookeanQ1P0
 
@@ -122,7 +122,6 @@ module NeoHookeanQ1P0
             ! ALLOCATE THE STATE VARIABLES
 		    !************************************************************************************
 
-            allocate( this%Stress( AnalysisSettings%StressSize ) ) ; this%Stress= 0.0d0
 
 		    !************************************************************************************
 

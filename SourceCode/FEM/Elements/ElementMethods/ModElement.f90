@@ -821,13 +821,14 @@ module Element
 
 
             G = 0.0d0
-            G(1,[(i,i=1,nDOFel,2)])=DifSF(:,1) !d_Ur/d_r
-            G(2,[(i,i=1,nDOFel,2)])=DifSF(:,2) !d_Ur/d_z
+            G(1,[(i,i=1,nDOFel,2)])=DifSF(:,1) !d_Ur/d_r i,1
+            G(2,[(i,i=1,nDOFel,2)])=DifSF(:,2) !d_Ur/d_z i,2
 
-            G(3,[(i,i=2,nDOFel,2)])=DifSF(:,1) !d_Uz/d_r
-            G(4,[(i,i=2,nDOFel,2)])=DifSF(:,2) !d_Uz/d_z
+            G(3,[(i,i=1,nDOFel,2)])=ShapeFunctions(:)/r !Ur/r i/r
+            
+            G(4,[(i,i=2,nDOFel,2)])=DifSF(:,1) !d_Uz/d_r i,1
+            G(5,[(i,i=2,nDOFel,2)])=DifSF(:,2) !d_Uz/d_z i,2
 
-            G(5,[(i,i=1,nDOFel,2)])=ShapeFunctions(:)/r !Ur/r
 
             FactorAxi = 2.0d0*Pi*r
 
@@ -855,7 +856,7 @@ module Element
 
             ! Internal variables
             ! -----------------------------------------------------------------------------------
-            real(8)  :: detJ, rX, Ur
+            real(8)  :: detJ, rX, Ur,r
             integer :: i , j , n , nNodes , DimProb , nDOFel
             real(8) , dimension(:,:) , pointer :: DifSF
             real(8) , dimension(:) , pointer :: ShapeFunctions
@@ -920,12 +921,13 @@ module Element
 
                 !Radius
                 rX = dot_product( ShapeFunctions , [( this%ElementNodes(n)%Node%CoordX(1),n=1,nNodes )] )
+                !r = dot_product( ShapeFunctions , [( this%ElementNodes(n)%Node%Coord(1),n=1,nNodes )] )
 
                 !Displacement Ur
                 Ur = dot_product( ShapeFunctions , U([(n , n=1,size(U),DimProb)]) )
 
                 !Deformation Gradient Axisymmetric
-                F(3,3) = F(3,3) + Ur/rX
+                F(3,3) = F(3,3) + Ur/rX !r/rX !
 
             endif
 

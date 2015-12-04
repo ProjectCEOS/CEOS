@@ -4,7 +4,7 @@
 !-----------------------------------------------------------------------------------------
 POST PROCESSOR 
 
-	Post Processor = GiD 7 !None
+	Post Processor = None !GiD 7 !
 	Results = Displacements  !, Cauchy Stress , Logarithmic Strain , von Mises Cauchy Stress
 	File Name = post_processing_file_GiD7.post.res
 	

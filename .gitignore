@@ -5,3 +5,6 @@ Debug
 /VisualStudio_Intel/VisualStudio_Intel/*.result
 /VisualStudio_Intel/VisualStudio_Intel/*.probe
 /VisualStudio_Intel/VisualStudio_Intel/*.res
+*.probe
+NumberOfIterationsToConverge.dat
+Log_CEOS.txt

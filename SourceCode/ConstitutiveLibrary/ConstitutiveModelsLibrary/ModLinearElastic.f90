@@ -141,7 +141,6 @@ module LinearElastic
             ! ALLOCATE THE STATE VARIABLES
 		    !************************************************************************************
 
-            allocate( this%Stress( AnalysisSettings%StressSize ) ) ; this%Stress= 0.0d0
 
 		    !************************************************************************************
 

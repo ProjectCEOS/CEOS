@@ -25,7 +25,7 @@ module modFEMSystemOfEquations
 
         procedure :: EvaluateSystem => EvaluateR
         procedure :: EvaluateGradientSparse => EvaluateKt
-        procedure :: RotinaExtra => FEMRotinaExtra
+        procedure :: PostUpdate => FEMUpdateMesh
 
     end type
 
@@ -70,19 +70,19 @@ module modFEMSystemOfEquations
         real(8) :: norma
 
         call TangentStiffnessMatrix(this%AnalysisSettings , this%ElementList , this%Kg )
-        
+
         ! As CC de deslocamento prescrito estão sendo aplicadas no sistema Kx=R e não em Kx=-R!!!
         R = -R
         call this%BC%ApplyBoundaryConditions(  this%Kg , R , this%DispDOF, this%Ubar , X   )
         R = -R
-        
+
         G => this%Kg
 
     end subroutine
 
 !--------------------------------------------------------------------------------------------------
 
-    subroutine FEMRotinaExtra(this,X)
+    subroutine FEMUpdateMesh(this,X)
         use Interfaces
         class(ClassFEMSystemOfEquations) :: this
         real(8),dimension(:)::X

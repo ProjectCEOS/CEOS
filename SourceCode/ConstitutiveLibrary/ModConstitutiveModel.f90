@@ -212,12 +212,12 @@ module ConstitutiveModel
                     S(1,2) = this%Stress(4)
                     S(2,1) = this%Stress(4)
 
-                    S(3,3) = this%Stress(1)
-                    S(4,4) = this%Stress(2)
-                    S(3,4) = this%Stress(4)
-                    S(4,3) = this%Stress(4)
-
-                    S(5,5) = this%Stress(3)
+                    S(3,3) = this%Stress(3)
+                    
+                    S(4,4) = this%Stress(1)
+                    S(5,5) = this%Stress(2)
+                    S(4,5) = this%Stress(4)
+                    S(5,4) = this%Stress(4)
 
 
 

@@ -79,7 +79,13 @@ subroutine ElementConstructor( this, ElementNodes, ElementType, GlobalNodesList,
     ! Construct the Constitutive Model
     ! -----------------------------------------------------------------------------------
     do gp=1,nGP
+
+        allocate( this%GaussPoints(gp)%Stress( AnalysisSettings%StressSize ) )
+
+        this%GaussPoints(gp)%Stress = 0.0d0
+
         call this%GaussPoints(gp)%ConstitutiveModelConstructor(AnalysisSettings)
+
     enddo
 
 	!************************************************************************************

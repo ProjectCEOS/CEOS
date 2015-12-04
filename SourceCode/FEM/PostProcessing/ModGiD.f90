@@ -189,7 +189,7 @@ module ModGid
 
                  case (VariableNames%UserDefined)
 
-                    ! TODO (Jan#2#11/18/15): Colocar para exportar todos os dados do usuário também
+                    ! TODO (Jan#1#11/18/15): Colocar para exportar todos os dados do usuário também
 
                     nelem = size( FEA%ElementList )
                     ngp = size(FEA%ElementList(1)%el%GaussPoints)

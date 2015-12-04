@@ -13,7 +13,7 @@ module modNonLinearSystemOfEquations
         procedure :: EvaluateGradientFull => EvaluateGradientBase
         procedure :: EvaluateGradientSparse => EvaluateGradientSparseBase
         generic   :: EvaluateGradient => EvaluateGradientFull , EvaluateGradientSparse
-        procedure :: RotinaExtra => RotinaExtraBase
+        procedure :: PostUpdate => PostUpdateBase
 
     end type
 
@@ -40,8 +40,7 @@ module modNonLinearSystemOfEquations
         stop "EvaluateGradient Not Implemented"
     end subroutine
 !__________________________________________________________________________________________________
-! TODO (Thiago#1#10/19/15): Mudar o Nome da Rotina
-    subroutine RotinaExtraBase(this,X)
+    subroutine PostUpdateBase(this,X)
         class(ClassNonLinearSystemOfEquations)::this
         real(8),dimension(:)::X
     end subroutine

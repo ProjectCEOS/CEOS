@@ -123,7 +123,6 @@ module StVenantKirchhoff
             ! ALLOCATE THE STATE VARIABLES
 		    !************************************************************************************
 
-            allocate( this%Stress( AnalysisSettings%StressSize ) ) ; this%Stress= 0.0d0
 
 		    !************************************************************************************
 
@@ -249,6 +248,8 @@ module StVenantKirchhoff
             real(8) :: D(6,6), GradU(3,3), F(3,3)
             real(8) :: J, trE, Lambda, Mu
 
+            real(8) :: YoungModulus, Poisson, cte, c1, c2
+            real(8) :: StrainAxi(4), StressAxi(4), Daxi(4,4)
 		    !************************************************************************************
 
             !************************************************************************************
@@ -280,6 +281,49 @@ module StVenantKirchhoff
              this%Stress(2)=S(2,2)
              this%Stress(3)=S(3,3)
              this%Stress(4)=S(1,2)
+
+            !88888888888888888888888888888888888888888888888888888888
+            !Daxi=0.0d0
+            !YoungModulus = this%Properties%YoungModulus
+            !Poisson = this%Properties%Poisson
+            !
+            !cte =  YoungModulus*(1.0d0-Poisson) / ( (1.0d0+Poisson)*(1.0d0-2.0d0*Poisson) )
+            !
+            !c1 = Poisson/(1.0d0-Poisson)
+            !
+            !c2 = (1.0d0-2.0d0*Poisson)/( 2.0d0*(1.0d0-Poisson) )
+            !
+            !Daxi(1,:) = [ 1.0d0    ,   c1      ,   c1      ,   0.0d0  ]
+            !Daxi(2,:) = [ c1       ,   1.0d0   ,   c1      ,   0.0d0  ]
+            !Daxi(3,:) = [ c1       ,   c1      ,   1.0d0   ,   0.0d0  ]
+            !Daxi(4,:) = [ 0.0d0    ,   0.0d0   ,   0.0d0   ,   c2     ]
+            !
+            !Daxi = cte*Daxi
+            !
+            ! StrainAxi(1)=E(1,1)
+            ! StrainAxi(2)=E(2,2)
+            ! StrainAxi(3)=E(3,3)
+            ! StrainAxi(4)=2.0d0*E(1,2)
+            !
+            ! StressAxi = matmul(Daxi,StrainAxi)
+            !
+            ! S = 0.0d0
+            ! S(1,1) = StressAxi(1)
+            ! S(2,2) = StressAxi(2)
+            ! S(3,3) = StressAxi(3)
+            ! S(1,2) = StressAxi(4)
+            !
+            ! S = matmul(matmul(this%F,S),transpose(this%F))/J
+            !
+            ! this%Stress(1)=S(1,1)
+            ! this%Stress(2)=S(2,2)
+            ! this%Stress(3)=S(3,3)
+            ! this%Stress(4)=S(1,2)
+
+
+            !88888888888888888888888888888888888888888888888888888888
+
+
 
 		    !************************************************************************************
 
@@ -317,6 +361,7 @@ module StVenantKirchhoff
             integer :: i,j,k,l
             real(8) :: aux, detF, c1, c2, YoungModulus, Poisson
             real(8) :: b(3,3)
+            real(8) :: Daxi(4,4),D3d(6,6), CX(3,3,3,3),Id(3,3)
 
             class (StVenantKirchhoffProperties), pointer :: p
 
@@ -335,11 +380,60 @@ module StVenantKirchhoff
 
             p => this%Properties
 
-
+            D = 0.0d0
             D(1,1:4) = [ Cs(b,p,detF,1,1,1,1) , Cs(b,p,detF,1,1,2,2)  , Cs(b,p,detF,1,1,3,3)  ,  Cs(b,p,detF,1,1,1,2)  ]
             D(2,2:4) = [                        Cs(b,p,detF,2,2,2,2)  , Cs(b,p,detF,2,2,3,3)  ,  Cs(b,p,detF,2,2,1,2)  ]
             D(3,3:4) = [                                                Cs(b,p,detF,3,3,3,3)  ,  Cs(b,p,detF,3,3,1,2)  ]
             D(4,4)   =                                                                           Cs(b,p,detF,1,2,1,2)
+
+
+            !88888888888888888888888888888888888888888888888888888888
+
+            YoungModulus = this%Properties%YoungModulus
+            Poisson = this%Properties%Poisson
+
+            Id = 0.0d0
+            Id(1,1) = 1.0d0
+            Id(2,2) = 1.0d0
+            Id(3,3) = 1.0d0
+
+            CX = 0.0d0
+            CX = 2.0d0*this%Properties%Mu*Isym() + this%Properties%Lambda*Tensor_Product_Ball(Id,Id)
+
+            D3d = Convert_to_Voigt_Tensor4Sym_3D (CX)
+
+            D3d = Push_Forward_Voigt(D3d,this%F)
+
+            Daxi = D3d(1:4,1:4)
+
+!            cte =  YoungModulus*(1.0d0-Poisson) / ( (1.0d0+Poisson)*(1.0d0-2.0d0*Poisson) )
+!
+!            c1 = Poisson/(1.0d0-Poisson)
+!
+!            c2 = (1.0d0-2.0d0*Poisson)/( 2.0d0*(1.0d0-Poisson) )
+!
+!            Daxi=0.0d0
+!            Daxi(1,:) = [ 1.0d0    ,   c1      ,   c1      ,   0.0d0  ]
+!            Daxi(2,:) = [ c1       ,   1.0d0   ,   c1      ,   0.0d0  ]
+!            Daxi(3,:) = [ c1       ,   c1      ,   1.0d0   ,   0.0d0  ]
+!            Daxi(4,:) = [ 0.0d0    ,   0.0d0   ,   0.0d0   ,   c2     ]
+!
+!
+!            Daxi = cte*Daxi
+!
+!            D3d = 0.0d0
+!            D3d(1:4,1:4) = Daxi
+!
+!            D3d = Push_Forward_Voigt(D3d,this%F)
+!
+!            Daxi=0.0d0
+!            Daxi = D3d(1:4,1:4)
+!
+!            D = Daxi
+            !88888888888888888888888888888888888888888888888888888888
+
+
+
 
 		    !************************************************************************************
 

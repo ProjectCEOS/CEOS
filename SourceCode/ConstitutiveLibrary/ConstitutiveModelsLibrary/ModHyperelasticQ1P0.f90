@@ -134,8 +134,6 @@ module HyperelasticQ1P0
             ! ALLOCATE THE STATE VARIABLES
 		    !************************************************************************************
 
-            allocate( this%Stress( AnalysisSettings%StressSize ) ) ; this%Stress= 0.0d0
-
 		    !************************************************************************************
 
         end subroutine
@@ -303,7 +301,7 @@ module HyperelasticQ1P0
             ! Fist Derivative with respect to Mean Dilatation
             !--------------------------------------------------------------------
 		    dPSIvol_dJbar = 3.0d0*BulkModulus*( Jbar**(-2.0d0/3.0d0) )*( Jbar**(1.0d0/3.0d0) - 1.0d0 )
-            
+
              !dPSIvol_dJbar = BulkModulus*( Jbar - 1.0d0 )
             !--------------------------------------------------------------------
 
@@ -408,11 +406,11 @@ module HyperelasticQ1P0
             ! Second Derivative with respect to Mean Dilatation
             !--------------------------------------------------------------------
             Jbar = this%AdditionalVariables%Jbar
-            
+
 		    d2PSIvol_dJbar2 = ( -this%Properties%BulkModulus*Jbar**(-5.0d0/3.0d0) ) * &
                               ( Jbar**(1.0d0/3.0d0) - 2.0d0  )
-            
-            !d2PSIvol_dJbar2 = BulkModulus 
+
+            !d2PSIvol_dJbar2 = BulkModulus
             !--------------------------------------------------------------------
 
 		    !************************************************************************************

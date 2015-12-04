@@ -82,12 +82,18 @@ module ModExportResultFile
                 !------------------------------------------------------------------------------------
                 call Constructor_GiD( PostProcessor, PostProcessorResults, PostProcessorFileName )
 
+                call File%GetNextString(String)
 
+                if ( .not. File%CompareStrings(String,'END POST PROCESSOR') ) then
+                    call File%RaiseError('Expecting Word END POST PROCESSOR in '//trim(FileName))
+                end if
 
             elseif ( File%CompareStrings(OptionValue,'None') ) then
-                !?????
-! TODO (Thiago#2#11/28/15): Ver o que fazer quando não se deseja que seja escrito um arquivo de Pos Processamento.
 
+                call File%GetNextString(String)
+                do while (.not. File%CompareStrings(String,'END POST PROCESSOR'))
+                    call File%GetNextString(String)
+                enddo
 
             endif
             !--------------------------------------------------------------------------------
@@ -98,13 +104,9 @@ module ModExportResultFile
         end if
 
 
-        call File%GetNextString(String)
 
-        if ( .not. File%CompareStrings(String,'END POST PROCESSOR') ) then
-            call File%RaiseError('Expecting Word END POST PROCESSOR in '//trim(FileName))
-        end if
 
-        !Começo da leitura do arquivo
+        !Começo da leitura do arquivo de Probes
         call File%GetNextOption(OptionName,OptionValue)
 
 
@@ -209,6 +211,7 @@ module ModExportResultFile
         use Parser
         use Interfaces
         use ModStatus
+        use modIO
         implicit none
 
 
@@ -226,6 +229,7 @@ module ModExportResultFile
         real(8) :: Time
         real(8) , allocatable, target, dimension(:) :: U
         character(len=255) :: OptionName, OptionValue, String, FileName
+        integer :: Flag_EndStep, NumberOfIterations,IterationFile
 
 
         !************************************************************************************
@@ -241,7 +245,9 @@ module ModExportResultFile
             call PostProcessor%InitializePostProcessorFile(FEA)
         endif
 
-
+        IterationFile = FreeFile()
+        open(IterationFile,File='NumberOfIterationsToConverge.dat',status='unknown')
+        write(IterationFile,*)'  Time                    Number Of Iterations To Converge'
 
         FileName='FEMAnalysis.result'
         FileNumber = 222
@@ -294,6 +300,14 @@ module ModExportResultFile
 
             Substep = OptionValue
 
+            call ResultFile%GetNextOption(OptionName,OptionValue)
+
+            Flag_EndStep = OptionValue
+
+            call ResultFile%GetNextOption(OptionName,OptionValue)
+
+            NumberOfIterations = OptionValue
+
             do i = 1, TotalNDOF
                 call ResultFile%GetNextString(String)
                 U(i) = String
@@ -305,16 +319,14 @@ module ModExportResultFile
             call SolveConstitutiveModel( FEA%ElementList , FEA%AnalysisSettings, Time, U, Status)
 
             ! Escrevendo os pontos pedidos. Excluindo soluções dos Cut Backs.
-! TODO (Thiago#3#12/01/15): Arrumar os cutbacks. Não estão zerando.
-! TODO (Thiago#3#12/01/15): Escrever as iterações para comparação de convergência no Checker.
-
-            if (CutBack .eq. 0) then
+            if (Flag_EndStep .eq. 1) then
                 do i = 1, size(ProbeList)
                     call ProbeList(i)%Pr%WriteProbeResult(FEA)
                 enddo
                 if (associated(PostProcessor)) then
                     call PostProcessor%WritePostProcessorResult(FEA)
                 endif
+                write(IterationFile,*)Time,NumberOfIterations
             endif
 
             ! SAVING THE CONVERGED STATE
@@ -336,7 +348,7 @@ module ModExportResultFile
 
         call ResultFile%CloseFile
 
-
+        close(IterationFile)
 
     end subroutine
 

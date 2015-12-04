@@ -1,28 +1,29 @@
-module FullLinearSolver
+module LinearSolverLU
+
     use LinearSolver
     implicit none
 
-    type,extends(ClassLinearSolver) :: ClassFullLinearSolver
+    type,extends(ClassLinearSolver) :: ClassLinearSolverLU
 
     contains
-        procedure :: SolveFull => Solve_ClassFullLinearSolver
-        procedure :: ReadSolverParameters => ReadSolverParameters_ClassFullLinearSolver
+        procedure :: SolveFull => Solve_ClassLinearSolverLU
+        procedure :: ReadSolverParameters => ReadSolverParameters_ClassLinearSolverLU
 
     end type
 
 contains
 
-    subroutine Solve_ClassFullLinearSolver(this,A,b,x)
+    subroutine Solve_ClassLinearSolverLU(this,A,b,x)
         use MathRoutines
-        class(ClassFullLinearSolver)::this
+        class(ClassLinearSolverLU)::this
         real(8),dimension(:,:):: A
         real(8),dimension(:)::b,x
-        call SolveLinearSystemFull(A,b,x)
+        call SolveLinearSystemLU(A,b,x)
     end subroutine
 
-    subroutine ReadSolverParameters_ClassFullLinearSolver(this,DataFile)
+    subroutine ReadSolverParameters_ClassLinearSolverLU(this,DataFile)
         use Parser
-        class(ClassFullLinearSolver)::this
+        class(ClassLinearSolverLU)::this
         class(ClassParser) :: DataFile
     end subroutine
 

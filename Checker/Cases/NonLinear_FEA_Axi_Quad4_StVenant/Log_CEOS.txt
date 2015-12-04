@@ -24,8 +24,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.287654298E+09
             IT:   1  NORM:  0.297322444E+06
-            IT:   2  NORM:  0.396758652E+02
-            IT:   3  NORM:  0.101141632E-04
+            IT:   2  NORM:  0.396758655E+02
+            IT:   3  NORM:  0.971928239E-05
             Converged in   3 iterations
     End Step:   1
  
@@ -35,8 +35,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.285257971E+09
             IT:   1  NORM:  0.294444717E+06
-            IT:   2  NORM:  0.356659654E+02
-            IT:   3  NORM:  0.629760325E-05
+            IT:   2  NORM:  0.356659659E+02
+            IT:   3  NORM:  0.616349280E-05
             Converged in   3 iterations
     End Step:   2
  
@@ -46,8 +46,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.282745285E+09
             IT:   1  NORM:  0.292378431E+06
-            IT:   2  NORM:  0.325951259E+02
-            IT:   3  NORM:  0.488478690E-05
+            IT:   2  NORM:  0.325951258E+02
+            IT:   3  NORM:  0.503659248E-05
             Converged in   3 iterations
     End Step:   3
  
@@ -57,8 +57,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.280118897E+09
             IT:   1  NORM:  0.291011323E+06
-            IT:   2  NORM:  0.302199842E+02
-            IT:   3  NORM:  0.393390656E-05
+            IT:   2  NORM:  0.302199841E+02
+            IT:   3  NORM:  0.344216824E-05
             Converged in   3 iterations
     End Step:   4
  
@@ -68,8 +68,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.277381142E+09
             IT:   1  NORM:  0.290254983E+06
-            IT:   2  NORM:  0.283702860E+02
-            IT:   3  NORM:  0.236928463E-05
+            IT:   2  NORM:  0.283702856E+02
+            IT:   3  NORM:  0.195205212E-05
             Converged in   3 iterations
     End Step:   5
  
@@ -79,8 +79,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.274534093E+09
             IT:   1  NORM:  0.290039025E+06
-            IT:   2  NORM:  0.271292858E+02
-            IT:   3  NORM:  0.177323818E-05
+            IT:   2  NORM:  0.271292857E+02
+            IT:   3  NORM:  0.220537186E-05
             Converged in   3 iterations
     End Step:   6
  
@@ -90,8 +90,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.271579603E+09
             IT:   1  NORM:  0.290306897E+06
-            IT:   2  NORM:  0.274849499E+02
-            IT:   3  NORM:  0.203959644E-05
+            IT:   2  NORM:  0.274849500E+02
+            IT:   3  NORM:  0.281631947E-05
             Converged in   3 iterations
     End Step:   7
  
@@ -102,7 +102,7 @@ Load Case:   1
             IT:   0  NORM:  0.268519339E+09
             IT:   1  NORM:  0.291012798E+06
             IT:   2  NORM:  0.285282022E+02
-            IT:   3  NORM:  0.272691250E-05
+            IT:   3  NORM:  0.223517418E-05
             Converged in   3 iterations
     End Step:   8
  
@@ -112,8 +112,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.265354806E+09
             IT:   1  NORM:  0.292119405E+06
-            IT:   2  NORM:  0.295979889E+02
-            IT:   3  NORM:  0.281631947E-05
+            IT:   2  NORM:  0.295979892E+02
+            IT:   3  NORM:  0.205636024E-05
             Converged in   3 iterations
     End Step:   9
  
@@ -124,7 +124,7 @@ Load Case:   1
             IT:   0  NORM:  0.262087379E+09
             IT:   1  NORM:  0.293596158E+06
             IT:   2  NORM:  0.306935167E+02
-            IT:   3  NORM:  0.309944153E-05
+            IT:   3  NORM:  0.211596489E-05
             Converged in   3 iterations
     End Step:  10
  
@@ -134,8 +134,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.258718311E+09
             IT:   1  NORM:  0.295417955E+06
-            IT:   2  NORM:  0.318139914E+02
-            IT:   3  NORM:  0.271585304E-05
+            IT:   2  NORM:  0.318139910E+02
+            IT:   3  NORM:  0.244751573E-05
             Converged in   3 iterations
     End Step:  11
  
@@ -146,7 +146,7 @@ Load Case:   1
             IT:   0  NORM:  0.255248753E+09
             IT:   1  NORM:  0.297564156E+06
             IT:   2  NORM:  0.329586222E+02
-            IT:   3  NORM:  0.262260437E-05
+            IT:   3  NORM:  0.272202305E-05
             Converged in   3 iterations
     End Step:  12
  
@@ -156,8 +156,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.251679769E+09
             IT:   1  NORM:  0.300017814E+06
-            IT:   2  NORM:  0.341266286E+02
-            IT:   3  NORM:  0.227987766E-05
+            IT:   2  NORM:  0.341266287E+02
+            IT:   3  NORM:  0.320747495E-05
             Converged in   3 iterations
     End Step:  13
  
@@ -167,8 +167,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.248012341E+09
             IT:   1  NORM:  0.302765069E+06
-            IT:   2  NORM:  0.353172423E+02
-            IT:   3  NORM:  0.324845314E-05
+            IT:   2  NORM:  0.353172424E+02
+            IT:   3  NORM:  0.253319740E-05
             Converged in   3 iterations
     End Step:  14
  
@@ -178,8 +178,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.244247381E+09
             IT:   1  NORM:  0.305794679E+06
-            IT:   2  NORM:  0.365297044E+02
-            IT:   3  NORM:  0.267475843E-05
+            IT:   2  NORM:  0.365297043E+02
+            IT:   3  NORM:  0.298023224E-05
             Converged in   3 iterations
     End Step:  15
  
@@ -189,8 +189,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.240385740E+09
             IT:   1  NORM:  0.309097652E+06
-            IT:   2  NORM:  0.377632698E+02
-            IT:   3  NORM:  0.271201134E-05
+            IT:   2  NORM:  0.377632696E+02
+            IT:   3  NORM:  0.336766243E-05
             Converged in   3 iterations
     End Step:  16
  
@@ -200,8 +200,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.236428210E+09
             IT:   1  NORM:  0.312666956E+06
-            IT:   2  NORM:  0.390172065E+02
-            IT:   3  NORM:  0.277161598E-05
+            IT:   2  NORM:  0.390172066E+02
+            IT:   3  NORM:  0.321865082E-05
             Converged in   3 iterations
     End Step:  17
  
@@ -212,7 +212,7 @@ Load Case:   1
             IT:   0  NORM:  0.232375535E+09
             IT:   1  NORM:  0.316497286E+06
             IT:   2  NORM:  0.402907962E+02
-            IT:   3  NORM:  0.324845314E-05
+            IT:   3  NORM:  0.342912972E-05
             Converged in   3 iterations
     End Step:  18
  
@@ -222,8 +222,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.228228411E+09
             IT:   1  NORM:  0.320584898E+06
-            IT:   2  NORM:  0.415833392E+02
-            IT:   3  NORM:  0.251643360E-05
+            IT:   2  NORM:  0.415833387E+02
+            IT:   3  NORM:  0.422447920E-05
             Converged in   3 iterations
     End Step:  19
  
@@ -234,7 +234,7 @@ Load Case:   1
             IT:   0  NORM:  0.223987492E+09
             IT:   1  NORM:  0.324927462E+06
             IT:   2  NORM:  0.428941537E+02
-            IT:   3  NORM:  0.385567546E-05
+            IT:   3  NORM:  0.342726707E-05
             Converged in   3 iterations
     End Step:  20
  
@@ -244,8 +244,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.219653394E+09
             IT:   1  NORM:  0.329523972E+06
-            IT:   2  NORM:  0.442225835E+02
-            IT:   3  NORM:  0.378862023E-05
+            IT:   2  NORM:  0.442225834E+02
+            IT:   3  NORM:  0.432878733E-05
             Converged in   3 iterations
     End Step:  21
  
@@ -255,8 +255,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.215226696E+09
             IT:   1  NORM:  0.334374665E+06
-            IT:   2  NORM:  0.455680017E+02
-            IT:   3  NORM:  0.683590770E-05
+            IT:   2  NORM:  0.455680015E+02
+            IT:   3  NORM:  0.336766243E-05
             Converged in   3 iterations
     End Step:  22
  
@@ -266,8 +266,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.210707944E+09
             IT:   1  NORM:  0.339480985E+06
-            IT:   2  NORM:  0.469298155E+02
-            IT:   3  NORM:  0.412436202E-05
+            IT:   2  NORM:  0.469298156E+02
+            IT:   3  NORM:  0.524520874E-05
             Converged in   3 iterations
     End Step:  23
  
@@ -277,8 +277,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.206097653E+09
             IT:   1  NORM:  0.344845554E+06
-            IT:   2  NORM:  0.483074748E+02
-            IT:   3  NORM:  0.402145088E-05
+            IT:   2  NORM:  0.483074749E+02
+            IT:   3  NORM:  0.426173210E-05
             Converged in   3 iterations
     End Step:  24
  
@@ -288,8 +288,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.201396305E+09
             IT:   1  NORM:  0.350472174E+06
-            IT:   2  NORM:  0.497004792E+02
-            IT:   3  NORM:  0.482983887E-05
+            IT:   2  NORM:  0.497004788E+02
+            IT:   3  NORM:  0.350549817E-05
             Converged in   3 iterations
     End Step:  25
  
@@ -299,8 +299,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.196604356E+09
             IT:   1  NORM:  0.356365846E+06
-            IT:   2  NORM:  0.511083862E+02
-            IT:   3  NORM:  0.527082011E-05
+            IT:   2  NORM:  0.511083860E+02
+            IT:   3  NORM:  0.450015068E-05
             Converged in   3 iterations
     End Step:  26
  
@@ -310,8 +310,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.191722230E+09
             IT:   1  NORM:  0.362532806E+06
-            IT:   2  NORM:  0.525308236E+02
-            IT:   3  NORM:  0.425055623E-05
+            IT:   2  NORM:  0.525308238E+02
+            IT:   3  NORM:  0.494718552E-05
             Converged in   3 iterations
     End Step:  27
  
@@ -321,8 +321,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.186750327E+09
             IT:   1  NORM:  0.368980590E+06
-            IT:   2  NORM:  0.539674972E+02
-            IT:   3  NORM:  0.560283661E-05
+            IT:   2  NORM:  0.539674975E+02
+            IT:   3  NORM:  0.485777855E-05
             Converged in   3 iterations
     End Step:  28
  
@@ -332,8 +332,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.181689015E+09
             IT:   1  NORM:  0.375718110E+06
-            IT:   2  NORM:  0.554182048E+02
-            IT:   3  NORM:  0.375509262E-05
+            IT:   2  NORM:  0.554182049E+02
+            IT:   3  NORM:  0.458955765E-05
             Converged in   3 iterations
     End Step:  29
  
@@ -343,8 +343,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.176538635E+09
             IT:   1  NORM:  0.382755760E+06
-            IT:   2  NORM:  0.568828498E+02
-            IT:   3  NORM:  0.500679016E-05
+            IT:   2  NORM:  0.568828496E+02
+            IT:   3  NORM:  0.572204590E-05
             Converged in   3 iterations
     End Step:  30
  
@@ -355,7 +355,7 @@ Load Case:   1
             IT:   0  NORM:  0.171299498E+09
             IT:   1  NORM:  0.390105543E+06
             IT:   2  NORM:  0.583614529E+02
-            IT:   3  NORM:  0.374019146E-05
+            IT:   3  NORM:  0.464916229E-05
             Converged in   3 iterations
     End Step:  31
  
@@ -365,8 +365,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.165971884E+09
             IT:   1  NORM:  0.397781232E+06
-            IT:   2  NORM:  0.598541700E+02
-            IT:   3  NORM:  0.572204590E-05
+            IT:   2  NORM:  0.598541701E+02
+            IT:   3  NORM:  0.727176666E-05
             Converged in   3 iterations
     End Step:  32
  
@@ -377,7 +377,7 @@ Load Case:   1
             IT:   0  NORM:  0.160556042E+09
             IT:   1  NORM:  0.405798553E+06
             IT:   2  NORM:  0.613613060E+02
-            IT:   3  NORM:  0.476837158E-05
+            IT:   3  NORM:  0.759959221E-05
             Converged in   3 iterations
     End Step:  33
  
@@ -387,8 +387,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.155052184E+09
             IT:   1  NORM:  0.414175416E+06
-            IT:   2  NORM:  0.628833346E+02
-            IT:   3  NORM:  0.758282840E-05
+            IT:   2  NORM:  0.628833345E+02
+            IT:   3  NORM:  0.575184822E-05
             Converged in   3 iterations
     End Step:  34
  
@@ -398,8 +398,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.149460484E+09
             IT:   1  NORM:  0.422932187E+06
-            IT:   2  NORM:  0.644209119E+02
-            IT:   3  NORM:  0.420585275E-05
+            IT:   2  NORM:  0.644209120E+02
+            IT:   3  NORM:  0.619888306E-05
             Converged in   3 iterations
     End Step:  35
  
@@ -410,7 +410,7 @@ Load Case:   1
             IT:   0  NORM:  0.143781077E+09
             IT:   1  NORM:  0.432092006E+06
             IT:   2  NORM:  0.659748991E+02
-            IT:   3  NORM:  0.737607479E-05
+            IT:   3  NORM:  0.613927841E-05
             Converged in   3 iterations
     End Step:  36
  
@@ -420,8 +420,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.141335707E+09
             IT:   1  NORM:  0.441681173E+06
-            IT:   2  NORM:  0.675463803E+02
-            IT:   3  NORM:  0.520050526E-05
+            IT:   2  NORM:  0.675463802E+02
+            IT:   3  NORM:  0.712275505E-05
             Converged in   3 iterations
     End Step:  37
  
@@ -431,8 +431,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.138834108E+09
             IT:   1  NORM:  0.451729609E+06
-            IT:   2  NORM:  0.691366772E+02
-            IT:   3  NORM:  0.571366400E-05
+            IT:   2  NORM:  0.691366775E+02
+            IT:   3  NORM:  0.697374344E-05
             Converged in   3 iterations
     End Step:  38
  
@@ -442,8 +442,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.136238501E+09
             IT:   1  NORM:  0.462271401E+06
-            IT:   2  NORM:  0.707473724E+02
-            IT:   3  NORM:  0.761449337E-05
+            IT:   2  NORM:  0.707473728E+02
+            IT:   3  NORM:  0.825524330E-05
             Converged in   3 iterations
     End Step:  39
  
@@ -453,8 +453,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.133547380E+09
             IT:   1  NORM:  0.473345466E+06
-            IT:   2  NORM:  0.747593344E+02
-            IT:   3  NORM:  0.715255737E-05
+            IT:   2  NORM:  0.747593359E+02
+            IT:   3  NORM:  0.703334808E-05
             Converged in   3 iterations
     End Step:  40
  
@@ -464,8 +464,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.130759145E+09
             IT:   1  NORM:  0.484996344E+06
-            IT:   2  NORM:  0.799260725E+02
-            IT:   3  NORM:  0.739097595E-05
+            IT:   2  NORM:  0.799260700E+02
+            IT:   3  NORM:  0.900030136E-05
             Converged in   3 iterations
     End Step:  41
  
@@ -475,8 +475,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.127872091E+09
             IT:   1  NORM:  0.497275162E+06
-            IT:   2  NORM:  0.856971688E+02
-            IT:   3  NORM:  0.920891762E-05
+            IT:   2  NORM:  0.856971698E+02
+            IT:   3  NORM:  0.841915607E-05
             Converged in   3 iterations
     End Step:  42
  
@@ -486,8 +486,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.124884394E+09
             IT:   1  NORM:  0.510240814E+06
-            IT:   2  NORM:  0.921703714E+02
-            IT:   3  NORM:  0.840425491E-05
+            IT:   2  NORM:  0.921703705E+02
+            IT:   3  NORM:  0.953674316E-05
             Converged in   3 iterations
     End Step:  43
  
@@ -497,8 +497,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.121794092E+09
             IT:   1  NORM:  0.523961396E+06
-            IT:   2  NORM:  0.994642546E+02
-            IT:   3  NORM:  0.667572021E-05
+            IT:   2  NORM:  0.994642537E+02
+            IT:   3  NORM:  0.989437103E-05
             Converged in   3 iterations
     End Step:  44
  
@@ -509,7 +509,7 @@ Load Case:   1
             IT:   0  NORM:  0.118599065E+09
             IT:   1  NORM:  0.538515987E+06
             IT:   2  NORM:  0.107723719E+03
-            IT:   3  NORM:  0.762939453E-05
+            IT:   3  NORM:  0.123381615E-04
             Converged in   3 iterations
     End Step:  45
  
@@ -519,8 +519,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.115297010E+09
             IT:   1  NORM:  0.553996860E+06
-            IT:   2  NORM:  0.117127275E+03
-            IT:   3  NORM:  0.134110451E-04
+            IT:   2  NORM:  0.117127276E+03
+            IT:   3  NORM:  0.131726265E-04
             Converged in   3 iterations
     End Step:  46
  
@@ -530,8 +530,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.111885413E+09
             IT:   1  NORM:  0.570512248E+06
-            IT:   2  NORM:  0.127896701E+03
-            IT:   3  NORM:  0.118613243E-04
+            IT:   2  NORM:  0.127896702E+03
+            IT:   3  NORM:  0.152587891E-04
             Converged in   3 iterations
     End Step:  47
  
@@ -541,8 +541,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.108361515E+09
             IT:   1  NORM:  0.588189837E+06
-            IT:   2  NORM:  0.140310153E+03
-            IT:   3  NORM:  0.199675560E-04
+            IT:   2  NORM:  0.140310148E+03
+            IT:   3  NORM:  0.180006027E-04
             Converged in   3 iterations
     End Step:  48
  
@@ -552,8 +552,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.106301982E+09
             IT:   1  NORM:  0.607181227E+06
-            IT:   2  NORM:  0.154720019E+03
-            IT:   3  NORM:  0.247955322E-04
+            IT:   2  NORM:  0.154720022E+03
+            IT:   3  NORM:  0.245571136E-04
             Converged in   3 iterations
     End Step:  49
  
@@ -563,8 +563,8 @@ Load Case:   1
             SubStep:   0 (Alpha:  1.0000)
             IT:   0  NORM:  0.110284057E+09
             IT:   1  NORM:  0.627667668E+06
-            IT:   2  NORM:  0.171577729E+03
-            IT:   3  NORM:  0.280141830E-04
+            IT:   2  NORM:  0.171577732E+03
+            IT:   3  NORM:  0.283718109E-04
             Converged in   3 iterations
     End Step:  50
  
@@ -573,7 +573,7 @@ End Load Case:   1
  
  
  
- Finite Element Analysis: CPU Time =   1.06301546096802      [s]
+ Finite Element Analysis: CPU Time =   5.74081015586853      [s]
  
  
  ---------------------------------------------------------
@@ -585,7 +585,7 @@ End Load Case:   1
  Post Processing Results...
  
  
- CPU Time =  0.330000400543213      [s]
+ CPU Time =   1.04520177841187      [s]
  ---------------------------------------------------------
  
  

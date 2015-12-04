@@ -17,7 +17,8 @@ ANALYSIS SETTINGS
 	Analysis Type = Quasi Static
 	Nonlinear Analysis = True !False !
 	Hypothesis of Analysis = Axisymmetric !3D !
-	Element Technology =  Mean Dilatation ! Full Integration !
+	!Element Technology =   Mean Dilatation !
+	Element Technology =   Full Integration 
 	Maximum Cut Backs = 10
 	
 END ANALYSIS SETTINGS
@@ -36,7 +37,7 @@ NONLINEAR SOLVER
 
 	Newton_Raphson_Full
 	
-	Tol = 1e-3
+	Tol = 1.0e-5
 	MaxIter = 10
 
 	
@@ -48,15 +49,15 @@ MATERIAL
 
 	Number of Materials = 1
 
-	Material ID = 1
-	Neo_Hookean
-	C10 = 5.0E10
-	Bulk Modulus = 5.0E13
-	
 	!Material ID = 1
-	!St_Venant_Kirchhoff
-	!Young Modulus = 100.0E9 
-	!Poisson = 0.3
+	!Neo_Hookean
+	!C10 = 5.0E10
+	!Bulk Modulus = 8.0E11
+	
+	Material ID = 1
+	St_Venant_Kirchhoff
+	Young Modulus = 100.0E9 
+	Poisson = 0.3
 	
 	!Material ID = 21
 	!Linear_Elastic
@@ -82,7 +83,7 @@ END MATERIAL
 
 MESH AND BOUNDARY CONDITIONS
 
-	Mesh File = Mesh.dat
+	Mesh File = Mesh_Axi.dat
 	Preprocessor = Gid 12
 	Time Discretization File = Time_Discretization.dat
 		

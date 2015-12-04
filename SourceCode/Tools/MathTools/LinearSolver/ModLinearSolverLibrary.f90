@@ -2,11 +2,10 @@ module LinearSolverLibrary
 
     use LinearSolver
 	use PardisoSolver
-	use FullLinearSolver
+	use LinearSolverLU
 
-    ! TODO (Jan#1#12/01/15): Verificar com o Thiago se ao invés de chamar FULL não deviamos chamar de LU ou pelo menos LU_full
     type ClassLinearSolvers
-        integer :: FULL = 1
+        integer :: LU = 1
         integer :: Pardiso = 2
     end type
 
@@ -26,15 +25,15 @@ module LinearSolverLibrary
             ! Internal variables
             ! -----------------------------------------------------------------------------------
 			type(ClassPardisoSolver)  , pointer :: ParSol => null()
-			type(ClassFullLinearSolver) , pointer :: FullSol => null()
+			type(ClassLinearSolverLU) , pointer :: LUSol => null()
 
 
             select case (SolverID)
 
-                case (LinearSolvers%FULL)
+                case (LinearSolvers%LU)
 
-                    allocate(FullSol)
-                    Solver=> FullSol
+                    allocate(LUSol)
+                    Solver=> LUSol
 
                 case (LinearSolvers%Pardiso)
 
@@ -68,8 +67,8 @@ module LinearSolverLibrary
 
             if (comp%CompareStrings(solver,"pardiso")) then
                 solverID = LinearSolvers%Pardiso
-            elseif (comp%CompareStrings(solver,"full")) then
-                solverID = LinearSolvers%FULL
+            elseif (comp%CompareStrings(solver,"LU")) then
+                solverID = LinearSolvers%LU
             else
                 call Error("Error: Linear Solver not identified: "//trim(solver))
             endif

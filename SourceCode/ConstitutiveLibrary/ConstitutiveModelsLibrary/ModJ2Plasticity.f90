@@ -127,7 +127,6 @@ module J2Plasticity
             ! ALLOCATE THE STATE VARIABLES
 		    !************************************************************************************
 
-            allocate( this%Stress( AnalysisSettings%StressSize ) ) ; this%Stress= 0.0d0
 
             allocate( this%S_dev_t( AnalysisSettings%StressSize ) ) ; this%S_dev_t=0.0d0
 
