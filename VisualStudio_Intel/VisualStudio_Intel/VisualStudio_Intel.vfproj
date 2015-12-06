@@ -109,7 +109,10 @@
 		<File RelativePath="..\..\SourceCode\Tools\MathTools\SparseMatrixRoutines\ModSparseMatrixRoutines.f90"/>
 		<File RelativePath="..\..\SourceCode\Tools\MathTools\SparseMatrixRoutines\ModSparseVectorRoutines.f90"/></Filter>
 		<File RelativePath="..\..\SourceCode\Tools\MathTools\ModMathRoutines.f90"/>
-		<File RelativePath="..\..\SourceCode\Tools\MathTools\ModNonLinearSystemOfEquations.f90"/></Filter>
+		<File RelativePath="..\..\SourceCode\Tools\MathTools\ModMathRoutines_NEW.f90"/>
+		<File RelativePath="..\..\SourceCode\Tools\MathTools\ModNonLinearSystemOfEquations.f90"/>
+		<File RelativePath="..\..\SourceCode\Tools\MathTools\ModTensorAlgebra.f90"/>
+		<File RelativePath="..\..\SourceCode\Tools\MathTools\ModVoigtNotation.f90"/></Filter>
 		<File RelativePath="..\..\SourceCode\Tools\modCharacter.f90"/>
 		<File RelativePath="..\..\SourceCode\Tools\ModContinuumMechanics.f90"/>
 		<File RelativePath="..\..\SourceCode\Tools\modIO.f90"/>

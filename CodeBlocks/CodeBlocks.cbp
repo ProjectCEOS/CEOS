@@ -80,6 +80,9 @@
 		<Unit filename="../SourceCode/Tools/MathTools/LinearSolver/modFullLinearSolver.f90" />
 		<Unit filename="../SourceCode/Tools/MathTools/LinearSolver/modLinearSolver.f90" />
 		<Unit filename="../SourceCode/Tools/MathTools/ModMathRoutines.f90" />
+		<Unit filename="../SourceCode/Tools/MathTools/ModMathRoutines_NEW.f90" />
+		<Unit filename="../SourceCode/Tools/MathTools/ModTensorAlgebra.f90" />
+		<Unit filename="../SourceCode/Tools/MathTools/ModVoigtNotation.f90" />
 		<Unit filename="../SourceCode/Tools/MathTools/NonlinearSolver/ModNonLinearSolver.f90" />
 		<Unit filename="../SourceCode/Tools/MathTools/NonlinearSolver/ModNonLinearSolverLibrary.f90" />
 		<Unit filename="../SourceCode/Tools/MathTools/NonlinearSolver/modNewtonRaphsonFull.f90" />

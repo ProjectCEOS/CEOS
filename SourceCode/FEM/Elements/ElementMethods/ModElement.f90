@@ -927,7 +927,8 @@ module Element
                 Ur = dot_product( ShapeFunctions , U([(n , n=1,size(U),DimProb)]) )
 
                 !Deformation Gradient Axisymmetric
-                F(3,3) = F(3,3) + Ur/rX !r/rX !
+                !F(3,3) = r/rX 
+                F(3,3) = F(3,3) + Ur/rX 
 
             endif
 

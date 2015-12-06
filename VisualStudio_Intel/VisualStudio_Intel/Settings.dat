@@ -37,7 +37,7 @@ NONLINEAR SOLVER
 
 	Newton_Raphson_Full
 	
-	Tol = 1.0e-5
+	Tol = 1.0e-4
 	MaxIter = 10
 
 	
@@ -51,8 +51,8 @@ MATERIAL
 
 	!Material ID = 1
 	!Neo_Hookean
-	!C10 = 5.0E10
-	!Bulk Modulus = 8.0E11
+	!C10 = 5.0E9
+	!Bulk Modulus = 5.0E11
 	
 	Material ID = 1
 	St_Venant_Kirchhoff
