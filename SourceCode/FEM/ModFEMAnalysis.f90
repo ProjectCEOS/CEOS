@@ -45,6 +45,7 @@ module FEMAnalysis
         ! Para usar no Probe...
         real(8), pointer, dimension(:) :: U => null()
         real (8) :: Time
+        integer :: LoadCase
 
         contains
 
@@ -368,7 +369,7 @@ subroutine QuasiStaticAnalysisFEM( ElementList , AnalysisSettings , GlobalNodesL
     ! Escrevendo os resultados para o tempo zero
     ! NOTE (Thiago#1#11/19/15): OBS.: As condições de contorno iniciais devem sair do tempo zero.
     Flag_EndStep = 1
-    call WriteFEMResults( U, 0.0d0, 0, 0, 0, 0, Flag_EndStep, FileID_FEMAnalysisResults, NumberOfIterations=0  )
+    call WriteFEMResults( U, 0.0d0, 1, 1, 0, 0, Flag_EndStep, FileID_FEMAnalysisResults, NumberOfIterations=0  )
 
     !LOOP - LOAD CASES
     LOAD_CASE:  do LC = 1 , nLoadCases
