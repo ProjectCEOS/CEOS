@@ -59,6 +59,7 @@
 		<Unit filename="../SourceCode/FEM/Modules/ModuleInterfaces.f90" />
 		<Unit filename="../SourceCode/FEM/PostProcessing/ModExportResultFile.f90" />
 		<Unit filename="../SourceCode/FEM/PostProcessing/ModGiD.f90" />
+		<Unit filename="../SourceCode/FEM/PostProcessing/ModHyperView.f90" />
 		<Unit filename="../SourceCode/FEM/PostProcessing/ModPostProcessors.f90" />
 		<Unit filename="../SourceCode/FEM/PostProcessing/ModProbe.f90" />
 		<Unit filename="../SourceCode/FEM/Subroutines/SubArgumentHandler.f90" />

@@ -91,6 +91,7 @@
 		<Filter Name="PostProcessing">
 		<File RelativePath="..\..\SourceCode\FEM\PostProcessing\ModExportResultFile.f90"/>
 		<File RelativePath="..\..\SourceCode\FEM\PostProcessing\ModGiD.f90"/>
+		<File RelativePath="..\..\SourceCode\FEM\PostProcessing\ModHyperView.f90"/>
 		<File RelativePath="..\..\SourceCode\FEM\PostProcessing\ModPostProcessors.f90"/>
 		<File RelativePath="..\..\SourceCode\FEM\PostProcessing\ModProbe.f90"/></Filter>
 		<Filter Name="Tools">

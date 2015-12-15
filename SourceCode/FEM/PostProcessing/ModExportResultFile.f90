@@ -4,6 +4,7 @@ module ModExportResultFile
     use ModProbe
     use ModPostProcessors
     use ModGid
+    use ModHyperView
 
 
     contains
@@ -62,7 +63,7 @@ module ModExportResultFile
         if (File%CompareStrings(OptionName,'Post Processor')) then
 
             ! GiD 7
-            !--------------------------------------------------------------------------------
+            !========================================================================================
             if ( File%CompareStrings(OptionValue,'GiD 7') ) then
 
                 call File%GetNextOption(OptionName,OptionValue)
@@ -78,7 +79,7 @@ module ModExportResultFile
                 end if
                 PostProcessorFileName = OptionValue
 
-                ! Constuindo o Pos Processador
+                ! Constuindo o Pos Processador GiD 7
                 !------------------------------------------------------------------------------------
                 call Constructor_GiD( PostProcessor, PostProcessorResults, PostProcessorFileName )
 
@@ -88,6 +89,35 @@ module ModExportResultFile
                     call File%RaiseError('Expecting Word END POST PROCESSOR in '//trim(FileName))
                 end if
 
+            ! HyperView 12
+            !========================================================================================
+            elseif ( File%CompareStrings(OptionValue,'HyperView 12') ) then
+
+                call File%GetNextOption(OptionName,OptionValue)
+                if ( .not. File%CompareStrings(OptionName,'Results') ) then
+                    call File%RaiseError('Expecting Word Results in '//trim(FileName))
+                end if
+
+                call Split( OptionValue , PostProcessorResults , ",")
+
+                call File%GetNextOption(OptionName,OptionValue)
+                if ( .not. File%CompareStrings(OptionName,'File Name') ) then
+                    call File%RaiseError('Expecting Word File Name in '//trim(FileName))
+                end if
+                PostProcessorFileName = OptionValue
+
+                ! Constuindo o Pos Processador HiperView 12
+                !------------------------------------------------------------------------------------
+                call Constructor_HyperView( PostProcessor, PostProcessorResults, PostProcessorFileName )
+
+                call File%GetNextString(String)
+
+                if ( .not. File%CompareStrings(String,'END POST PROCESSOR') ) then
+                    call File%RaiseError('Expecting Word END POST PROCESSOR in '//trim(FileName))
+                end if
+
+            ! Nenhum Pós Processodor
+            !========================================================================================
             elseif ( File%CompareStrings(OptionValue,'None') ) then
 
                 call File%GetNextString(String)
@@ -96,7 +126,7 @@ module ModExportResultFile
                 enddo
 
             endif
-            !--------------------------------------------------------------------------------
+            !========================================================================================
 
         else
             call File%RaiseError('Expecting Post Processor Name in '//trim(FileName))
@@ -211,7 +241,7 @@ module ModExportResultFile
         use Parser
         use Interfaces
         use ModStatus
-        use modIO
+        use ModIO
         implicit none
 
 
@@ -223,7 +253,7 @@ module ModExportResultFile
 
         ! Internal variables
         ! -----------------------------------------------------------------------------------
-        type(ClassParser) :: ResultFile
+        type(ClassParser)                         :: ResultFile
         type(ClassStatus)                         :: Status
         integer :: TotalNDOF, LoadCase, Step, CutBack, SubStep, el, gp, i, FileNumber
         real(8) :: Time
@@ -313,6 +343,7 @@ module ModExportResultFile
                 U(i) = String
             enddo
 
+            FEA%LoadCase = LoadCase
             FEA%Time = Time
             FEA%U => U
             ! Update stress and internal variables
