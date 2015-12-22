@@ -10,6 +10,7 @@ module modCharacter
     contains
 
     !=================== ROTINAS DE CONVERSÃO ======================
+
     subroutine RealToChar(C,R)
         character(len=*) , intent(inout) :: C
         real(8) , intent(in) :: R
@@ -79,6 +80,15 @@ module modCharacter
     !=================== FIM DAS ROTINAS DE CONVERSÃO ======================
 
     ! ================= ROTINAS GERAIS ==================================
+
+
+    function Compare(InputA,InputB) Result(output)
+        character(len=*) :: InputA,InputB
+        logical :: Output
+        integer::i
+		Output = Lcase(trim(InputA)) == Lcase(trim(InputB))
+    end function
+
     function Lcase(Input) Result(output)
         character(len=*) :: Input
         character(len(Input)) :: Output

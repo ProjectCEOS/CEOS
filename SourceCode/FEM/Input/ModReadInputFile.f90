@@ -386,7 +386,7 @@ contains
         character(len=100),dimension(3) :: ListOfOptions,ListOfValues
         character(len=100)              :: TimeFileName
         logical,dimension(3)            :: FoundOption
-        integer                         :: i,j,PreProcessorID
+        integer                         :: i,j,PreProcessorID, FileNumber
 
 
         ListOfOptions=["Mesh File","Time Discretization File","Preprocessor"]
@@ -416,30 +416,36 @@ contains
         ENDIF
 
 
-        call DataMeshBC%Setup(FileName=ListOfValues(1),FileNumber=43)
+
+        select case (PreProcessorID)
+
+            case (PreProcessors%Gid12,PreProcessors%Gid7)
+
+                call DataMeshBC%Setup(FileName=ListOfValues(1),FileNumber=43)
+
+                call ReadMesh(DataMeshBC,GlobalNodesList,ElementList,AnalysisSettings,MaterialList, PreProcessorID)
+
+                TimeFileName = ListOfValues(2)
+                call ReadBoundaryConditions(TimeFileName,DataMeshBC,BC,AnalysisSettings)
+
+                call DataMeshBC%CloseFile
 
 
 
-        !Leitura da malha e CC do Ansys gerada pelo HyperMesh
-        !--------------------------------------------------------------------------
-        !call ReadMeshHyperMesh(DataMeshBC,GlobalNodesList,ElementList,AnalysisSettings,MaterialList, PreProcessorID)
+            case (PreProcessors%HyperMesh)
+
+                FileNumber = FreeFile()
+                open(FileNumber,File=ListOfValues(1),status='unknown')
+                call ReadMeshHyperMesh(FileNumber,GlobalNodesList,ElementList,AnalysisSettings,MaterialList, PreProcessorID)
+
+                TimeFileName = ListOfValues(2)
+                call ReadBoundaryConditionsHyperMesh(TimeFileName,FileNumber,BC,AnalysisSettings)
 
 
+            case default
 
+        end select
 
-        !--------------------------------------------------------------------------
-
-
-
-
-        !Leitura da malha e CC gerada pelo GiD
-        !--------------------------------------------------------------------------
-        call ReadMesh(DataMeshBC,GlobalNodesList,ElementList,AnalysisSettings,MaterialList, PreProcessorID)
-
-        TimeFileName = ListOfValues(2)
-        call ReadBoundaryConditions(TimeFileName,DataMeshBC,BC,AnalysisSettings)
-
-        call DataMeshBC%CloseFile
 
        call DataFile%GetNextString(string)
 
@@ -448,167 +454,349 @@ contains
         endif
 
         BlockFound(iMeshAndBC)=.true.
-        !--------------------------------------------------------------------------
 
 
     end subroutine
     !=======================================================================================================================
 
     !=======================================================================================================================
-    subroutine ReadMeshHyperMesh(DataFile, GlobalNodesList, ElementList, AnalysisSettings, MaterialList, PreProcessorID)
+    subroutine ReadMeshHyperMesh(FileNumber, GlobalNodesList, ElementList, AnalysisSettings, MaterialList, PreProcessorID)
 
         use Interfaces
         implicit none
 
-        type (ClassParser)                                    :: DataFile
-        type (ClassAnalysis)                                  :: AnalysisSettings
-        type (ClassNodes) , pointer , dimension(:)            :: GlobalNodesList
-        type (ClassElementsWrapper) , pointer , dimension(:)  :: ElementList
-        type (ClassConstitutiveModelWrapper) , pointer , dimension(:) :: MaterialList
-        Integer                                               :: PreProcessorID
+        type (ClassParser)                                              :: DataFile
+        type (ClassAnalysis)                                            :: AnalysisSettings
+        type (ClassNodes) , pointer , dimension(:)                      :: GlobalNodesList
+        type (ClassElementsWrapper) , pointer , dimension(:)            :: ElementList
+        type (ClassConstitutiveModelWrapper) , pointer , dimension(:)   :: MaterialList
+        Integer                                                         :: PreProcessorID
 
-
-        character(len=255)::string , OptionName,OptionValue , line
-        logical :: FoundMaterial , IsQuadratic
+        integer ::  FileNumber, i, n
+        integer :: nnodes,nelem,ndime,ElemType, ElemID, MaterialID, ennodes,ElemConec(MaxElementNodes)
+        logical :: FoundMaterial
+        character(len=255) :: FileName, Line
+        character(len=255), allocatable , dimension(:) :: AuxString, CoordString
         real(8) , allocatable , dimension(:) :: Coords
-        integer , allocatable ,dimension(:) :: MatID
-        integer::i,e,id,j
-        integer::nnodes,nelem,ndime,ElemType, ElemConec(MaxElementNodes),GeoType,ENnodes , NumberOfMaterialIDs
         class(ClassConstitutiveModelWrapper)  , pointer :: Material
 
-        call DataFile%GetNextString(string)
-
-        do i=1,3
-            call DataFile%GetNextOption(OptionName,OptionValue)
-            if (DataFile%Error) then
-                call DataFile%ShowError
-                write(*,*) "Expected Nnodes,Nelem or Ndime"
-                stop
-            end if
-            if (DataFile%CompareStrings(OptionName,"nnodes")) then
-
-                nnodes = OptionValue
-                call DataFile%CheckError
-                if (nnodes<=0) call DataFile%RaiseError("Nnodes must be positive")
-            elseif (DataFile%CompareStrings(OptionName,"ndime")) then
-
-                ndime = OptionValue
-                call DataFile%CheckError
-                if (ndime<=0) call DataFile%RaiseError("Ndime must be positive")
-            elseif (DataFile%CompareStrings(OptionName,"nelem")) then
-
-                nelem = OptionValue
-                call DataFile%CheckError
-                if (nelem<=0) call DataFile%RaiseError("Nelem must be positive")
-            else
-                call DataFile%RaiseError("Expected Nnodes,Nelem or Ndime")
-            endif
-        enddo
-
-        allocate( GlobalNodesList( Nnodes ) , ElementList(Nelem) , Coords(Ndime) )
-
-        call DataFile%GetNextString(string)
-        call DataFile%CheckError
-        if (.not.DataFile%CompareStrings(string,"Coordinates")) call DataFile%RaiseError("Coordinates were not found")
 
 
-        do i=1,nnodes
-            call DataFile%GetNextString()
-            call DataFile%CheckError
-            call DataFile%GetOriginalLine(line)
-            Read(line,*) id, ( Coords(j) , j=1,Ndime )
-            call GlobalNodesList(i)%NodeConstructor( Coords , i , AnalysisSettings % NDOFnode )
-        enddo
-
-        call DataFile%GetNextString(string)
-        IF (.not.DataFile%CompareStrings(string,'end coordinates')) call DataFile%RaiseError("Expected: End Coordinates")
+        LOOP_MESH: do while (.not. EOF(FileNumber))
 
 
-        call DataFile%GetNextString(string)
-        call DataFile%CheckError
+            read(FileNumber,'(a255)') Line
 
-        if (.not.DataFile%CompareStrings(string,"MATERIAL ID")) call DataFile%RaiseError("MATERIAL ID was not found")
+            call Split(Line,AuxString,',')
 
-        call DataFile%GetNextString(string) ; call DataFile%CheckError
+            if (size(AuxString) .ge. 3) then
 
-        NumberOfMaterialIDs = string
-        call DataFile%CheckError
+                if ( Compare(AuxString(1),'numoff') ) then
 
-        if (NumberOfMaterialIDs .ne. nelem ) then
-            call DataFile%RaiseError("Elements without material were found")
-        endif
-
-        allocate( MatID(nelem))
-
-        do e = 1,nelem
-            call DataFile%GetNextString()
-            call DataFile%CheckError
-            call DataFile%GetOriginalLine(line)
-            read(line,*) id , MatID(id)
-        enddo
-
-        call DataFile%GetNextString(string)
-        IF (.not.DataFile%CompareStrings(string,'end material id')) call DataFile%RaiseError("Expected: End Material ID")
-
-
-        call DataFile%GetNextString(string)
-        call DataFile%CheckError
-
-        if (.not.DataFile%CompareStrings(string,"CONNECTIVITY")) call DataFile%RaiseError("CONNECTIVITY was not found")
-        do e=1,Nelem
-                call DataFile%GetNextString()
-                call DataFile%CheckError
-                call DataFile%GetOriginalLine(line)
-                Read(line,*) id , GeoType , ENnodes , (ElemConec(j),j=1,ENnodes)
-
-                FoundMaterial=.false.
-                do i=1,size(MaterialList)
-                    if (MaterialList(i)%MaterialID == MatID(id)) then
-                        Material => MaterialList(i)
-                        FoundMaterial = .true.
+                    if (Compare(AuxString(2),'node') ) then
+                        nnodes = AuxString(3)
+                        allocate( GlobalNodesList(Nnodes), CoordString(Nnodes))
+                    elseif (Compare(AuxString(2), 'elem') ) then
+                        nelem = AuxString(3)
+                        allocate( ElementList(Nelem) )
                     endif
-                enddo
-                if (.not.FoundMaterial) then
-                    call DataFile%RaiseError("Element's Material was not found")
+
+                elseif ( Compare(AuxString(1),'nblock') ) then
+
+                    read(FileNumber,*)
+                    do i = 1,nnodes
+                        read(FileNumber,'(a255)') CoordString(i)
+                    end do
+                    write(*,*)''
+
+                elseif ( Compare(AuxString(1),'et') ) then
+
+                    ElemType = AuxString(3)
+
+                    select case (ElemType)
+                        case (185) ! Ansys Element 185 - Hexa8
+                            ndime = 3
+                            ElemType = ElementTypes%Hexa8
+                        case (42) ! Ansys Element 2 - Quad4
+                            ndime = 2
+                            ElemType = ElementTypes%Quad4
+                        case default
+                            write(*,*)trim(Line)
+                            stop 'Error: Ansys Element Type Not Identified'
+                    end select
+
+                    allocate( Coords(ndime) )
+
+                    do i = 1,nnodes
+                        call Split(CoordString(i),AuxString,' ')
+                        do n = 1,ndime
+                            Coords(n) = AuxString(3+n)
+                        enddo
+                        call GlobalNodesList(i)%NodeConstructor( Coords, i, AnalysisSettings%NDOFnode )
+                    enddo
+
+
+                elseif ( Compare(AuxString(1),'eblock') ) then
+
+                    read(FileNumber,*)
+                    read(FileNumber,'(a255)') line
+                    call Split(Line,AuxString,' ')
+                    do while ( .not. Compare(AuxString(1),'-1') )
+
+                        ElemID = AuxString(11)
+                        ENnodes = AuxString(9)
+                        MaterialID = AuxString(1)
+
+                        FoundMaterial=.false.
+                        do i=1,size(MaterialList)
+                            if (MaterialList(i)%MaterialID == MaterialID) then
+                                Material => MaterialList(i)
+                                FoundMaterial = .true.
+                            endif
+                        enddo
+                        if (.not.FoundMaterial) then
+                            call DataFile%RaiseError("Element's Material was not found")
+                        endif
+
+                        do i = 1,ENnodes
+                            ElemConec(i) = AuxString(11+i)
+                        enddo
+
+                        call ElementConstructor( ElementList(ElemID)%el , ElemConec(1:ENnodes) ,ElemType , GlobalNodesList, Material, AnalysisSettings)
+
+                        read(FileNumber,'(a255)') line
+                        call Split(Line,AuxString,' ')
+
+                    enddo
+
+
                 endif
 
-                !---------------------------------------------------------------------------------------------------------------
-                selectcase (PreProcessorID)
-                !===============================================================================================================
-                    case (PreProcessors%Gid7)
+            elseif ( Compare(RemoveSpaces(Line),'!!loadstepdata') ) then
 
-                        IF (GeoType==1) then
-                            IsQuadratic=.true.
-                        elseif(GeoType==0) then
-                            IsQuadratic=.false.
-                        else
-                            stop "Preprocessor GiD 7 :: ReadMesh :: IsQuadratic must be 1 or 0"
-                        endif
-                        call ElementIdentifier_IsQuadratic(IsQuadratic, Ndime ,ENnodes,AnalysisSettings%ElementTech,ElemType)
-                !===============================================================================================================
-                    case (PreProcessors%Gid12)
-                        call ElementIdentifier( GeoType , ENnodes , AnalysisSettings%ElementTech, ElemType )
-                !===============================================================================================================
-                    case default
-                        stop "ReadMesh :: Preprocessor not available"
-                end select
-                !---------------------------------------------------------------------------------------------------------------
+                exit LOOP_MESH
 
-                call ElementConstructor( ElementList(id)%el , ElemConec(1:ENnodes) ,ElemType , GlobalNodesList, Material, AnalysisSettings)
+            endif
 
-        enddo
+        end do LOOP_MESH
 
-        call DataFile%GetNextString(string)
-        IF (.not.DataFile%CompareStrings(string,'end connectivity')) call DataFile%RaiseError("Expected: End connectivity")
-
-
-        call DataFile%GetNextString(string)
-        IF (.not.DataFile%CompareStrings(string,'end mesh') ) then
-            call DataFile%RaiseError("End of block was expected. BlockName=MESH")
-        endif
 
     end subroutine
     !=======================================================================================================================
+
+    !=======================================================================================================================
+    subroutine ReadBoundaryConditionsHyperMesh(TimeFileName,FileNumber,BC,AnalysisSettings)
+
+        implicit none
+
+        character(len=100)                  :: TimeFileName
+        integer                             :: FileNumber
+        type (ClassBoundaryConditions)      :: BC
+        type (ClassAnalysis)                :: AnalysisSettings
+
+
+        integer ::  i, j, n, NumberOfCol, cont, istart, iend, NDOFnode, iaux
+        character(len=255) :: Line
+        character(len=255), allocatable , dimension(:) :: AuxString, TableName, BCList, Disp_Table, Force_Table
+        integer, allocatable , dimension(:) :: BCListPointer, Disp_Node, Disp_Dof, Force_Node, Force_Dof
+        integer, allocatable , dimension(:,:) :: ArrayAux
+
+
+        NDOFnode = AnalysisSettings % NDOFnode
+
+        cont = 1
+        LOOP_BC: do while (.not. EOF(FileNumber))
+
+            read(FileNumber,'(a255)') Line
+
+            call Split(Line,AuxString,',')
+
+            NumberOfCol = size(AuxString)
+
+            if ( Compare(RemoveSpaces(Line),'!!hmnameloadcol') ) then
+
+                read(FileNumber,'(a255)') Line
+
+                call Split(Line,AuxString,'"')
+
+                call AppendString( TableName, AuxString(2) )
+
+                call AppendInteger( BCListPointer, cont )
+
+
+            elseif (NumberOfCol == 4) then
+
+                call AppendString(BCList,Line)
+
+                cont = cont + 1
+
+            endif
+
+        enddo LOOP_BC
+
+
+        ! Reading only the tables used in the analysis.
+        cont = 0
+        do i = 1,size(TableName)
+            if (.not. Compare(RemoveSpaces(TableName(i)),"fixedsupports")) then
+                cont = cont + 1
+            endif
+        enddo
+
+        allocate( BC%SetOfLoadHistory(cont) )
+
+        cont = 0
+        do i = 1,size(TableName)
+            if (.not. Compare(RemoveSpaces(TableName(i)),"fixedsupports")) then
+                cont = cont + 1
+                call BC%SetOfLoadHistory(cont)%ReadTimeDiscretization(TimeFileName)
+                call BC%SetOfLoadHistory(cont)%ReadValueDiscretization(TableName(i))
+            endif
+        enddo
+
+
+
+        do i = 1,size(TableName)
+
+            istart = BCListPointer(i)
+            if ( i == ubound(TableName,1) ) then
+                iend = ubound(BCList,1)
+            else
+                iend = BCListPointer(i+1) - 1
+            endif
+
+            if ( Compare(RemoveSpaces(TableName(i)),"fixedsupports") ) then
+
+                allocate(ArrayAux(iend-istart+1,2))
+                do j = istart, iend
+
+                    call Split(BCList(j),AuxString,',')
+                    ArrayAux(j-istart+1,1) = AuxString(2)
+                    if (Compare(AuxString(3),'ux')) then
+                        ArrayAux(j-istart+1,2) = 1
+                    elseif (Compare(AuxString(3),'uy')) then
+                        ArrayAux(j-istart+1,2) = 2
+                    elseif (Compare(AuxString(3),'uz')) then
+                        ArrayAux(j-istart+1,2) = 3
+                    else
+                        stop 'Error: DOF not identified in ansys file'
+                    endif
+
+                enddo
+
+                allocate( BC%FixedSupport%dof (size(ArrayAux,1)) )
+
+                BC%FixedSupport%dof = NDOFnode*(ArrayAux(:,1)-1) + ArrayAux(:,2)
+
+            else
+
+
+                do j = istart, iend
+
+                    call Split(BCList(j),AuxString,',')
+                    if (Compare(AuxString(1),'d')) then
+
+                        call AppendString(Disp_Table,TableName(i))
+                        iaux = AuxString(2)
+                        call AppendInteger(Disp_Node,iaux)
+
+                        if (Compare(AuxString(3),'ux')) then
+                            call AppendInteger(Disp_Dof,1)
+                        elseif (Compare(AuxString(3),'uy')) then
+                            call AppendInteger(Disp_Dof,2)
+                        elseif (Compare(AuxString(3),'uz')) then
+                            call AppendInteger(Disp_Dof,3)
+                        else
+                            stop 'Error: DOF not identified in ansys file'
+                        endif
+
+                    elseif( Compare(AuxString(1),'f') ) then
+
+                        call AppendString(Force_Table,TableName(i))
+                        iaux = AuxString(2)
+                        call AppendInteger(Force_Node,iaux)
+
+                        if (Compare(AuxString(3),'fx')) then
+                            call AppendInteger(Force_Dof,1)
+                        elseif (Compare(AuxString(3),'fy')) then
+                            call AppendInteger(Force_Dof,2)
+                        elseif (Compare(AuxString(3),'fz')) then
+                            call AppendInteger(Force_Dof,3)
+                        else
+                            stop 'Error: DOF not identified in ansys file'
+                        endif
+
+                    endif
+
+                enddo
+
+            endif
+
+
+        enddo
+
+
+
+        allocate(BC%NodalDispBC(size(Disp_Dof,1)))
+        allocate(BC%NodalForceBC(size(Force_Dof,1)))
+
+        BC%NodalDispBC%dof  = NDOFnode*(Disp_Node(:)-1)  + Disp_Dof(:)
+        BC%NodalForceBC%dof = NDOFnode*(Force_Node(:)-1) + Force_Dof(:)
+
+        do j = 1,size(Disp_Node)
+            call RetrieveLoadHistory( BC%SetOfLoadHistory , Disp_Table(j) , BC%NodalDispBC(j)%LoadHistory )
+        enddo
+
+        do j = 1,size(Force_Node)
+            call RetrieveLoadHistory( BC%SetOfLoadHistory , Force_Table(j) , BC%NodalForceBC(j)%LoadHistory )
+        enddo
+
+
+    end subroutine
+    !=======================================================================================================================
+
+
+
+    !=======================================================================================================================
+    subroutine AppendString(List,NewString)
+
+        character(len=*), allocatable, dimension(:) :: List
+        character(len=*)                            :: NewString
+
+        character(len=len(List)), dimension(size(List)) :: AuxList
+
+        AuxList = List
+
+        if (allocated(List)) deallocate(List)
+
+        allocate( List(size(AuxList)+1) )
+
+        List(1:size(AuxList)) = AuxList
+        List(size(AuxList)+1) = NewString
+
+    end subroutine
+    !=======================================================================================================================
+
+    !=======================================================================================================================
+    subroutine AppendInteger(List,NewInteger)
+
+        integer, allocatable, dimension(:) :: List
+        integer                            :: NewInteger
+
+        integer, dimension(size(List)) :: AuxList
+
+        AuxList = List
+
+        if (allocated(List)) deallocate(List)
+
+        allocate( List(size(AuxList)+1) )
+
+        List(1:size(AuxList)) = AuxList
+        List(size(AuxList)+1) = NewInteger
+
+    end subroutine
+    !=======================================================================================================================
+
 
 
 ! TODO (Thiago#2#): Criar rotinas separadas para a leitura da malha de cada pre processador.
