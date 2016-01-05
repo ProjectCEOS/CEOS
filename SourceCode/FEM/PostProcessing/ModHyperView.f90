@@ -69,7 +69,7 @@ module ModHyperView
             real(8), allocatable, dimension(:,:)    :: NodalValues
             real(8), allocatable, dimension(:,:,:)  :: GaussPointlValues
             real(8) :: Tensor(3,3), Tensor_voigt(6)
-            integer :: i, j, v, e, gp, nelem, ngp
+            integer :: i, j, v, e, gp, nelem, ngp, nnodes, n
             class(ClassConstitutiveModel) , pointer :: GaussPoint
 
             type (ClassParser)                      :: Comp
@@ -79,6 +79,8 @@ module ModHyperView
             character(len=255)                :: UD_Name
             logical :: FoundUserVariable
             character(len=255)                :: LoadCaseChar
+            integer, allocatable, dimension(:,:)   :: Conec
+
 
         call Comp%Setup()
 
@@ -107,23 +109,31 @@ module ModHyperView
 
                 case (VariableNames%CauchyStress)
                 !NOTE (Thiago#1#11/17/15): GiD - não exporta resultados com malha mista e tensores não simétricos
+! TODO (Thiago#2#): O HyperView lê os resultados nos pontos de gauss segundo a conectividade dos nós. Implementado somente para elementos com a mesma quantidade de nós e pontos de gauss.
+
 
                     nelem = size( FEA%ElementList )
                     ngp = size(FEA%ElementList(1)%el%GaussPoints)
+                    nnodes = size(FEA%ElementList(1)%El%ElementNodes)
                     allocate( GaussPointlValues( nelem , ngp , 6 ) )
+                    allocate( Conec(nelem , nnodes ) )
 
                     do e=1,nelem
                         do gp=1,ngp
                             GaussPoint => FEA%ElementList(e)%El%GaussPoints(gp)
                             GaussPointlValues(e,gp,1:FEA%AnalysisSettings%StressSize) = GaussPoint%Stress
                         enddo
+                        do n = 1,nnodes
+                            Conec(e,n) = FEA%ElementList(e)%El%ElementNodes(n)%Node%ID
+                        enddo
                     enddo
 
                     LoadCaseChar = FEA%LoadCase
                     LoadCaseChar = RemoveSpaces(LoadCaseChar)
-                    call this%ExportOnGaussPointsHV( this%VariableNames(v), LoadCaseChar, FEA%Time , GaussPointlValues(:,:,1:FEA%AnalysisSettings%StressSize)  , 3 )
+                    call this%ExportOnGaussPointsHV( this%VariableNames(v), LoadCaseChar, FEA%Time , Conec, &
+                                                     GaussPointlValues(:,:,1:FEA%AnalysisSettings%StressSize)  , 3 )
 
-                    deallocate(GaussPointlValues)
+                    deallocate(GaussPointlValues, Conec)
 
 
 
@@ -131,7 +141,9 @@ module ModHyperView
 
                     nelem = size( FEA%ElementList )
                     ngp = size(FEA%ElementList(1)%el%GaussPoints)
+                    nnodes = size(FEA%ElementList(1)%El%ElementNodes)
                     allocate( GaussPointlValues( nelem , ngp , 6 ) )
+                    allocate( Conec(nelem , nnodes ) )
 
                     do e=1,nelem
                         do gp=1,ngp
@@ -142,14 +154,18 @@ module ModHyperView
                             Tensor_voigt = Convert_to_Voigt_3D_Sym( Tensor )
                             GaussPointlValues(e,gp,1:FEA%AnalysisSettings%StrainSize) =  Tensor_voigt
                         enddo
+                        do n = 1,nnodes
+                            Conec(e,n) = FEA%ElementList(e)%El%ElementNodes(n)%Node%ID
+                        enddo
                     enddo
 
-                    
+
                     LoadCaseChar = FEA%LoadCase
                     LoadCaseChar = RemoveSpaces(LoadCaseChar)
-                    call this%ExportOnGaussPointsHV( this%VariableNames(v), LoadCaseChar, FEA%Time , GaussPointlValues(:,:,1:FEA%AnalysisSettings%StressSize)  , 3 )
+                    call this%ExportOnGaussPointsHV( this%VariableNames(v), LoadCaseChar, FEA%Time, Conec, &
+                                                     GaussPointlValues(:,:,1:FEA%AnalysisSettings%StressSize)  , 3 )
 
-                    deallocate(GaussPointlValues)
+                    deallocate(GaussPointlValues, Conec)
 
 
 
@@ -159,7 +175,9 @@ module ModHyperView
 
                     nelem = size( FEA%ElementList )
                     ngp = size(FEA%ElementList(1)%el%GaussPoints)
+                    nnodes = size(FEA%ElementList(1)%El%ElementNodes)
                     allocate( GaussPointlValues( nelem , ngp , 6 ) )
+                    allocate( Conec(nelem , nnodes ) )
 
                     GaussPoint => FEA%ElementList(1)%El%GaussPoints(1)
 
@@ -185,13 +203,17 @@ module ModHyperView
                                     call GaussPoint%GetResult( UD_ID, UD_Name, UD_Length, UD_Variable, UD_VariableType )
                                     GaussPointlValues(e,gp,1:UD_Length) = UD_Variable(1:UD_Length)
                                 enddo
+                                do n = 1,nnodes
+                                    Conec(e,n) = FEA%ElementList(e)%El%ElementNodes(n)%Node%ID
+                                enddo
                             enddo
 
                             LoadCaseChar = FEA%LoadCase
                             LoadCaseChar = RemoveSpaces(LoadCaseChar)
-                            call this%ExportOnGaussPointsHV( this%VariableNames(v), LoadCaseChar, FEA%Time, GaussPointlValues(:,:,1:UD_Length), UD_VariableType )
+                            call this%ExportOnGaussPointsHV( this%VariableNames(v), LoadCaseChar, FEA%Time, Conec, &
+                                                             GaussPointlValues(:,:,1:UD_Length), UD_VariableType )
 
-                            deallocate(GaussPointlValues)
+                            deallocate(GaussPointlValues, Conec)
 
                         endif
 
@@ -325,7 +347,7 @@ module ModHyperView
 
         ! Export Results on GaussPoints - HyperView
         !----------------------------------------------------------------------------------------
-        subroutine ExportOnGaussPointsHV( this ,  Name , LoadCaseChar, Time , Variable , VariableType )
+        subroutine ExportOnGaussPointsHV( this ,  Name , LoadCaseChar, Time, Conec, Variable, VariableType )
 
             implicit none
             class(ClassHyperView) :: this
@@ -333,6 +355,7 @@ module ModHyperView
             Real(8)::Time
             character(*)::Name, LoadCaseChar
             real(8),dimension(:,:,:)::Variable
+            integer, dimension(:,:) :: Conec
 
             character(100) :: DataType , ComponentName,Form , Complement
             integer::e,gp,i,j,nComponents
@@ -382,15 +405,15 @@ module ModHyperView
             write(FileNumber,'(a)') adjustl( '$TITLE = Transient analysis' )
             write(FileNumber,'(a)') adjustl( '$SUBCASE = '//trim(LoadCaseChar)//'  Load Case '//trim(LoadCaseChar) )
             write(FileNumber,'(a)') adjustl( '$BINDING = ELEMENT' )
-            write(FileNumber,'(a)') adjustl( '$COLUMN_INFO = ENTITY_ID' )
+            write(FileNumber,'(a)') adjustl( '$COLUMN_INFO = ENTITY_ID GRID_ID' )
             write(FileNumber,'(a)') adjustl( '$RESULT_TYPE = '//trim(Name)//trim(DataType) )
             write(FileNumber,'(a)') adjustl( '$SYS_ID = -1' )
             write(FileNumber,'(a,1X,E16.9,a)') adjustl('$TIME  = '),Time,' sec'
 
-
+! TODO (Thiago#1#): HyperView - Resultados nos pontos de gauss coerentes com ordenação dos elementos em ordem crescente.
             do e=1,size(Variable,1)
                 do gp=1,size(Variable,2)
-                    write(FileNumber,'(I0,'//trim(Form)//',A)') e ,  (Variable(e,gp,j) , j=1,nComponents) , trim(Complement)
+                    write(FileNumber,'(I0,(1X,I0),'//trim(Form)//',A)') e , Conec(e,gp),  (Variable(e,gp,j) , j=1,nComponents) , trim(Complement)
                 enddo
             enddo
 
