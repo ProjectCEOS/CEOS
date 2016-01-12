@@ -1,26 +1,30 @@
      ---------------------------------------------------------------------- 
-     Comparing File: ceos_disp_x.probe with File: marc_disp_x.dat
+     Comparing File: ceos_disp_x.probe with File: ref_disp_x.dat
   
      SUCCESS!
      ---------------------------------------------------------------------- 
      ---------------------------------------------------------------------- 
-     Comparing File: ceos_disp_y.probe with File: marc_disp_y.dat
+     Comparing File: ceos_disp_y.probe with File: ref_disp_y.dat
   
      SUCCESS!
      ---------------------------------------------------------------------- 
      ---------------------------------------------------------------------- 
-     Comparing File: ceos_disp_z.probe with File: marc_disp_z.dat
+     Comparing File: ceos_disp_z.probe with File: ref_disp_z.dat
   
      SUCCESS!
      ---------------------------------------------------------------------- 
      ---------------------------------------------------------------------- 
-     Comparing File: ceos_disp_z.probe with File: marc_disp_z.dat
+     Comparing File: ceos_stress_11.probe with File: ref_stress_11.dat
   
      SUCCESS!
      ---------------------------------------------------------------------- 
      ---------------------------------------------------------------------- 
-     Comparing File: NumberOfIterationsToConverge.dat with File: 
- NumOfIterRef.dat
+     Comparing File: ceos_stress_33.probe with File: ref_stress_33.dat
+  
+     SUCCESS!
+     ---------------------------------------------------------------------- 
+     ---------------------------------------------------------------------- 
+     Comparing File: ceos_stress_12.probe with File: ref_stress_12.dat
   
      SUCCESS!
      ---------------------------------------------------------------------- 

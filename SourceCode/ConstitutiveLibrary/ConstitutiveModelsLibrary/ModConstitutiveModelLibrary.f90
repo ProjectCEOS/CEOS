@@ -18,7 +18,7 @@ module ConstitutiveModelLibrary
 	! Modules and implicit declarations
 	! ---------------------------------------------------------------------------------------------
     use ConstitutiveModel
-    use LinearElastic
+    use ModGeneralizedHookesLaw
     use J2Plasticity
     use NeoHookean
     use NeoHookeanQ1P0
@@ -27,12 +27,12 @@ module ConstitutiveModelLibrary
 
     ! Constitutive Models ID registered:
     type ClassConstitutiveModels
-        integer   :: LinearElasticModel     = 1
-        integer   :: J2PlasticityModel      = 2
-        integer   :: NeoHookeanModel        = 3
-        integer   :: NeoHookeanQ1P0Model    = 4
-        integer   :: StVenantKirchhoffModel = 5
-        integer   :: HyperelasticQ1P0Model  = 6
+        integer   :: GeneralizedHookesLawModel  = 1
+        integer   :: J2PlasticityModel          = 2
+        integer   :: NeoHookeanModel            = 3
+        integer   :: NeoHookeanQ1P0Model        = 4
+        integer   :: StVenantKirchhoffModel     = 5
+        integer   :: HyperelasticQ1P0Model      = 6
     end type
 
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -69,7 +69,7 @@ module ConstitutiveModelLibrary
             ! -----------------------------------------------------------------------------------
             !type(ClassLinearElastic_PlaneStrain)       , pointer , dimension(:) :: LE_PlaneStrain
             !type(ClassLinearElastic_Axisymmetric)      , pointer , dimension(:) :: LE_Axisymmetric
-            type(ClassLinearElastic_ThreeDimensional)  , pointer , dimension(:) :: LE_ThreeDimensional
+            type(ClassGeneralizedHookesLaw_3D)          , pointer , dimension(:) :: GHL_3D
 
             type(ClassJ2Plasticity_PlaneStrain)        , pointer , dimension(:) :: VM_PlaneStrain
             type(ClassJ2Plasticity_3D)                 , pointer , dimension(:) :: VM_3D
@@ -97,9 +97,9 @@ module ConstitutiveModelLibrary
             select case (MaterialModel)
 
                 ! -------------------------------------------------------------------------
-                ! Linear Elastic Model
+                ! Generalized Hooke's Law
                 ! -------------------------------------------------------------------------------
-                case (ConstitutiveModels % LinearElasticModel)
+                case (ConstitutiveModels % GeneralizedHookesLawModel)
 
 
                     !if ( AnalysisSettings%Hypothesis == HypothesisOfAnalysis%PlaneStrain ) then
@@ -114,11 +114,11 @@ module ConstitutiveModelLibrary
 
                      if ( AnalysisSettings%Hypothesis == HypothesisOfAnalysis%ThreeDimensional ) then
 
-                            allocate( LE_ThreeDimensional(nGP) )
-                            GaussPoints => LE_ThreeDimensional
+                            allocate( GHL_3D(nGP) )
+                            GaussPoints => GHL_3D
 
                     else
-                            call Error("Error: Linear Elastic Model - analysis type not available.")
+                            call Error("Error: Generalized Hooke's Model - analysis type not available.")
 
                     endif
 
@@ -283,9 +283,9 @@ module ConstitutiveModelLibrary
 
 
 
-            if ( Comp%CompareStrings('Linear_Elastic', model).and. (AnalysisSettings%ElementTech == ElementTechnologies%Full_Integration) ) then
+            if ( Comp%CompareStrings('Generalized_Hookes_Law', model).and. (AnalysisSettings%ElementTech == ElementTechnologies%Full_Integration) ) then
 
-                modelID = ConstitutiveModels % LinearElasticModel
+                modelID = ConstitutiveModels % GeneralizedHookesLawModel
 
             elseif ( Comp%CompareStrings('j2_plasticity', model) .and. (AnalysisSettings%ElementTech == ElementTechnologies%Full_Integration) ) then
 

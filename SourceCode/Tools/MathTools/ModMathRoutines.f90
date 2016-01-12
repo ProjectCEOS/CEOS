@@ -4,8 +4,6 @@ module MathRoutines
 
     real(8),parameter :: Pi = 4.0d0*atan(1.0d0)
 
-    ! TODO (Jan#1#10/29/15): Criar um módulo só para notação de VOIGT e anexar com o mathroutines
-
     contains
 !######################################################################################################################################################################################
         subroutine Error(MSG)

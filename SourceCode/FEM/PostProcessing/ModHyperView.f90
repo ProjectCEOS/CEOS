@@ -108,7 +108,6 @@ module ModHyperView
 
 
                 case (VariableNames%CauchyStress)
-                !NOTE (Thiago#1#11/17/15): GiD - não exporta resultados com malha mista e tensores não simétricos
 ! TODO (Thiago#2#): O HyperView lê os resultados nos pontos de gauss segundo a conectividade dos nós. Implementado somente para elementos com a mesma quantidade de nós e pontos de gauss.
 
 
@@ -407,8 +406,9 @@ module ModHyperView
             write(FileNumber,'(a)') adjustl( '$BINDING = ELEMENT' )
             write(FileNumber,'(a)') adjustl( '$COLUMN_INFO = ENTITY_ID GRID_ID' )
             write(FileNumber,'(a)') adjustl( '$RESULT_TYPE = '//trim(Name)//trim(DataType) )
-            write(FileNumber,'(a)') adjustl( '$SYS_ID = -1' )
+            write(FileNumber,'(a)') adjustl( '$SYS_ID = 1' )
             write(FileNumber,'(a,1X,E16.9,a)') adjustl('$TIME  = '),Time,' sec'
+            ! NOTE (Thiago#1#): SYS_ID = 1 exporta os resultados no sistema global da análise. 
 
 ! TODO (Thiago#1#): HyperView - Resultados nos pontos de gauss coerentes com ordenação dos elementos em ordem crescente.
             do e=1,size(Variable,1)

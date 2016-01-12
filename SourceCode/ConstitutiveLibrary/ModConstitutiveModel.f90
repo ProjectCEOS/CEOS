@@ -36,7 +36,7 @@ module ConstitutiveModel
         real(8)                             :: Time = 0.0d0
 
         type (ClassAdditionalVariables) :: AdditionalVariables
-        
+
         contains
 
             ! Class Methods
@@ -114,7 +114,7 @@ module ConstitutiveModel
                 stop "Error: ReadMaterialParameters"
             end subroutine
             !==========================================================================================
-            ! TODO (Thiago#1#03/11/15): Passar o Analysis Settings - obter informações dependendo do tipo de análise!
+            ! TODO (Thiago#1#03/11/15): Passar o Analysis Settings - obter informações dependendo do tipo de análise! Alterar quando necessário!
 
             subroutine GetResultBase(this, ID , Name , Length , Variable , VariableType )
                 class(ClassConstitutiveModel) :: this
@@ -213,7 +213,7 @@ module ConstitutiveModel
                     S(2,1) = this%Stress(4)
 
                     S(3,3) = this%Stress(3)
-                    
+
                     S(4,4) = this%Stress(1)
                     S(5,5) = this%Stress(2)
                     S(4,5) = this%Stress(4)

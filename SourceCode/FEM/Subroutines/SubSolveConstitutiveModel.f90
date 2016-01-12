@@ -48,6 +48,8 @@ subroutine SolveConstitutiveModel( ElementList , AnalysisSettings, Time, U, Stat
     ! SOLVING THE GLOBAL CONSTITUTIVE MODEL
     !************************************************************************************
 
+! TODO (Thiago#2#): Criar rotina para calcular variáveis no ponto de gauss que precisam ser calculadas somente no começo da análise (volume inicial, vetor tangente nos pontos de gauss, etc)
+
 
     ! Loop over the elements
     do e = 1 , size(ElementList)
