@@ -65,13 +65,21 @@ contains
 
         LOOP: do while (.true.)
 
+            !---------------------------------------------------------------------------------------------------------------
+            ! Evaluating Residual - Nonlinear System of Equations
+            !---------------------------------------------------------------------------------------------------------------
             call SOE%EvaluateSystem(X,R)
 
             if (SOE%Status%Error) then
                 call this%Status%SetError(NewtonRaphsonFull_Errors%UserEvaluateSystemReportedError,'Error Evaluating system')
                 return
             endif
+            !---------------------------------------------------------------------------------------------------------------
 
+
+            !---------------------------------------------------------------------------------------------------------------
+            ! Evaluating the Residual Gradient
+            !---------------------------------------------------------------------------------------------------------------
             select case (this%MatrixType)
                 case (NewtonRaphsonFull_MatrixTypes%Full)
                     call SOE%EvaluateGradient(X,R,GFull)
@@ -84,9 +92,13 @@ contains
                 call this%Status%SetError(NewtonRaphsonFull_Errors%UserEvaluateGradientReportedError,'Error Evaluating Gradient')
                 return
             endif
+            !---------------------------------------------------------------------------------------------------------------
 
 
-           select case (this%normtype)
+            !---------------------------------------------------------------------------------------------------------------
+            ! Computing the Residual Norm
+            !---------------------------------------------------------------------------------------------------------------
+            select case (this%normtype)
                 case (NewtonRaphsonFull_NormTypes%L2Norm)
                     normR = norm(R)
                 case (NewtonRaphsonFull_NormTypes%MaximumAbsoluteValue)
@@ -94,7 +106,6 @@ contains
                 case default
                     stop "NewtonRaphsonFull_Solve :: NormType not set"
             end select
-
 
             if (this%ShowInfo) write(*,'(12x,a,i3,a,e16.9)') 'IT: ',IT ,'  NORM: ',normR
 
@@ -106,11 +117,19 @@ contains
                 call this%Status%SetError(NewtonRaphsonFull_Errors%MaxNumberOfIteration,'Maximum Number of Iterations reached!')
                 return
             endif
+            !---------------------------------------------------------------------------------------------------------------
 
+            !---------------------------------------------------------------------------------------------------------------
+            ! Update Iterations
+            !---------------------------------------------------------------------------------------------------------------
             it=it+1
 
             this%NumberOfIterations = it
+            !---------------------------------------------------------------------------------------------------------------
 
+            !---------------------------------------------------------------------------------------------------------------
+            ! Solving the Linear System of Equations
+            !---------------------------------------------------------------------------------------------------------------
             select case (this%MatrixType)
                 case (NewtonRaphsonFull_MatrixTypes%Full)
                     call this%LinearSolver%Solve(GFull, -R, DX)
@@ -123,14 +142,21 @@ contains
             !    call this%Status%SetError(NewtonRaphsonFull_Errors%LinearSystemError,'Error Solving Linear System')
             !    return
             !endif
+            !---------------------------------------------------------------------------------------------------------------
 
+            !---------------------------------------------------------------------------------------------------------------
+            ! Update Unknown Variable and Additional Variables
+            !---------------------------------------------------------------------------------------------------------------
             X = X + DX
 
             call SOE%PostUpdate(X)
+            !---------------------------------------------------------------------------------------------------------------
 
         end do LOOP
 
     end subroutine
+
+
 
     subroutine NewtonRaphsonFull_ReadSolverParameters(this,DataFile)
             use Parser

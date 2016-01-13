@@ -15,7 +15,7 @@ ANALYSIS SETTINGS
 
 	Problem Type = Mechanical
 	Analysis Type = Quasi Static
-	Nonlinear Analysis = True !False !
+	Nonlinear Analysis = False !True !
 	Hypothesis of Analysis = 3D !Axisymmetric !
 	Element Technology =  Full Integration !Mean Dilatation ! 
 	Maximum Cut Backs = 10
@@ -48,15 +48,15 @@ MATERIAL
 
 	Number of Materials = 1
 
-	Material ID = 1
-	St_Venant_Kirchhoff
-	Young Modulus = 100.0E9 
-	Poisson = 0.3
-	
-	!Material ID = 21
-	!Linear_Elastic
+	!Material ID = 1
+	!St_Venant_Kirchhoff
 	!Young Modulus = 100.0E9 
-	!Poisson = 0.3	
+	!Poisson = 0.3
+	
+	Material ID = 1
+	Generalized_Hookes_Law
+	Young Modulus = 100.0E9 
+	Poisson = 0.3	
 	
 	!Material ID = 22
 	!J2_Plasticity	
@@ -82,8 +82,8 @@ END MATERIAL
 
 MESH AND BOUNDARY CONDITIONS
 
-	Mesh File = Mesh.dat
-	Preprocessor = Gid 12
+	Mesh File = Mesh.cdb
+	Preprocessor = HyperMesh !Gid 12
 	Time Discretization File = Time_Discretization.dat
 		
 END MESH AND BOUNDARY CONDITIONS

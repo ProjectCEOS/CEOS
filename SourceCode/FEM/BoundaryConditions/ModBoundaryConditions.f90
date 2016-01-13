@@ -29,18 +29,16 @@ module BoundaryConditions
 
 
     type ClassFixedSupport
-        integer,dimension(:),pointer::dof=>null()
+        integer, pointer, dimension(:) :: dof=>null()
         contains
             procedure :: FixedSupportConstructor
     end type
 
     type ClassBoundaryConditions
 
-        type (ClassLoadHistory)   ,dimension(:), pointer    :: SetOfLoadHistory => null()
-        type (ClassLoadHistory)   ,dimension(:), pointer    :: HistoryOfMacroDisp => null()
-        type (ClassLoadHistory)   ,dimension(:,:), pointer  :: HistoryOfMacroDefGrad => null()
-        type (ClassFixedSupport)                            :: FixedSupport
-        type (ClassNodalBC) , allocatable , dimension(:)    :: NodalForceBC , NodalDispBC
+        type (ClassLoadHistory),    pointer,     dimension(:) :: SetOfLoadHistory => null()
+        type (ClassFixedSupport)                              :: FixedSupport
+        type (ClassNodalBC),        allocatable, dimension(:) :: NodalForceBC , NodalDispBC
 
         contains
 
@@ -50,6 +48,7 @@ module BoundaryConditions
         procedure :: GetPrescribedDisplacements
         procedure :: GetTimeInformation
         procedure :: ApplyBoundaryConditions
+        procedure :: GetBoundaryConditions
 
     end type
 
@@ -105,100 +104,6 @@ module BoundaryConditions
     end function
 !=================================================================================================
 
-!=================================================================================================
-    subroutine GetExternalForces( this, LC, ST, Fext, DeltaFext )
-
-        !************************************************************************************
-        ! DECLARATIONS OF VARIABLES
-        !************************************************************************************
-        ! Modules and implicit declarations
-        ! -----------------------------------------------------------------------------------
-
-
-        implicit none
-
-        ! Input variables
-        ! -----------------------------------------------------------------------------------
-        class(ClassBoundaryConditions) :: this
-        integer                       , intent(in) :: LC, ST
-
-        ! Output variables
-        ! -----------------------------------------------------------------------------------
-        real(8) , dimension(:) , intent(out)  :: Fext , DeltaFext
-
-        ! Internal variables
-        ! -----------------------------------------------------------------------------------
-        real(8) , allocatable, dimension(:) :: InitialValue , FinalValue
-
-        !************************************************************************************
-
-        !************************************************************************************
-        ! ASSEMBLING THE EXTERNAL FORCE AND ITS INCREMENT
-        !************************************************************************************
-
-        Fext=0.0d0
-        allocate( InitialValue(size(Fext)) , FinalValue(size(Fext)) )
-        InitialValue=0.0d0 ; FinalValue=0.0d0
-
-        call AssembleNodalExternalForce( this%NodalForceBC , LC, ST , InitialValue , FinalValue )
-        !call AssembleLineExternalForce( BC % LineForceBC , LC , InitialValue , FinalValue )
-
-        Fext = InitialValue
-
-        DeltaFext = FinalValue - InitialValue
-
-        !************************************************************************************
-
-    end subroutine
-!=================================================================================================
-
-!=================================================================================================
-    subroutine GetPrescribedDisplacements ( this , LC , ST, NodalDispDOF, U, DeltaUPresc )
-
-        !************************************************************************************
-        ! DECLARATIONS OF VARIABLES
-        !************************************************************************************
-        ! Modules and implicit declarations
-        ! -----------------------------------------------------------------------------------
-
-
-        implicit none
-
-        ! Input variables
-        ! -----------------------------------------------------------------------------------
-        class(ClassBoundaryConditions)  :: this
-        integer                        :: LC, ST
-
-        ! Output variables
-        ! -----------------------------------------------------------------------------------
-        real(8) , dimension(:)              :: U, DeltaUPresc
-        integer , pointer , dimension(:)    :: NodalDispDOF
-
-        ! Internal variables
-        ! -----------------------------------------------------------------------------------
-        real(8) , pointer, dimension(:) :: InitialValue , FinalValue
-        integer                         :: i
-
-        !************************************************************************************
-
-        !************************************************************************************
-        ! ASSEMBLING THE PRESCRIBED DISPLACEMENT AND ITS INCREMENT
-        !************************************************************************************
-
-        ! Prescribed displacement
-        call GetActiveDOFNodal( this%NodalDispBC  , LC, ST , NodalDispDOF  , InitialValue,  &
-                                FinalValue )
-
-        DeltaUPresc=0.0d0
-        do i = 1, size(NodalDispDOF)
-            U( NodalDispDOF(i) ) = InitialValue(i)
-            DeltaUPresc( NodalDispDOF(i) ) =  FinalValue(i) - InitialValue(i)
-        enddo
-
-        !************************************************************************************
-
-    end subroutine
-!=================================================================================================
 
 !=================================================================================================
     subroutine GetTimeInformation(this,LoadCase,ST,InitialTime,DeltaTime)
@@ -318,6 +223,141 @@ module BoundaryConditions
 
     end subroutine
 !=================================================================================================
+
+!=================================================================================================
+    subroutine GetBoundaryConditions( this, AnalysisSettings, LC, ST, Fext, DeltaFext, NodalDispDOF, U, DeltaUPresc )
+
+        !************************************************************************************
+        ! DECLARATIONS OF VARIABLES
+        !************************************************************************************
+        ! Modules and implicit declarations
+        ! -----------------------------------------------------------------------------------
+        use Analysis
+
+        implicit none
+
+        ! Input variables
+        ! -----------------------------------------------------------------------------------
+        class(ClassBoundaryConditions) :: this
+        class(ClassAnalysis)           :: AnalysisSettings
+        integer                        :: LC, ST
+
+        ! Output variables
+        ! -----------------------------------------------------------------------------------
+        real(8) , dimension(:)               :: Fext , DeltaFext
+        real(8) , dimension(:)               :: U, DeltaUPresc
+        integer , pointer , dimension(:)     :: NodalDispDOF
+
+        !************************************************************************************
+
+        !************************************************************************************
+
+        call this%GetExternalForces(LC, ST, Fext, DeltaFext)
+
+        call this%GetPrescribedDisplacements(LC , ST, NodalDispDOF, U, DeltaUPresc)
+
+        !************************************************************************************
+
+    end subroutine
+!=================================================================================================
+
+!=================================================================================================
+    subroutine GetExternalForces( this, LC, ST, Fext, DeltaFext )
+
+        !************************************************************************************
+        ! DECLARATIONS OF VARIABLES
+        !************************************************************************************
+        ! Modules and implicit declarations
+        ! -----------------------------------------------------------------------------------
+
+
+        implicit none
+
+        ! Input variables
+        ! -----------------------------------------------------------------------------------
+        class(ClassBoundaryConditions) :: this
+        integer                       , intent(in) :: LC, ST
+
+        ! Output variables
+        ! -----------------------------------------------------------------------------------
+        real(8) , dimension(:) , intent(out)  :: Fext , DeltaFext
+
+        ! Internal variables
+        ! -----------------------------------------------------------------------------------
+        real(8) , allocatable, dimension(:) :: InitialValue , FinalValue
+
+        !************************************************************************************
+
+        !************************************************************************************
+        ! ASSEMBLING THE EXTERNAL FORCE AND ITS INCREMENT
+        !************************************************************************************
+
+        Fext=0.0d0
+        allocate( InitialValue(size(Fext)) , FinalValue(size(Fext)) )
+        InitialValue=0.0d0 ; FinalValue=0.0d0
+
+        call AssembleNodalExternalForce( this%NodalForceBC , LC, ST , InitialValue , FinalValue )
+        !call AssembleLineExternalForce( BC % LineForceBC , LC , InitialValue , FinalValue )
+
+        Fext = InitialValue
+
+        DeltaFext = FinalValue - InitialValue
+
+        !************************************************************************************
+
+    end subroutine
+!=================================================================================================
+
+!=================================================================================================
+    subroutine GetPrescribedDisplacements ( this , LC , ST, NodalDispDOF, U, DeltaUPresc )
+
+        !************************************************************************************
+        ! DECLARATIONS OF VARIABLES
+        !************************************************************************************
+        ! Modules and implicit declarations
+        ! -----------------------------------------------------------------------------------
+
+
+        implicit none
+
+        ! Input variables
+        ! -----------------------------------------------------------------------------------
+        class(ClassBoundaryConditions)  :: this
+        integer                        :: LC, ST
+
+        ! Output variables
+        ! -----------------------------------------------------------------------------------
+        real(8) , dimension(:)              :: U, DeltaUPresc
+        integer , pointer , dimension(:)    :: NodalDispDOF
+
+        ! Internal variables
+        ! -----------------------------------------------------------------------------------
+        real(8) , pointer, dimension(:) :: InitialValue , FinalValue
+        integer                         :: i
+
+        !************************************************************************************
+
+        !************************************************************************************
+        ! ASSEMBLING THE PRESCRIBED DISPLACEMENT AND ITS INCREMENT
+        !************************************************************************************
+
+        ! Prescribed displacement
+        call GetActiveDOFNodal( this%NodalDispBC  , LC, ST , NodalDispDOF  , InitialValue,  &
+                                FinalValue )
+
+        DeltaUPresc=0.0d0
+        do i = 1, size(NodalDispDOF)
+            U( NodalDispDOF(i) ) = InitialValue(i)
+            DeltaUPresc( NodalDispDOF(i) ) =  FinalValue(i) - InitialValue(i)
+        enddo
+
+        !************************************************************************************
+
+    end subroutine
+!=================================================================================================
+
+
+
 
 
 

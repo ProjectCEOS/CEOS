@@ -71,11 +71,7 @@
 		<Unit filename="../SourceCode/FEM/Subroutines/SubTangentStiffnessMatrix.f90" />
 		<Unit filename="../SourceCode/FEM/Subroutines/SubUpdateMeshCoordinates.f90" />
 		<Unit filename="../SourceCode/MAIN.f90" />
-		<Unit filename="../SourceCode/MultiScale/ModMicrostructure.f90" />
-		<Unit filename="../SourceCode/MultiScale/SubCentroidCorrection.f90" />
-		<Unit filename="../SourceCode/MultiScale/SubMacrocopicKinematics.f90" />
-		<Unit filename="../SourceCode/MultiScale/SubMicroscopicDisplacement.f90" />
-		<Unit filename="../SourceCode/MultiScale/SubStressHomogenisation.f90" />
+		<Unit filename="../SourceCode/MultiScale/ModMultiscaleBoundaryConditions.f90" />
 		<Unit filename="../SourceCode/Tools/MathTools/LinearSolver/ModLinearSolverLibrary.f90" />
 		<Unit filename="../SourceCode/Tools/MathTools/LinearSolver/ModPardisoSolver.f90" />
 		<Unit filename="../SourceCode/Tools/MathTools/LinearSolver/modFullLinearSolver.f90" />
