@@ -1,9 +1,10 @@
-module modReadInputFile
+module ModReadInputFile
 
     use Analysis
     use Nodes
     use ElementLibrary
     use BoundaryConditions
+    use ModMultiscaleBoundaryConditions
 
     use ConstitutiveModelLibrary
     use NonLinearSolverLibrary
@@ -19,7 +20,8 @@ module modReadInputFile
 
     type (ClassPreprocessors) , parameter :: PreProcessors = ClassPreprocessors()
 
-    integer,parameter :: iAnalysisSettings=1, iLinearSolver=2, iNonLinearSolver=3, iMaterial=4, iMeshAndBC=5, nblocks=5
+    integer,parameter :: iAnalysisSettings=1, iLinearSolver=2, iNonLinearSolver=3, iMaterial=4, &
+                         iMeshAndBC=5, iMultiscaleSettings=6, nblocks=6
     logical,dimension(nblocks)::BlockFound=.false.
     character(len=100),dimension(nblocks)::BlockName
 
@@ -27,18 +29,20 @@ contains
 
     !=======================================================================================================================
     subroutine ReadInputFile( FileName, AnalysisSettings , GlobalNodesList , ElementList , BC , NLSolver )
+
         implicit none
 
         type (ClassAnalysis)                                     :: AnalysisSettings
         type (ClassNodes) , pointer , dimension(:)               :: GlobalNodesList
         type (ClassElementsWrapper) , pointer , dimension(:)     :: ElementList
-        type (ClassBoundaryConditions)                           :: BC
-        class(ClassNonlinearSolver) , pointer                    :: NLSolver
+        class (ClassBoundaryConditions), pointer                 :: BC
+        class (ClassNonlinearSolver) , pointer                   :: NLSolver
         character(len=*) :: FileName
 
 
         integer :: ModelID , i
         character(len=255) :: string , endstring, DataFileName
+        character(len=100) :: TimeFileName
         Type(ClassParser) :: DataFile
         type(ClassConstitutiveModelWrapper) , pointer , dimension(:) :: MaterialList
         class(ClassLinearSolver) , pointer :: LinearSolver
@@ -49,7 +53,7 @@ contains
         BlockName(3)="NonLinear Solver"
         BlockName(4)="Material"
         BlockName(5)="Mesh and Boundary Conditions"
-
+        BlockName(6)="Multiscale Settings"
 
 
         BlockFound=.false.
@@ -79,7 +83,6 @@ contains
                 select case (GetBlockID(DataFile,string))
     !---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
     !---------------------------------------------------------------------------------------------------------------------------------------------------------
                 case (iAnalysisSettings)
                     call ReadAnalysisSettings(DataFile,AnalysisSettings)
@@ -100,10 +103,15 @@ contains
 
     !---------------------------------------------------------------------------------------------------------------------------------------------------------
                 case (iMeshAndBC)
-                    if (.not.all(BlockFound([iAnalysisSettings,iMaterial]))) call DataFile%RaiseError("Analysis Settings, Multiscale Settings and Material must be specified before mesh.")
-                    call ReadMeshAndBC(DataFile,GlobalNodesList,ElementList,AnalysisSettings,MaterialList,BC)
+                    if (.not.all(BlockFound([iAnalysisSettings,iMaterial]))) call DataFile%RaiseError("Analysis Settings and Material must be specified before mesh.")
+                    call ReadMeshAndBC(DataFile,GlobalNodesList,ElementList,AnalysisSettings,MaterialList,BC,TimeFileName)
 
     !---------------------------------------------------------------------------------------------------------------------------------------------------------
+                case (iMultiscaleSettings)
+                    if (.not.all(BlockFound([iMeshAndBC]))) call DataFile%RaiseError("Mesh must be specified before Multiscale Settings.")
+                    call ReadMultiscaleSettings(DataFile,TimeFileName,BC,GlobalNodesList,AnalysisSettings%MultiscaleAnalysis)
+    !---------------------------------------------------------------------------------------------------------------------------------------------------------
+
                 case default
                     call DataFile%RaiseError("Erro no select.")
                 end select
@@ -164,12 +172,13 @@ contains
         type (ClassAnalysis) :: AnalysisSettings
         character(len=255)::string
 
-        character(len=100),dimension(6)::ListOfOptions,ListOfValues
-        logical,dimension(6)::FoundOption
+        character(len=100),dimension(7)::ListOfOptions,ListOfValues
+        logical,dimension(7)::FoundOption
         integer :: i
 
 
-        ListOfOptions=["Problem Type","Analysis Type","Nonlinear Analysis","Hypothesis of Analysis","Element Technology","Maximum Cut Backs"]
+        ListOfOptions=["Problem Type","Analysis Type","Nonlinear Analysis","Hypothesis of Analysis", &
+                        "Element Technology","Maximum Cut Backs","Multiscale Analysis"]
 
 
         call DataFile%FillListOfOptions(ListOfOptions,ListOfValues,FoundOption)
@@ -237,8 +246,17 @@ contains
             call Error( "Element Technology not identified" )
         endif
 
-
+        ! Option Cut Backs
         AnalysisSettings%MaxCutBack = ListOfValues(6)
+
+        ! Option Multiscale Analysis
+        if (DataFile%CompareStrings(ListOfValues(7),"True")) then
+            AnalysisSettings%MultiscaleAnalysis=.true.
+        elseif (DataFile%CompareStrings(ListOfValues(7),"False")) then
+            AnalysisSettings%MultiscaleAnalysis=.false.
+        else
+            call Error( "Multiscale Analysis not identified" )
+        endif
 
 
         BlockFound(iAnalysisSettings)=.true.
@@ -251,6 +269,139 @@ contains
 
     end subroutine
     !=======================================================================================================================
+
+    !=======================================================================================================================
+    subroutine ReadMultiscaleSettings(DataFile,TimeFileName,BC,GlobalNodesList,isMultiscale)
+
+        use ModMultiscaleBoundaryConditions
+
+        implicit none
+
+
+        type(ClassParser)                               :: DataFile
+        !type (ClassAnalysis)                            :: AnalysisSettings
+        type (ClassNodes) , pointer , dimension(:)      :: GlobalNodesList
+        class (ClassBoundaryConditions), pointer        :: BC
+        character(len=100)                              :: TimeFileName
+        logical                                         :: isMultiscale
+
+
+        character(len=255)::string
+
+        character(len=100),dimension(10)::ListOfOptions,ListOfValues
+        logical,dimension(10)::FoundOption
+        integer :: i, j, k, cont
+
+
+
+        ListOfOptions=["Kinematical Constraints","F11","F12","F13","F21","F22","F23","F31","F32","F33"]
+
+        call DataFile%FillListOfOptions(ListOfOptions,ListOfValues,FoundOption)
+
+        call DataFile%CheckError
+
+        do i=1,size(FoundOption)
+            if (.not.FoundOption(i)) then
+                write(*,*) "Multiscale Settings :: Option not found ["//trim(ListOfOptions(i))//"]"
+                stop
+            endif
+        enddo
+
+
+        if (isMultiscale) then
+
+        select type ( BC )
+            type is ( ClassMultiscaleBoundaryConditionsTaylorAndLinear )
+
+                ! Option: Kinematical Constraints
+                if (DataFile%CompareStrings(ListOfValues(1),"Taylor")) then
+                    BC%TypeOfBC = MultiscaleBCType%Taylor
+                elseif (DataFile%CompareStrings(ListOfValues(1),"Linear")) then
+                    BC%TypeOfBC = MultiscaleBCType%Linear
+                !elseif (DataFile%CompareStrings(ListOfValues(1),"Periodic")) then
+                !   BC%TypeOfBC = MultiscaleBCType%Periodic
+                else
+                    call Error( "Multiscale Kinematical Constraints not identified" )
+                endif
+
+
+                allocate(BC%MacroscopicDefGrad(3,3))
+
+                k=1
+                do i=1,3
+                    do j=1,3
+
+                        k = k + 1
+
+                        call BC%MacroscopicDefGrad(i,j)%ReadTimeDiscretization(TimeFileName)
+
+                        if (DataFile%CompareStrings(ListOfValues(k),"Zero")) then
+                            call BC%MacroscopicDefGrad(i,j)%CreateConstantLoadHistory(0.0d0)
+                        elseif (DataFile%CompareStrings(ListOfValues(k),"One")) then
+                            call BC%MacroscopicDefGrad(i,j)%CreateConstantLoadHistory(1.0d0)
+                        else
+                            call BC%MacroscopicDefGrad(i,j)%ReadValueDiscretization(ListOfValues(k))
+                        endif
+
+                    enddo
+                enddo
+
+
+                ! Criando a classe das restrições cinemáticas
+                if (BC%TypeOfBC == MultiscaleBCType%Taylor) then
+
+                    allocate(BC%NodalMultiscaleDispBC(size(GlobalNodesList)))
+
+                    do i=1,size(GlobalNodesList)
+                        BC%NodalMultiscaleDispBC(i)%Fmacro => BC%MacroscopicDefGrad
+                        BC%NodalMultiscaleDispBC(i)%Node => GlobalNodesList(i)
+                    enddo
+
+                elseif (BC%TypeOfBC == MultiscaleBCType%Linear) then
+
+                    ! somando todos os nós das fronteiras
+                    cont = 0
+                    do i=1,size(BC%BoundaryNodes)
+                        cont = cont + size(BC%BoundaryNodes(i)%Nodes)
+                    enddo
+
+                    allocate(BC%NodalMultiscaleDispBC(cont))
+
+                    cont = 0
+                    do i=1,size(BC%BoundaryNodes)
+                        do j=1,size(BC%BoundaryNodes(i)%Nodes)
+                            cont = cont + 1
+                            BC%NodalMultiscaleDispBC(cont)%Fmacro => BC%MacroscopicDefGrad
+                            BC%NodalMultiscaleDispBC(cont)%Node => GlobalNodesList(BC%BoundaryNodes(i)%Nodes(j))
+                        enddo
+                    enddo
+
+                !elseif (BC%TypeOfBC == MultiscaleBCType%Periodic) then
+
+                else
+                    stop "Error: Kinematical Constraints not identified"
+                endif
+
+
+                 class default
+                     stop "Error: Multiscale Settings - Select Type (BC)"
+            end select
+
+        endif
+
+
+
+        BlockFound(iMultiscaleSettings)=.true.
+        call DataFile%GetNextString(string)
+        if (.not.DataFile%CompareStrings(string,'end'//trim(BlockName(iMultiscaleSettings)))) then
+            call DataFile%RaiseError("End of block was expected. BlockName="//trim(BlockName(iMultiscaleSettings)))
+        endif
+
+
+
+    end subroutine
+    !=======================================================================================================================
+
 
     !=======================================================================================================================
     subroutine ReadLinearSolver(DataFile,LinearSolver)
@@ -369,7 +520,7 @@ contains
     !=======================================================================================================================
 
     !=======================================================================================================================
-    subroutine ReadMeshAndBC(DataFile,GlobalNodesList,ElementList,AnalysisSettings,MaterialList,BC)
+    subroutine ReadMeshAndBC(DataFile,GlobalNodesList,ElementList,AnalysisSettings,MaterialList,BC,TimeFileName)
 
         implicit none
 
@@ -377,7 +528,7 @@ contains
         type (ClassAnalysis)                                          :: AnalysisSettings
         type (ClassNodes) , pointer , dimension(:)                    :: GlobalNodesList
         type (ClassElementsWrapper) , pointer , dimension(:)          :: ElementList
-        type (ClassBoundaryConditions)                                :: BC
+        class (ClassBoundaryConditions), pointer                      :: BC
         type (ClassConstitutiveModelWrapper) , pointer , dimension(:) :: MaterialList
 
         character(len=100)                                            :: OptionName, OptionValue,string
@@ -387,6 +538,13 @@ contains
         character(len=100)              :: TimeFileName
         logical,dimension(3)            :: FoundOption
         integer                         :: i,j,PreProcessorID, FileNumber
+
+
+        if (AnalysisSettings%MultiscaleAnalysis) then
+            allocate(ClassMultiscaleBoundaryConditionsTaylorAndLinear:: BC)
+        else
+            allocate(ClassBoundaryConditions :: BC)
+        endif
 
 
         ListOfOptions=["Mesh File","Time Discretization File","Preprocessor"]
@@ -405,6 +563,12 @@ contains
             call DataFile%RaiseError("MESH AND BOUNDARY CONDITIONS :: Preprocessor was not found")
         ENDIF
 
+
+
+        TimeFileName = ListOfValues(2)
+        call BC%TimeInformation%ReadTimeDiscretization(TimeFileName)
+        call BC%TimeInformation%CreateNullLoadHistory()
+
         IF (DataFile%CompareStrings(ListOfValues(3),"Gid7")) then
             PreProcessorID = PreProcessors%Gid7
         ELSEIF (DataFile%CompareStrings(ListOfValues(3),"Gid12")) then
@@ -415,8 +579,6 @@ contains
             call datafile%RaiseError("Preprocessor not identified")
         ENDIF
 
-
-
         select case (PreProcessorID)
 
             case (PreProcessors%Gid12,PreProcessors%Gid7)
@@ -425,7 +587,6 @@ contains
 
                 call ReadMesh(DataMeshBC,GlobalNodesList,ElementList,AnalysisSettings,MaterialList, PreProcessorID)
 
-                TimeFileName = ListOfValues(2)
                 call ReadBoundaryConditions(TimeFileName,DataMeshBC,BC,AnalysisSettings)
 
                 call DataMeshBC%CloseFile
@@ -438,9 +599,7 @@ contains
                 open(FileNumber,File=ListOfValues(1),status='unknown')
                 call ReadMeshHyperMesh(FileNumber,GlobalNodesList,ElementList,AnalysisSettings,MaterialList, PreProcessorID)
 
-                TimeFileName = ListOfValues(2)
                 call ReadBoundaryConditionsHyperMesh(TimeFileName,FileNumber,BC,AnalysisSettings)
-
 
             case default
 
@@ -589,13 +748,13 @@ contains
 
         implicit none
 
-        character(len=100)                  :: TimeFileName
-        integer                             :: FileNumber
-        type (ClassBoundaryConditions)      :: BC
-        type (ClassAnalysis)                :: AnalysisSettings
+        character(len=100)                              :: TimeFileName
+        integer                                         :: FileNumber
+        class (ClassBoundaryConditions), pointer        :: BC
+        type (ClassAnalysis)                            :: AnalysisSettings
 
 
-        integer ::  i, j, n, NumberOfCol, cont, istart, iend, NDOFnode, iaux
+        integer ::  i, j, n, NumberOfCol, cont, istart, iend, NDOFnode, iaux, cont_boundary
         character(len=255) :: Line
         character(len=255), allocatable , dimension(:) :: AuxString, TableName, BCList, Disp_Table, Force_Table
         integer, allocatable , dimension(:) :: BCListPointer, Disp_Node, Disp_Dof, Force_Node, Force_Dof
@@ -637,26 +796,42 @@ contains
 
         ! Reading only the tables used in the analysis.
         cont = 0
+        cont_boundary = 0
         do i = 1,size(TableName)
-            if (.not. Compare(RemoveSpaces(TableName(i)),"fixedsupports")) then
-                cont = cont + 1
+            call Split(TableName(i),AuxString,' ')
+            if (Compare(AuxString(1),"boundary")) then
+                cont_boundary = cont_boundary + 1
+                cycle
+            elseif (Compare(RemoveSpaces(TableName(i)),"fixedsupports")) then
+                cycle
             endif
+            cont = cont + 1
         enddo
 
         allocate( BC%SetOfLoadHistory(cont) )
+        allocate( BC%BoundaryNodes(cont_boundary) )
 
         cont = 0
         do i = 1,size(TableName)
-            if (.not. Compare(RemoveSpaces(TableName(i)),"fixedsupports")) then
-                cont = cont + 1
+            call Split(TableName(i),AuxString,' ')
+            if (Compare(AuxString(1),"boundary")) then
+                cycle
+            elseif (Compare(RemoveSpaces(TableName(i)),"fixedsupports")) then
+                cycle
+            endif
+            cont = cont + 1
+            ! Alocando tabelas para uma análise de finitos sem multiescala
+            if (.not. AnalysisSettings%MultiscaleAnalysis) then
                 call BC%SetOfLoadHistory(cont)%ReadTimeDiscretization(TimeFileName)
                 call BC%SetOfLoadHistory(cont)%ReadValueDiscretization(TableName(i))
             endif
         enddo
 
 
-
+        cont_boundary = 0
         do i = 1,size(TableName)
+
+            call Split(TableName(i),AuxString,' ')
 
             istart = BCListPointer(i)
             if ( i == ubound(TableName,1) ) then
@@ -688,8 +863,22 @@ contains
 
                 BC%FixedSupport%dof = NDOFnode*(ArrayAux(:,1)-1) + ArrayAux(:,2)
 
-            else
+            elseif (Compare(AuxString(1),"boundary")) then
 
+                cont_boundary = cont_boundary + 1
+                allocate(BC%BoundaryNodes(cont_boundary)%Nodes(iend-istart+1))
+
+                ! Alocando nome da contorno
+                BC%BoundaryNodes(cont_boundary)%Name = TableName(i)
+
+                ! Coletanto nós do contorno
+                do j = istart, iend
+                    call Split(BCList(j),AuxString,',')
+                    BC%BoundaryNodes(cont_boundary)%Nodes(j-istart+1) = AuxString(2)
+                enddo
+
+
+            else
 
                 do j = istart, iend
 
@@ -736,25 +925,27 @@ contains
         enddo
 
 
+        if (.not. AnalysisSettings%MultiscaleAnalysis) then
 
-        allocate(BC%NodalDispBC(size(Disp_Dof,1)))
-        allocate(BC%NodalForceBC(size(Force_Dof,1)))
+            allocate(BC%NodalDispBC(size(Disp_Dof,1)))
+            allocate(BC%NodalForceBC(size(Force_Dof,1)))
 
-        BC%NodalDispBC%dof  = NDOFnode*(Disp_Node(:)-1)  + Disp_Dof(:)
-        BC%NodalForceBC%dof = NDOFnode*(Force_Node(:)-1) + Force_Dof(:)
+            BC%NodalDispBC%dof  = NDOFnode*(Disp_Node(:)-1)  + Disp_Dof(:)
+            BC%NodalForceBC%dof = NDOFnode*(Force_Node(:)-1) + Force_Dof(:)
 
-        do j = 1,size(Disp_Node)
-            call RetrieveLoadHistory( BC%SetOfLoadHistory , Disp_Table(j) , BC%NodalDispBC(j)%LoadHistory )
-        enddo
+            do j = 1,size(Disp_Node)
+                call RetrieveLoadHistory( BC%SetOfLoadHistory , Disp_Table(j) , BC%NodalDispBC(j)%LoadHistory )
+            enddo
 
-        do j = 1,size(Force_Node)
-            call RetrieveLoadHistory( BC%SetOfLoadHistory , Force_Table(j) , BC%NodalForceBC(j)%LoadHistory )
-        enddo
+            do j = 1,size(Force_Node)
+                call RetrieveLoadHistory( BC%SetOfLoadHistory , Force_Table(j) , BC%NodalForceBC(j)%LoadHistory )
+            enddo
+
+        endif
 
 
     end subroutine
     !=======================================================================================================================
-
 
 
     !=======================================================================================================================
@@ -796,6 +987,7 @@ contains
 
     end subroutine
     !=======================================================================================================================
+
 
 
 
@@ -960,10 +1152,10 @@ contains
     subroutine ReadBoundaryConditions(TimeFileName,DataFile,BC,AnalysisSettings)
         implicit none
 
-        character(len=100)                  :: TimeFileName
-        type (ClassParser)                  :: DataFile
-        type (ClassBoundaryConditions)      :: BC
-        type (ClassAnalysis)                :: AnalysisSettings
+        character(len=100)                              :: TimeFileName
+        type (ClassParser)                              :: DataFile
+        class (ClassBoundaryConditions),pointer         :: BC
+        type (ClassAnalysis)                            :: AnalysisSettings
 
 
 

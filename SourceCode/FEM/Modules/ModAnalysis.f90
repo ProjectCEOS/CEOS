@@ -87,6 +87,7 @@ module Analysis
         integer ::  Hypothesis
         integer ::  ElementTech
         logical ::  NLAnalysis
+        logical ::  MultiscaleAnalysis
 
         integer ::  NDOFnode   , AnalysisDimension
         integer ::  BRowSize   , DSize

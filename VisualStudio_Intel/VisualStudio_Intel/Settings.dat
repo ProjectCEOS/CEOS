@@ -13,9 +13,10 @@
 
 ANALYSIS SETTINGS
 
+	Multiscale Analysis =  True ! False !
 	Problem Type = Mechanical
 	Analysis Type = Quasi Static
-	Nonlinear Analysis = False !True !
+	Nonlinear Analysis = True ! False !
 	Hypothesis of Analysis = 3D !Axisymmetric !
 	Element Technology =  Full Integration !Mean Dilatation ! 
 	Maximum Cut Backs = 10
@@ -48,15 +49,15 @@ MATERIAL
 
 	Number of Materials = 1
 
-	!Material ID = 1
-	!St_Venant_Kirchhoff
-	!Young Modulus = 100.0E9 
-	!Poisson = 0.3
-	
 	Material ID = 1
-	Generalized_Hookes_Law
+	St_Venant_Kirchhoff
 	Young Modulus = 100.0E9 
-	Poisson = 0.3	
+	Poisson = 0.3
+	
+	!Material ID = 1
+	!Generalized_Hookes_Law
+	!Young Modulus = 100.0E9 
+	!Poisson = 0.3	
 	
 	!Material ID = 22
 	!J2_Plasticity	
@@ -82,7 +83,7 @@ END MATERIAL
 
 MESH AND BOUNDARY CONDITIONS
 
-	Mesh File = Mesh.cdb
+	Mesh File = Malha_Multiescala.cdb
 	Preprocessor = HyperMesh !Gid 12
 	Time Discretization File = Time_Discretization.dat
 		
@@ -90,3 +91,19 @@ END MESH AND BOUNDARY CONDITIONS
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+MULTISCALE SETTINGS
+
+	Kinematical Constraints = Taylor ! Periodic ! Linear !
+	F11 = F11.dat !Zero !One
+	F12 = F12.dat
+	F13 = F12.dat
+	F21 = F12.dat
+	F22 = F11.dat
+	F23 = F12.dat
+	F31 = F12.dat
+	F32 = F12.dat
+	F33 = F11.dat	
+		
+END MULTISCALE SETTINGS
+
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX

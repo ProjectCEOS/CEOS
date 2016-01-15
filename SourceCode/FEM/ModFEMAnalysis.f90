@@ -35,7 +35,7 @@ module FEMAnalysis
 		!----------------------------------------------------------------------------------------
         type  (ClassElementsWrapper)    , pointer     , dimension(:) :: ElementList
         type  (ClassNodes)              , pointer     , dimension(:) :: GlobalNodesList
-        type  (ClassAnalysis)                                        :: AnalysisSettings
+        type  (ClassAnalysis)           , pointer                    :: AnalysisSettings
         class (ClassBoundaryConditions) , pointer                    :: BC
         type  (ClassGlobalSparseMatrix) , pointer                    :: Kg
 
@@ -371,7 +371,7 @@ module FEMAnalysis
                     write(*,'(4x,a,i3,a,i3,a)')'Step: ',ST,' (LC: ',LC,')'
                     write(*,*)''
 
-                    call BC%GetBoundaryConditions(LC, ST, Fext_alpha0, DeltaFext,FEMSoE%DispDOF, U, DeltaUPresc)
+                    call BC%GetBoundaryConditions(AnalysisSettings, LC, ST, Fext_alpha0, DeltaFext,FEMSoE%DispDOF, U, DeltaUPresc)
 
                     call BC%GetTimeInformation(LC,ST,Time_alpha0,DeltaTime)
 

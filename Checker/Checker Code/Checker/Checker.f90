@@ -36,11 +36,11 @@ program Checker
 
         if (comp%CompareStrings(aux(1),"File1")) then
             File1 = trim( aux(2) )
-            FoundFile1 = .true.
+            inquire(File = File1, exist=FoundFile1)
             cycle
         elseif (comp%CompareStrings(aux(1),"File2")) then
             File2 = trim( aux(2) )
-            FoundFile2 = .true.
+            inquire(File = File2, exist=FoundFile2)
         elseif (comp%CompareStrings(aux(1),"Tol")) then
             call comp%converttodouble( trim(aux(2)), tol)
         else
@@ -50,9 +50,11 @@ program Checker
     enddo
 
     if (.not.FoundFile1) then
-        stop "ERROR :: File 1 missing"
+        write(*,*) "ERROR :: File 1 missing"
+        stop
     elseif (.not.FoundFile2) then
-        stop "ERROR :: File 2 missing"
+        write(*,*) "ERROR :: File 2 missing"
+        stop
     endif
 
     
@@ -85,6 +87,7 @@ program Checker
             write(3,*) "    File 2 :: point = ", a2
             write(3,*) "    ---------------------------------------------------------------------- " 
             write(*,*)"CHECKER Analysis: FAILED!"
+            
             stop         
         endif
  

@@ -17,7 +17,7 @@ module modFEMSystemOfEquations
         type (ClassElementsWrapper)  , dimension(:) , pointer  :: ElementList
         type (ClassNodes)            , dimension(:) , pointer  :: GlobalNodesList
         type (ClassAnalysis)                                   :: AnalysisSettings
-        type (ClassBoundaryConditions)              , pointer  :: BC
+        class (ClassBoundaryConditions)              , pointer  :: BC
         type (ClassGlobalSparseMatrix)              , pointer  :: Kg
 
 

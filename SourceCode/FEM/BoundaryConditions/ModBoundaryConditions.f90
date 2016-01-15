@@ -34,21 +34,29 @@ module BoundaryConditions
             procedure :: FixedSupportConstructor
     end type
 
+    type ClassBoundaryNodes
+        character(len=255) :: Name=''
+        integer, allocatable, dimension(:) :: Nodes
+    end type
+
+
     type ClassBoundaryConditions
 
         type (ClassLoadHistory),    pointer,     dimension(:) :: SetOfLoadHistory => null()
+        type (ClassLoadHistory)                               :: TimeInformation
         type (ClassFixedSupport)                              :: FixedSupport
         type (ClassNodalBC),        allocatable, dimension(:) :: NodalForceBC , NodalDispBC
+        type (ClassBoundaryNodes),  allocatable, dimension(:) :: BoundaryNodes
 
         contains
 
-        procedure :: GetNumberOfLoadCases
-        procedure :: GetNumberOfSteps
-        procedure :: GetExternalForces
-        procedure :: GetPrescribedDisplacements
-        procedure :: GetTimeInformation
-        procedure :: ApplyBoundaryConditions
-        procedure :: GetBoundaryConditions
+            procedure :: GetNumberOfLoadCases
+            procedure :: GetNumberOfSteps
+            procedure :: GetExternalForces
+            procedure :: GetPrescribedDisplacements
+            procedure :: GetTimeInformation
+            procedure :: ApplyBoundaryConditions
+            procedure :: GetBoundaryConditions
 
     end type
 
@@ -92,7 +100,7 @@ module BoundaryConditions
     function GetNumberOfLoadCases(this) result(nLC)
         class(ClassBoundaryConditions) :: this
         integer::nLC
-        nLC = this%SetOfLoadHistory(1)%nLoadCases
+        nLC = this%TimeInformation%nLoadCases
     end function
 !=================================================================================================
 
@@ -100,7 +108,7 @@ module BoundaryConditions
     function GetNumberOfSteps(this,LoadCase) result(nST)
         class(ClassBoundaryConditions) :: this
         integer::LoadCase,nST
-        nST = this%SetOfLoadHistory(1)%LoadCase(LoadCase)%nSteps
+        nST = this%TimeInformation%LoadCase(LoadCase)%nSteps
     end function
 !=================================================================================================
 
@@ -112,8 +120,8 @@ module BoundaryConditions
         real(8)::InitialTime,FinalTime,DeltaTime
         integer :: LoadCase , ST
 
-        InitialTime = this%SetOfLoadHistory(1)%LoadCase(LoadCase)%Step(ST)%InitTime
-        FinalTime   = this%SetOfLoadHistory(1)%LoadCase(LoadCase)%Step(ST)%FinalTime
+        InitialTime = this%TimeInformation%LoadCase(LoadCase)%Step(ST)%InitTime
+        FinalTime   = this%TimeInformation%LoadCase(LoadCase)%Step(ST)%FinalTime
         DeltaTime   = FinalTime - InitialTime
 
     end subroutine

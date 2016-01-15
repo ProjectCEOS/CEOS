@@ -32,12 +32,13 @@ program MAIN
     use modTools
     use Timer
     use Parser
+    use ModAnalysisManager
 
     implicit none
 
     ! Objects
 	! ---------------------------------------------------------------------------------------------
-    type (ClassFEMAnalysis) :: FEMAnalysis_1
+    class (ClassFEMAnalysis), pointer :: Analysis
     type (ClassProbeWrapper), pointer, dimension(:) :: ProbeList
     class(ClassPostProcessor), pointer :: PostProcessor
 
@@ -54,8 +55,8 @@ program MAIN
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 ! TODO (Thiago#1#11/17/15): Trocar todos o nome dos módulos para Mod'NOME'
- 
-    
+
+
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 	!                                       MAIN PROGRAM
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -86,9 +87,10 @@ program MAIN
     write(*,*) ''
 
 
-    ! Reading FEM settings file
+    ! Reading settings file and Create Analysis (FEM or Multiscale)
     ! ---------------------------------------------------------------------------------------------
-	call FEMAnalysis_1%ReadInputData( SettingsFileName )
+	call ReadAndCreateAnalysis(Analysis, SettingsFileName)
+
 
 	if (TaskSolve) then
         !**********************************************************************************************
@@ -105,9 +107,9 @@ program MAIN
 
         ! Allocating memory for the sparse matrix (pre-assembling)
         ! ---------------------------------------------------------------------------------------------
-        call FEMAnalysis_1%AllocateGlobalSparseStiffnessMatrix
+        call Analysis%AllocateGlobalSparseStiffnessMatrix
 
-        call FEMAnalysis_1%Solve
+        call Analysis%Solve
 
         call AnalysisTime%Stop
         write(*,*) ''
@@ -136,7 +138,7 @@ program MAIN
 
         ! Post Processing Results
         ! ---------------------------------------------------------------------------------------------
-        call PostProcessingResults(ProbeList,PostProcessor,FEMAnalysis_1)
+        call PostProcessingResults(ProbeList,PostProcessor,Analysis)
 
         call AnalysisTime%Stop
         write(*,*) ''

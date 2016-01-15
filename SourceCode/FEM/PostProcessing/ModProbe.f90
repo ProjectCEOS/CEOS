@@ -56,6 +56,11 @@ module ModProbe
         procedure :: WriteProbeResult => WriteProbeResult_GaussPoint
     end type
 
+    type, extends(ClassProbe) :: ClassMicroStructureProbe
+    contains
+        procedure :: WriteProbeResult => WriteProbeResult_MicroStructure
+    end type
+
 
     !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     !Wrapper in order to use different types of probes
@@ -362,7 +367,6 @@ module ModProbe
     end subroutine
     !==========================================================================================
 
-
     !==========================================================================================
     subroutine WriteProbeResult_GaussPoint(this,FEA)
             ! Modules and implicit declarations
@@ -542,6 +546,165 @@ module ModProbe
 
     end subroutine
     !==========================================================================================
+
+
+    !==========================================================================================
+    subroutine MicroStructureProbeConstructor (Probe, Variable, FileName, ComponentsString)
+
+            ! Modules and implicit declarations
+            ! -----------------------------------------------------------------------------------
+            use Parser
+            implicit none
+
+            ! Object
+            ! -----------------------------------------------------------------------------------
+            class(ClassProbe), pointer :: Probe
+
+            ! Input variables
+            ! -----------------------------------------------------------------------------------
+            character(len=*) :: Variable
+            character(len=*) :: FileName
+            character(len=*) :: ComponentsString
+
+            ! Internal variables
+            ! -----------------------------------------------------------------------------------
+            type(ClassParser) :: Comp
+            type(ClassMicroStructureProbe), pointer :: MicroStructureProbe
+            !************************************************************************************
+
+            call Comp%Setup()
+
+            allocate(MicroStructureProbe)
+
+            MicroStructureProbe%FileName       = FileName
+            MicroStructureProbe%VariableName   = Variable
+            MicroStructureProbe%VariableNameID = ParseVariableName(Variable)
+
+            if ( Comp%CompareStrings(ComponentsString, 'All') ) then
+                MicroStructureProbe%AllComponents = .true.
+            else
+                MicroStructureProbe%AllComponents = .false.
+                Call ParseComponents( ComponentsString , MicroStructureProbe%Components )
+            endif
+
+
+            Probe => MicroStructureProbe
+
+    end subroutine
+    !==========================================================================================
+
+
+    !==========================================================================================
+    subroutine WriteProbeResult_MicroStructure(this,FEA)
+
+            ! Modules and implicit declarations
+            ! -----------------------------------------------------------------------------------
+            use FEMAnalysis
+            use MathRoutines
+            use Parser
+            use ModContinuumMechanics
+            use ModMultiscaleAnalysis
+
+            implicit none
+
+            ! Object
+            ! -----------------------------------------------------------------------------------
+            class(ClassMicroStructureProbe) :: this
+
+            ! Input variables
+            ! -----------------------------------------------------------------------------------
+            class(ClassFEMAnalysis) :: FEA
+
+            ! Internal variables
+            ! -----------------------------------------------------------------------------------
+            type (ClassParser) :: Comp
+
+            real(8), dimension(size(this%Components)) , target :: ProbeVariable
+            integer :: FileNumber, i, NumberOfComp, NumberOfGaussPoint, NumberOfElements
+
+            real(8) , dimension(FEA%AnalysisSettings%StrainSize) :: Strain_Voigt
+            real(8) , dimension(FEA%AnalysisSettings%StressSize) :: HomogenizedStress
+            real(8) , dimension(9) :: F_voigt
+            real(8) , dimension(3) :: eigenvalues
+            real(8) , dimension(3,3) :: F, b, Log_Strain, eigenvectors, N
+
+            real(8) , dimension(9)            :: UD_Variable
+            integer                           :: UD_ID, UD_Length, UD_VariableType
+            character(len=255)                :: UD_Name
+            logical :: FoundUserVariable
+            class(ClassConstitutiveModel) , pointer :: GP
+            real(8)                                 :: HomogenizedF(3,3),HomogenizedF_voigt(9)
+
+            !************************************************************************************
+            ! Teste se probe esta ativo
+            if (.not. this%Active) then
+                return
+            endif
+
+            call Comp%Setup()
+
+
+
+
+            select type (FEA)
+                class is (ClassMultiscaleAnalysis)
+
+                    select case (this%VariableNameID)
+                        ! Writing Cauchy Stress
+                        case (VariableNames%CauchyStress)
+
+                            call FEA%HomogenizeStress(HomogenizedStress)
+
+                            NumberOfComp = size(HomogenizedStress)
+                            if ( any( this%Components .gt. NumberOfComp ) ) then
+                                call this%WriteOnFile('ERROR - Stress component is greater than Max Stress Size')
+                                this%Active = .false.
+                            else
+                                if (this%AllComponents) then
+                                    call this%WriteOnFile(FEA%Time , HomogenizedStress)
+                                else
+                                    ProbeVariable = HomogenizedStress(this%Components)
+                                    call this%WriteOnFile(FEA%Time , ProbeVariable)
+                                endif
+                            endif
+
+
+                        ! Writing Deformation Gradient
+                        case (VariableNames%DeformationGradient)
+
+                            call FEA%HomogenizeDeformationGradient(HomogenizedF)
+
+                            NumberOfComp = 9
+                            if ( any( this%Components .gt. NumberOfComp ) ) then
+                                call this%WriteOnFile('ERROR - Homogenized Deformation Gradient component is greater than Max Size')
+                                this%Active = .false.
+                            else
+                                HomogenizedF_voigt = Convert_to_Voigt_3D(HomogenizedF)
+                                if (this%AllComponents) then
+                                    call this%WriteOnFile(FEA%Time , HomogenizedF_voigt)
+                                else
+                                    ProbeVariable = HomogenizedF_voigt(this%Components)
+                                    call this%WriteOnFile(FEA%Time , ProbeVariable)
+                                endif
+
+                            endif
+
+                        case default
+                        stop 'Error in ModProbe - WriteProbeResult_MicroStructure - VariableNameID - not identified'
+
+                    end select
+
+                class default
+                    call this%WriteOnFile('Not a multiscale analysis')
+                    this%Active = .false.
+                    
+
+            end select
+
+    end subroutine
+    !==========================================================================================
+
+
 
 
 end module

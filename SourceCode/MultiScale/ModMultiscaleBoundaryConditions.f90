@@ -15,7 +15,9 @@ module ModMultiscaleBoundaryConditions
     use LoadHistoryData
     use Nodes
     use Element
+    use BoundaryConditions
 
+    ! Enumerador
     !-----------------------------------------------------------------------------------
     type ClassMultiscaleBCType
         integer :: Taylor=1, Linear=2, Periodic=3
@@ -23,27 +25,26 @@ module ModMultiscaleBoundaryConditions
     type(ClassMultiscaleBCType), parameter :: MultiscaleBCType = ClassMultiscaleBCType()
     !-----------------------------------------------------------------------------------
 
-    type ClassMacroDefGradCurve
-        type (ClassLoadHistory), pointer :: LoadHistory => null()
-    end type
-
+    !
+    !-----------------------------------------------------------------------------------
     type ClassMultiscaleNodalBC
         type(ClassNodes), pointer :: Node
-        type (ClassMacroDefGradCurve), dimension (3,3) :: Fmacro
+        type (ClassLoadHistory), pointer, dimension (:,:) :: Fmacro
     end type
+    !-----------------------------------------------------------------------------------
 
 
-
+    !-----------------------------------------------------------------------------------
     type, extends(ClassBoundaryConditions) :: ClassMultiscaleBoundaryConditions
 
         integer :: TypeOfBC
         type (ClassMultiscaleNodalBC), allocatable, dimension(:) :: NodalMultiscaleDispBC
+        type (ClassLoadHistory), pointer, dimension(:,:)         :: MacroscopicDefGrad
 
     end type
+    !-----------------------------------------------------------------------------------
 
-
-
-
+    !-----------------------------------------------------------------------------------
     type, extends(ClassMultiscaleBoundaryConditions) :: ClassMultiscaleBoundaryConditionsTaylorAndLinear
 
         contains
@@ -51,24 +52,25 @@ module ModMultiscaleBoundaryConditions
             ! A rotina de aplicação de contorno para Taylor e Linear é a mesma de FEM
 
     end type
+    !-----------------------------------------------------------------------------------
 
 
-
-    type, extends(ClassMultiscaleBoundaryConditions) :: ClassMultiscaleBoundaryConditionsPeriodic
-
-        contains
-            procedure :: ApplyBoundaryConditions => ApplyBoundaryConditionsMultiscalePeriodic
-            procedure :: GetBoundaryConditions => GetBoundaryConditionsMultiscalePeriodic
-
-    end type
-
+    !-----------------------------------------------------------------------------------
+    !type, extends(ClassMultiscaleBoundaryConditions) :: ClassMultiscaleBoundaryConditionsPeriodic
+    !
+    !    contains
+    !        procedure :: ApplyBoundaryConditions => ApplyBoundaryConditionsMultiscalePeriodic
+    !        procedure :: GetBoundaryConditions => GetBoundaryConditionsMultiscalePeriodic
+    !
+    !end type
+    !-----------------------------------------------------------------------------------
 
 
     contains
 
 
     !=================================================================================================
-    subroutine GetBoundaryConditionsMultiscaleTaylorAndLinear( this, AnalysisSettings, LC, ST, Fext, DeltaFext, ActiveDOF, U, DeltaUPresc )
+    subroutine GetBoundaryConditionsMultiscaleTaylorAndLinear( this, AnalysisSettings, LC, ST, Fext, DeltaFext, NodalDispDOF, U, DeltaUPresc )
 
         !************************************************************************************
         ! DECLARATIONS OF VARIABLES
@@ -82,7 +84,7 @@ module ModMultiscaleBoundaryConditions
 
         ! Input variables
         ! -----------------------------------------------------------------------------------
-        class(ClassMultiscaleBoundaryConditions) :: this
+        class(ClassMultiscaleBoundaryConditionsTaylorAndLinear) :: this
         class(ClassAnalysis)                     :: AnalysisSettings
         integer                                  :: LC, ST
 
@@ -90,11 +92,11 @@ module ModMultiscaleBoundaryConditions
         ! -----------------------------------------------------------------------------------
         real(8) , dimension(:)               :: Fext , DeltaFext
         real(8) , dimension(:)               :: U, DeltaUPresc
-        integer , pointer , dimension(:)     :: ActiveDOF
+        integer , pointer , dimension(:)     :: NodalDispDOF
 
         ! Internal variables
         ! -----------------------------------------------------------------------------------
-        integer                                :: i,j,k
+        integer                                :: i,j,k, nActive
         real(8), allocatable, dimension(:) :: ActiveInitialValue, ActiveFinalValue
         real(8) :: FMacroInitial(3,3), FMacroFinal(3,3), Y(3), UmicroYInitial(3),UmicroYFinal(3)
 
@@ -104,13 +106,13 @@ module ModMultiscaleBoundaryConditions
         Fext = 0.0d0
         DeltaFext = 0.0d0
 
-        if (associated(ActiveDOF))          deallocate(ActiveDOF)
+        if (associated(NodalDispDOF))          deallocate(NodalDispDOF)
 
 
         !CONTANDO QUANTAS CONDIÇÕES ATIVAS (número total de graus de liberdade com deslocamento prescrito)
         nActive = size(this%NodalMultiscaleDispBC)*AnalysisSettings%NDOFnode
 
-        Allocate( ActiveDOF(nActive) , ActiveInitialValue(nActive) , ActiveFinalValue(nActive) )
+        Allocate( NodalDispDOF(nActive) , ActiveInitialValue(nActive) , ActiveFinalValue(nActive) )
 
 
 
@@ -120,8 +122,8 @@ module ModMultiscaleBoundaryConditions
             ! Montando FMacro no tempo t baseado na curva informada pelo usuário
             do i = 1,3
                 do j = 1,3
-                FMacroInitial(i,j) = this%NodalMultiscaleDispBC(k)%Fmacro(i,j)%LoadHistory%LoadCase(LC)%Step(ST)%InitVal
-                FMacroFinal(i,j)   = this%NodalMultiscaleDispBC(k)%Fmacro(i,j)%LoadHistory%LoadCase(LC)%Step(ST)%FinalVal
+                FMacroInitial(i,j) = this%NodalMultiscaleDispBC(k)%Fmacro(i,j)%LoadCase(LC)%Step(ST)%InitVal
+                FMacroFinal(i,j)   = this%NodalMultiscaleDispBC(k)%Fmacro(i,j)%LoadCase(LC)%Step(ST)%FinalVal
                 enddo
             enddo
 
@@ -136,7 +138,7 @@ module ModMultiscaleBoundaryConditions
             ! Montando os deslocamentos micro prescritos nos graus de liberdade (analise mecânica)
             do i = 1,AnalysisSettings%NDOFnode
                 j = AnalysisSettings%NDOFnode*(k -1 ) + i
-                ActiveDOF(j) = AnalysisSettings%NDOFnode*(this%NodalMultiscaleDispBC(k)%Node%ID -1 ) + i
+                NodalDispDOF(j) = AnalysisSettings%NDOFnode*(this%NodalMultiscaleDispBC(k)%Node%ID -1 ) + i
                 ActiveInitialValue(j) = UmicroYInitial(i)
                 ActiveFinalValue(j)   = UmicroYFinal(i)
             enddo
@@ -145,8 +147,8 @@ module ModMultiscaleBoundaryConditions
 
         DeltaUPresc=0.0d0
         do i = 1, size(NodalDispDOF)
-            U( ActiveDOF(i) ) = ActiveInitialValue(i)
-            DeltaUPresc( ActiveDOF(i) ) =  ActiveFinalValue(i) - ActiveInitialValue(i)
+            U( NodalDispDOF(i) ) = ActiveInitialValue(i)
+            DeltaUPresc( NodalDispDOF(i) ) =  ActiveFinalValue(i) - ActiveInitialValue(i)
         enddo
 
 

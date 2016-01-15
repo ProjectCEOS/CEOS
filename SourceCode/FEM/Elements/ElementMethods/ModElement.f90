@@ -825,7 +825,7 @@ module Element
             G(2,[(i,i=1,nDOFel,2)])=DifSF(:,2) !d_Ur/d_z i,2
 
             G(3,[(i,i=1,nDOFel,2)])=ShapeFunctions(:)/r !Ur/r i/r
-            
+
             G(4,[(i,i=2,nDOFel,2)])=DifSF(:,1) !d_Uz/d_r i,1
             G(5,[(i,i=2,nDOFel,2)])=DifSF(:,2) !d_Uz/d_z i,2
 
@@ -927,8 +927,8 @@ module Element
                 Ur = dot_product( ShapeFunctions , U([(n , n=1,size(U),DimProb)]) )
 
                 !Deformation Gradient Axisymmetric
-                !F(3,3) = r/rX 
-                F(3,3) = F(3,3) + Ur/rX 
+                !F(3,3) = r/rX
+                F(3,3) = F(3,3) + Ur/rX
 
             endif
 
@@ -944,7 +944,7 @@ module Element
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-        subroutine ElementVolume( this, AnalysisSettings, Volume, VolumeX, Status )
+        subroutine ElementVolume( this, AnalysisSettings, Volume, VolumeX,  Status )
 
 		    !************************************************************************************
             ! DECLARATIONS OF VARIABLES

@@ -11,3 +11,5 @@
 ..\Checker.exe /File1 NumberOfIterationsToConverge.dat /File2 NumOfIterRef.dat /Tol 1.0d-3
 
 del FEMAnalysis.result
+del *.probe
+del NumberOfIterationsToConverge.dat

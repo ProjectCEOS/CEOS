@@ -217,6 +217,11 @@ module ModExportResultFile
 
             call GaussPointProbeConstructor(ProbeList(i)%Pr, ProbeVariableName, ProbeElement, ProbeFileName, ProbeGaussPoint, ProbeComponentsString)
 
+        ! Probes de Micro Estrutura
+        elseif (  File%CompareStrings(ProbeLocation, 'Micro Structure' ) ) then
+
+            call MicroStructureProbeConstructor(ProbeList(i)%Pr, ProbeVariableName, ProbeFileName, ProbeComponentsString)
+
         endif
 
     end do
@@ -249,7 +254,7 @@ module ModExportResultFile
         ! -----------------------------------------------------------------------------------
         type (ClassProbeWrapper), pointer, dimension(:) :: ProbeList
         class (ClassPostProcessor), pointer             :: PostProcessor
-        type (ClassFEMAnalysis)                         :: FEA
+        class (ClassFEMAnalysis)                        :: FEA
 
         ! Internal variables
         ! -----------------------------------------------------------------------------------

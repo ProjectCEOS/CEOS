@@ -5,13 +5,12 @@
 POST PROCESSOR 
 
 	Post Processor = HyperView 12 !None !GiD 7 !
-	Results = Displacements ,  Stress !Cauchy Stress , Logarithmic Strain !, von Mises Cauchy Stress
+	Results = Displacements ,  Cauchy Stress , Logarithmic Strain !, von Mises Cauchy Stress
 	File Name = hypermesh_results.hwascii
 	
 END POST PROCESSOR 
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
 
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -27,9 +26,25 @@ END POST PROCESSOR
 ! Components: 1=XX ; 2=YX ; 3=ZX ; 4=XY ; 5=YY ; 6=ZY ; 7=XZ ; 8=YZ ; 9=ZZ ; All
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-NUMBER OF PROBES = 6
+NUMBER OF PROBES = 2
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+PROBE
+	Location = Micro Structure !Node ! Gauss Point !
+	File Name = Homogenized_Stress.probe
+	Variable Name = Cauchy Stress
+	Components = 1
+END PROBE
+
+PROBE
+	Location = Micro Structure !Node ! Gauss Point !
+	File Name = Homogenized_F.probe
+	Variable Name = Deformation Gradient
+	Components = All
+END PROBE
+
+
 
 PROBE
 	Location = Node

@@ -8,3 +8,5 @@
 
 
 del FEMAnalysis.result
+del *.probe
+del NumberOfIterationsToConverge.dat

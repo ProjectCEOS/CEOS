@@ -71,6 +71,8 @@
 		<Unit filename="../SourceCode/FEM/Subroutines/SubTangentStiffnessMatrix.f90" />
 		<Unit filename="../SourceCode/FEM/Subroutines/SubUpdateMeshCoordinates.f90" />
 		<Unit filename="../SourceCode/MAIN.f90" />
+		<Unit filename="../SourceCode/ModAnalysisManager.f90" />
+		<Unit filename="../SourceCode/MultiScale/ModMultiscaleAnalysis.f90" />
 		<Unit filename="../SourceCode/MultiScale/ModMultiscaleBoundaryConditions.f90" />
 		<Unit filename="../SourceCode/Tools/MathTools/LinearSolver/ModLinearSolverLibrary.f90" />
 		<Unit filename="../SourceCode/Tools/MathTools/LinearSolver/ModPardisoSolver.f90" />

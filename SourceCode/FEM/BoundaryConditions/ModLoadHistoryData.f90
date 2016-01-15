@@ -30,6 +30,7 @@ module LoadHistoryData
             procedure :: ReadTimeDiscretization
             procedure :: ReadValueDiscretization
             procedure :: CreateNullLoadHistory
+            procedure :: CreateConstantLoadHistory
 
     end type
     !==================================================
@@ -135,11 +136,20 @@ module LoadHistoryData
         integer                             :: cont, flagInitial, flagFinal, ST, LC
         real(8), allocatable, dimension(:,:)  :: TimeAndValue
         logical                             :: FileExist
+        character(len=255), allocatable, dimension(:)  :: AuxString
 
 
         this%TableName = TableName
 
-        FileName = trim(TableName)//'.tab'
+        call Split(TableName,AuxString,'.')
+
+        if (size(AuxString) == 1) then
+            FileName = trim(TableName)//'.tab'
+        else
+            FileName = trim(TableName)
+        endif
+
+
         inquire(file=trim(FileName),exist=FileExist)
 
         if (.not.FileExist) then
@@ -248,6 +258,44 @@ module LoadHistoryData
 
     end subroutine
    !=================================================================================================
+
+   !=================================================================================================
+    subroutine CreateConstantLoadHistory(this,value)
+
+
+        implicit none
+
+        class(ClassLoadHistory) :: this
+        real(8) :: value
+
+        integer                ::  ST, LC
+
+
+        ! Interpolação dos valores segundo a discretização do tempo requerida
+        ! no arquivo "time discretization"
+        !---------------------------------------------------------------------
+
+        do LC = 1, this%nLoadCases
+
+            do ST = 1, this%LoadCase(LC)%nSteps
+
+                this%LoadCase(LC)%Step(ST)%InitVal = value
+
+                this%LoadCase(LC)%Step(ST)%FinalVal = value
+
+                this%LoadCase(LC)%Step(ST)%active = .true.
+
+            enddo
+
+        enddo
+
+        !---------------------------------------------------------------------
+
+
+
+    end subroutine
+   !=================================================================================================
+
 
 
 
