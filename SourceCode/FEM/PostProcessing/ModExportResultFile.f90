@@ -295,10 +295,13 @@ module ModExportResultFile
         allocate( U(TotalNDOF) )
 
 
+        call FEA%AdditionalMaterialModelRoutine()
+
         ! Restart Constitutive Model
         ! -----------------------------------------------------------------------------------
         do el = 1,size(FEA%ElementList)
             do gp = 1,size(FEA%ElementList(el)%El%GaussPoints)
+                call FEA%ElementList(el)%El%GaussPoints(gp)%ConstitutiveModelDestructor()
                 call FEA%ElementList(el)%El%GaussPoints(gp)%ConstitutiveModelConstructor(FEA%AnalysisSettings)
             enddo
         enddo

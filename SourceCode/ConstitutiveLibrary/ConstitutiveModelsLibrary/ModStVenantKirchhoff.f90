@@ -49,9 +49,10 @@ module StVenantKirchhoff
             ! Class Methods
             !----------------------------------------------------------------------------------
              procedure :: ConstitutiveModelConstructor => ConstitutiveModelConstructor_StVenantKirchhoff
+             procedure :: ConstitutiveModelDestructor  => ConstitutiveModelDestructor_StVenantKirchhoff
              procedure :: ReadMaterialParameters       => ReadMaterialParameters_StVenantKirchhoff
              procedure :: GetResult                    => GetResult_StVenantKirchhoff
-             procedure :: SwitchConvergedState           => SwitchConvergedState_StVenantKirchhoff
+             procedure :: SwitchConvergedState         => SwitchConvergedState_StVenantKirchhoff
              procedure :: CopyProperties               => CopyProperties_StVenantKirchhoff
 
     end type
@@ -121,6 +122,42 @@ module StVenantKirchhoff
 
  		    !************************************************************************************
             ! ALLOCATE THE STATE VARIABLES
+		    !************************************************************************************
+
+
+		    !************************************************************************************
+
+        end subroutine
+        !==========================================================================================
+
+
+        !==========================================================================================
+        ! Method ConstitutiveModelDestructor_"NameOfTheMaterialModel": Routine that constructs the
+        ! Constitutive Model
+        !------------------------------------------------------------------------------------------
+        ! Modifications:
+        ! Date:         Author:
+        !==========================================================================================
+        subroutine ConstitutiveModelDestructor_StVenantKirchhoff(this)
+
+		    !************************************************************************************
+            ! DECLARATIONS OF VARIABLES
+		    !************************************************************************************
+            ! Modules and implicit declarations
+            ! -----------------------------------------------------------------------------------
+            use Analysis
+
+            ! Object
+            ! -----------------------------------------------------------------------------------
+            class(ClassStVenantKirchhoff) :: this
+
+            ! Input variables
+            ! -----------------------------------------------------------------------------------
+
+		    !************************************************************************************
+
+ 		    !************************************************************************************
+            ! DEALLOCATE THE STATE VARIABLES
 		    !************************************************************************************
 
 

@@ -49,6 +49,7 @@ module NeoHookeanQ1P0
             ! Class Methods
             !----------------------------------------------------------------------------------
              procedure :: ConstitutiveModelConstructor => ConstitutiveModelConstructor_NeoHookeanQ1P0
+             procedure :: ConstitutiveModelDestructor  => ConstitutiveModelDestructor_NeoHookeanQ1P0
              procedure :: ReadMaterialParameters       => ReadMaterialParameters_NeoHookeanQ1P0
              procedure :: GetResult                    => GetResult_NeoHookeanQ1P0
              procedure :: SwitchConvergedState         => SwitchConvergedState_NeoHookeanQ1P0
@@ -120,6 +121,41 @@ module NeoHookeanQ1P0
 
  		    !************************************************************************************
             ! ALLOCATE THE STATE VARIABLES
+		    !************************************************************************************
+
+
+		    !************************************************************************************
+
+        end subroutine
+        !==========================================================================================
+
+        !==========================================================================================
+        ! Method ConstitutiveModelDestructor_"NameOfTheMaterialModel": Routine that constructs the
+        ! Constitutive Model
+        !------------------------------------------------------------------------------------------
+        ! Modifications:
+        ! Date:         Author:
+        !==========================================================================================
+        subroutine ConstitutiveModelDestructor_NeoHookeanQ1P0(this)
+
+		    !************************************************************************************
+            ! DECLARATIONS OF VARIABLES
+		    !************************************************************************************
+            ! Modules and implicit declarations
+            ! -----------------------------------------------------------------------------------
+            use Analysis
+
+            ! Object
+            ! -----------------------------------------------------------------------------------
+            class(ClassNeoHookeanQ1P0) :: this
+
+            ! Input variables
+            ! -----------------------------------------------------------------------------------
+
+		    !************************************************************************************
+
+ 		    !************************************************************************************
+            ! DEALLOCATE THE STATE VARIABLES
 		    !************************************************************************************
 
 

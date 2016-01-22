@@ -38,6 +38,7 @@ module MathRoutines
             real(8):: detA
 
             detA = det(A)
+
             if (detA==zero) call error('inv::Det==0')
 
             select case (size(A,dim=1))

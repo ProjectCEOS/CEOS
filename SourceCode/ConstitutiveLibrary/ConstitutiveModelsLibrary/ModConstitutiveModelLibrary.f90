@@ -27,12 +27,13 @@ module ConstitutiveModelLibrary
 
     ! Constitutive Models ID registered:
     type ClassConstitutiveModels
-        integer   :: GeneralizedHookesLawModel  = 1
-        integer   :: J2PlasticityModel          = 2
-        integer   :: NeoHookeanModel            = 3
-        integer   :: NeoHookeanQ1P0Model        = 4
-        integer   :: StVenantKirchhoffModel     = 5
-        integer   :: HyperelasticQ1P0Model      = 6
+        integer   :: GeneralizedHookesLawModel      = 1
+        integer   :: J2PlasticityModel              = 2
+        integer   :: NeoHookeanModel                = 3
+        integer   :: NeoHookeanQ1P0Model            = 4
+        integer   :: StVenantKirchhoffModel         = 5
+        integer   :: HyperelasticQ1P0Model          = 6
+        integer   :: CompressibleNeoHookeanModel    = 7
     end type
 
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -67,8 +68,6 @@ module ConstitutiveModelLibrary
 
             ! Internal variables: Instance of each available Constitutive Model.
             ! -----------------------------------------------------------------------------------
-            !type(ClassLinearElastic_PlaneStrain)       , pointer , dimension(:) :: LE_PlaneStrain
-            !type(ClassLinearElastic_Axisymmetric)      , pointer , dimension(:) :: LE_Axisymmetric
             type(ClassGeneralizedHookesLaw_3D)          , pointer , dimension(:) :: GHL_3D
 
             type(ClassJ2Plasticity_PlaneStrain)        , pointer , dimension(:) :: VM_PlaneStrain
@@ -85,6 +84,9 @@ module ConstitutiveModelLibrary
 
             type(ClassHyperelasticQ1P0_3D)             , pointer , dimension(:) :: HEQ1P0_3D
             type(ClassHyperelasticQ1P0_Axisymmetric)   , pointer , dimension(:) :: HEQ1P0_Axisymmetric
+
+            !type(ClassCompressibleNeoHookean_3D)       , pointer , dimension(:) :: CNH_3D
+
 ! TODO (Thiago#1#02/13/15): Trocar threeDimensional para 3D
 
 		    !************************************************************************************
@@ -101,16 +103,6 @@ module ConstitutiveModelLibrary
                 ! -------------------------------------------------------------------------------
                 case (ConstitutiveModels % GeneralizedHookesLawModel)
 
-
-                    !if ( AnalysisSettings%Hypothesis == HypothesisOfAnalysis%PlaneStrain ) then
-                    !
-                    !        allocate( LE_PlaneStrain(nGP) )
-                    !        GaussPoints => LE_PlaneStrain
-                    !
-                    !elseif ( AnalysisSettings%Hypothesis == Axisymmetric ) then
-                    !
-                    !        allocate( LE_Axisymmetric(nGP) )
-                    !        GaussPoints => LE_Axisymmetric
 
                      if ( AnalysisSettings%Hypothesis == HypothesisOfAnalysis%ThreeDimensional ) then
 
@@ -132,7 +124,7 @@ module ConstitutiveModelLibrary
                             allocate( VM_PlaneStrain(nGP) )
                             GaussPoints => VM_PlaneStrain
 
-                    elseif ( AnalysisSettings%Hypothesis == ThreeDimensional ) then
+                    elseif ( AnalysisSettings%Hypothesis == HypothesisOfAnalysis%ThreeDimensional ) then
 
                             allocate( VM_3D(nGP) )
                             GaussPoints => VM_3D
@@ -226,6 +218,26 @@ module ConstitutiveModelLibrary
                     endif
                 ! ------------------------------------------------------------------------------
 
+                ! -------------------------------------------------------------------------------
+                ! Compressible Neo-Hookean Model
+                ! -------------------------------------------------------------------------------
+!                case (ConstitutiveModels % CompressibleNeoHookeanModel)
+!
+!                    if ( AnalysisSettings%Hypothesis == HypothesisOfAnalysis%ThreeDimensional ) then
+!
+!                            allocate( NH_3D(nGP) )
+!                            GaussPoints => NH_3D
+!
+!!                    elseif ( AnalysisSettings%Hypothesis == HypothesisOfAnalysis%Axisymmetric ) then
+!!
+!!                            allocate( NH_Axisymmetric(nGP) )
+!!                            GaussPoints => NH_Axisymmetric
+!
+!                    else
+!                            call Error("Error: Compressible Neo Hookean Model - analysis type not available.")
+!
+!                    endif
+                ! -------------------------------------------------------------------------------
                 case default
 
                     call Error( "Error: Constitutive Model not registered.")
@@ -306,6 +318,10 @@ module ConstitutiveModelLibrary
             elseif ( Comp%CompareStrings('hyperelastic', model) .and. (AnalysisSettings%ElementTech == ElementTechnologies%Mean_Dilatation) ) then
 
                 modelID = ConstitutiveModels % HyperelasticQ1P0Model
+
+            elseif ( Comp%CompareStrings('compressible_neo_hookean', model) .and. (AnalysisSettings%ElementTech == ElementTechnologies%Full_Integration) ) then
+
+                modelID = ConstitutiveModels%CompressibleNeoHookeanModel
 
             else
                 call Error( "Error: Material Model not identified: "//trim(model))

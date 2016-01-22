@@ -61,9 +61,10 @@ module HyperelasticQ1P0
             ! Class Methods
             !----------------------------------------------------------------------------------
              procedure :: ConstitutiveModelConstructor => ConstitutiveModelConstructor_HyperelasticQ1P0
+             procedure :: ConstitutiveModelDestructor  => ConstitutiveModelDestructor_HyperelasticQ1P0
              procedure :: ReadMaterialParameters       => ReadMaterialParameters_HyperelasticQ1P0
              procedure :: GetResult                    => GetResult_HyperelasticQ1P0
-             procedure :: SwitchConvergedState           => SwitchConvergedState_HyperelasticQ1P0
+             procedure :: SwitchConvergedState         => SwitchConvergedState_HyperelasticQ1P0
              procedure :: SecondDerivativesOfPSI_Jbar  => SecondDerivativesOfPSI_Jbar_HyperelasticQ1P0
              procedure :: CopyProperties               => CopyProperties_HyperelasticQ1P0
 
@@ -138,6 +139,42 @@ module HyperelasticQ1P0
 
         end subroutine
         !==========================================================================================
+
+        !==========================================================================================
+        ! Method ConstitutiveModelDestructor_"NameOfTheMaterialModel": Routine that constructs the
+        ! Constitutive Model
+        !------------------------------------------------------------------------------------------
+        ! Modifications:
+        ! Date:         Author:
+        !==========================================================================================
+        subroutine ConstitutiveModelDestructor_HyperelasticQ1P0(this)
+
+		    !************************************************************************************
+            ! DECLARATIONS OF VARIABLES
+		    !************************************************************************************
+            ! Modules and implicit declarations
+            ! -----------------------------------------------------------------------------------
+            use Analysis
+
+            ! Object
+            ! -----------------------------------------------------------------------------------
+            class(ClassHyperelasticQ1P0) :: this
+
+            ! Input variables
+            ! -----------------------------------------------------------------------------------
+
+		    !************************************************************************************
+
+ 		    !************************************************************************************
+            ! DEALLOCATE THE STATE VARIABLES
+		    !************************************************************************************
+
+
+		    !************************************************************************************
+
+        end subroutine
+        !==========================================================================================
+
 
 
         !==========================================================================================

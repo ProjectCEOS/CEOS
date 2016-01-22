@@ -12,7 +12,6 @@
 !##################################################################################################
 module ModGeneralizedHookesLaw
 
-! TODO (Thiago#1#): Validar e criar um Checker para o modelo linear elástico. Mudar nome do modelo para Lei de Hooke Generalizada
 
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 	! DECLARATIONS OF VARIABLES
@@ -53,6 +52,7 @@ module ModGeneralizedHookesLaw
             ! Class Methods
             !----------------------------------------------------------------------------------
              procedure :: ConstitutiveModelConstructor => ConstitutiveModelConstructor_GeneralizedHookesLaw
+             procedure :: ConstitutiveModelDestructor  => ConstitutiveModelDestructor_GeneralizedHookesLaw
              procedure :: ReadMaterialParameters       => ReadMaterialParameters_GeneralizedHookesLaw
              procedure :: GetResult                    => GetResult_GeneralizedHookesLaw
              procedure :: SwitchConvergedState         => SwitchConvergedState_GeneralizedHookesLaw
@@ -141,6 +141,41 @@ module ModGeneralizedHookesLaw
 
  		    !************************************************************************************
             ! ALLOCATE THE STATE VARIABLES
+		    !************************************************************************************
+
+
+		    !************************************************************************************
+
+        end subroutine
+        !==========================================================================================
+
+        !==========================================================================================
+        ! Method ConstitutiveModelDestructor_"NameOfTheMaterialModel": Routine that constructs the
+        ! Constitutive Model
+        !------------------------------------------------------------------------------------------
+        ! Modifications:
+        ! Date:         Author:
+        !==========================================================================================
+        subroutine ConstitutiveModelDestructor_GeneralizedHookesLaw(this)
+
+		    !************************************************************************************
+            ! DECLARATIONS OF VARIABLES
+		    !************************************************************************************
+            ! Modules and implicit declarations
+            ! -----------------------------------------------------------------------------------
+            use Analysis
+
+            ! Object
+            ! -----------------------------------------------------------------------------------
+            class(ClassGeneralizedHookesLaw) :: this
+
+            ! Input variables
+            ! -----------------------------------------------------------------------------------
+
+		    !************************************************************************************
+
+ 		    !************************************************************************************
+            ! DEALLOCATE THE STATE VARIABLES
 		    !************************************************************************************
 
 

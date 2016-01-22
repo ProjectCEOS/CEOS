@@ -16,18 +16,15 @@ module Interfaces
     interface
 
         !==========================================================================================
-        subroutine ElementConstructor( this, ElementNodes, ElementType, GlobalNodesList, &
-                                       Material, AnalysisSettings )
+        subroutine ElementConstructor( this, ElementNodes, ElementType, GlobalNodesList )
 
 	        !************************************************************************************
 	        ! DECLARATIONS OF VARIABLES
 	        !************************************************************************************
 	        ! Modules and implicit declarations
 	        ! -----------------------------------------------------------------------------------
-	        use Analysis
 	        use ElementLibrary
 	        use Nodes
-	        use ConstitutiveModelLibrary
 
 	        implicit none
 
@@ -37,11 +34,9 @@ module Interfaces
 
 	        ! Input variables
 	        ! -----------------------------------------------------------------------------------
-	        type(ClassAnalysis)                       , intent(in) :: AnalysisSettings
 	        type(ClassNodes) , dimension(:) , pointer , intent(in) :: GlobalNodesList
 	        integer				 , intent(in) :: ElementType
 	        integer,dimension(:) , intent(in) :: ElementNodes
-	        class(ClassConstitutiveModelWrapper)  , pointer :: Material
 
         end subroutine
         !==========================================================================================
@@ -263,6 +258,32 @@ module Interfaces
          endsubroutine
         !==============================================================================================
 
+
+        !==============================================================================================
+        subroutine MaterialConstructor( Element, ElementList, GlobalNodesList, Material, AnalysisSettings )
+
+            !************************************************************************************
+            ! DECLARATIONS OF VARIABLES
+            !************************************************************************************
+            ! Modules and implicit declarations
+            ! -----------------------------------------------------------------------------------
+            use Analysis
+            use ElementLibrary
+            use Nodes
+            use ConstitutiveModelLibrary
+
+            implicit none
+
+            ! Input variables
+            ! -----------------------------------------------------------------------------------
+            class(ClassElement) , pointer                         :: Element
+            type (ClassElementsWrapper) , pointer , dimension(:)  :: ElementList
+            type(ClassAnalysis)                                   :: AnalysisSettings
+            type(ClassNodes) , dimension(:) , pointer             :: GlobalNodesList
+            class(ClassConstitutiveModelWrapper)  , pointer :: Material
+
+        end subroutine
+        !==============================================================================================
 
 
 

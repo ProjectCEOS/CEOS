@@ -54,6 +54,7 @@ module FEMAnalysis
             procedure :: ReadInputData
             procedure :: AllocateGlobalSparseStiffnessMatrix
             procedure :: Solve => SolveFEMAnalysis
+            procedure :: AdditionalMaterialModelRoutine
 
     end type
 
@@ -104,18 +105,18 @@ module FEMAnalysis
         !==========================================================================================
 
 
-!##################################################################################################
-! This routine pre-allocates the size of the global stiffness matrix in the sparse format.
-!--------------------------------------------------------------------------------------------------
-! Date: 2014/02
-!
-! Authors:  Jan-Michel Farias
-!           Thiago Andre Carniel
-!           Paulo Bastos de Castro
-!!------------------------------------------------------------------------------------------------
-! Modifications:
-! Date:         Author:
-!##################################################################################################
+        !##################################################################################################
+        ! This routine pre-allocates the size of the global stiffness matrix in the sparse format.
+        !--------------------------------------------------------------------------------------------------
+        ! Date: 2014/02
+        !
+        ! Authors:  Jan-Michel Farias
+        !           Thiago Andre Carniel
+        !           Paulo Bastos de Castro
+        !!------------------------------------------------------------------------------------------------
+        ! Modifications:
+        ! Date:         Author:
+        !##################################################################################################
         subroutine AllocateGlobalSparseStiffnessMatrix (this)
 
             !************************************************************************************
@@ -218,6 +219,9 @@ module FEMAnalysis
             select case ( this%AnalysisSettings%AnalysisType )
 
                 case ( AnalysisTypes%Quasi_Static )
+
+                    call this%AdditionalMaterialModelRoutine()
+
                     call QuasiStaticAnalysisFEM( this%ElementList, this%AnalysisSettings, this%GlobalNodesList , &
                                                  this%BC, this%Kg, this%NLSolver )
 
@@ -490,6 +494,43 @@ module FEMAnalysis
 
         end subroutine
 
+
+
+        !==========================================================================================
+        ! Method ClassFEMAnalysis:
+        !------------------------------------------------------------------------------------------
+        ! Modifications:
+        ! Date:         Author:
+        !==========================================================================================
+        subroutine  AdditionalMaterialModelRoutine( this )
+
+		    !************************************************************************************
+            ! DECLARATIONS OF VARIABLES
+		    !************************************************************************************
+            ! Modules and implicit declarations
+            ! -----------------------------------------------------------------------------------
+            implicit none
+
+            ! Object
+            ! -----------------------------------------------------------------------------------
+            class(ClassFEMAnalysis) :: this
+
+            ! Input variables
+            ! -----------------------------------------------------------------------------------
+
+ 		    !************************************************************************************
+            ! SELECT PARAMETERS OF THE analysis type
+		    !************************************************************************************
+
+
+            !
+            !***********************************************************************************
+
+
+		    !************************************************************************************
+
+        end subroutine
+        !==========================================================================================
 
 
 end module

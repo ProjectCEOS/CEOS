@@ -585,9 +585,9 @@ contains
 
                 call DataMeshBC%Setup(FileName=ListOfValues(1),FileNumber=43)
 
-                call ReadMesh(DataMeshBC,GlobalNodesList,ElementList,AnalysisSettings,MaterialList, PreProcessorID)
+                call ReadMeshGiD(DataMeshBC,GlobalNodesList,ElementList,AnalysisSettings,MaterialList, PreProcessorID)
 
-                call ReadBoundaryConditions(TimeFileName,DataMeshBC,BC,AnalysisSettings)
+                call ReadBoundaryConditionsGiD(TimeFileName,DataMeshBC,BC,AnalysisSettings)
 
                 call DataMeshBC%CloseFile
 
@@ -631,12 +631,13 @@ contains
         type (ClassConstitutiveModelWrapper) , pointer , dimension(:)   :: MaterialList
         Integer                                                         :: PreProcessorID
 
-        integer ::  FileNumber, i, n
-        integer :: nnodes,nelem,ndime,ElemType, ElemID, MaterialID, ennodes,ElemConec(MaxElementNodes)
+        integer ::  FileNumber, i, n, j
+        integer :: Nnodes,Nelem,ndime,ElemType, ElemID, MaterialID, ennodes,ElemConec(MaxElementNodes)
         logical :: FoundMaterial
         character(len=255) :: FileName, Line
         character(len=255), allocatable , dimension(:) :: AuxString, CoordString
         real(8) , allocatable , dimension(:) :: Coords
+        integer, allocatable , dimension(:) :: ElementMaterialID
         class(ClassConstitutiveModelWrapper)  , pointer :: Material
 
 
@@ -657,7 +658,7 @@ contains
                         allocate( GlobalNodesList(Nnodes), CoordString(Nnodes))
                     elseif (Compare(AuxString(2), 'elem') ) then
                         nelem = AuxString(3)
-                        allocate( ElementList(Nelem) )
+                        allocate( ElementList(Nelem), ElementMaterialID(Nelem) )
                     endif
 
                 elseif ( Compare(AuxString(1),'nblock') ) then
@@ -706,22 +707,13 @@ contains
                         ENnodes = AuxString(9)
                         MaterialID = AuxString(1)
 
-                        FoundMaterial=.false.
-                        do i=1,size(MaterialList)
-                            if (MaterialList(i)%MaterialID == MaterialID) then
-                                Material => MaterialList(i)
-                                FoundMaterial = .true.
-                            endif
-                        enddo
-                        if (.not.FoundMaterial) then
-                            call DataFile%RaiseError("Element's Material was not found")
-                        endif
+                        ElementMaterialID(ElemID) = MaterialID
 
                         do i = 1,ENnodes
                             ElemConec(i) = AuxString(11+i)
                         enddo
 
-                        call ElementConstructor( ElementList(ElemID)%el , ElemConec(1:ENnodes) ,ElemType , GlobalNodesList, Material, AnalysisSettings)
+                        call ElementConstructor( ElementList(ElemID)%el , ElemConec(1:ENnodes) ,ElemType , GlobalNodesList)
 
                         read(FileNumber,'(a255)') line
                         call Split(Line,AuxString,' ')
@@ -738,6 +730,26 @@ contains
             endif
 
         end do LOOP_MESH
+
+
+        ! Material Constructor
+        do i = 1,size(ElementMaterialID)
+
+            FoundMaterial=.false.
+            do j=1,size(MaterialList)
+                if (MaterialList(j)%MaterialID == ElementMaterialID(i)) then
+                    Material => MaterialList(j)
+                    FoundMaterial = .true.
+                endif
+            enddo
+            if (.not.FoundMaterial) then
+                call DataFile%RaiseError("Element's Material was not found")
+            endif
+
+            call MaterialConstructor( ElementList(i)%El, ElementList, GlobalNodesList, Material, AnalysisSettings )
+
+        enddo
+
 
 
     end subroutine
@@ -993,7 +1005,7 @@ contains
 
 ! TODO (Thiago#2#): Criar rotinas separadas para a leitura da malha de cada pre processador.
     !=======================================================================================================================
-    subroutine ReadMesh(DataFile, GlobalNodesList, ElementList, AnalysisSettings, MaterialList, PreProcessorID)
+    subroutine ReadMeshGiD(DataFile, GlobalNodesList, ElementList, AnalysisSettings, MaterialList, PreProcessorID)
 
         use Interfaces
         implicit none
@@ -1099,16 +1111,7 @@ contains
                 call DataFile%GetOriginalLine(line)
                 Read(line,*) id , GeoType , ENnodes , (ElemConec(j),j=1,ENnodes)
 
-                FoundMaterial=.false.
-                do i=1,size(MaterialList)
-                    if (MaterialList(i)%MaterialID == MatID(id)) then
-                        Material => MaterialList(i)
-                        FoundMaterial = .true.
-                    endif
-                enddo
-                if (.not.FoundMaterial) then
-                    call DataFile%RaiseError("Element's Material was not found")
-                endif
+
 
                 !---------------------------------------------------------------------------------------------------------------
                 selectcase (PreProcessorID)
@@ -1129,10 +1132,11 @@ contains
                 !===============================================================================================================
                     case default
                         stop "ReadMesh :: Preprocessor not available"
-                end select
+                    end select
                 !---------------------------------------------------------------------------------------------------------------
 
-                call ElementConstructor( ElementList(id)%el , ElemConec(1:ENnodes) ,ElemType , GlobalNodesList, Material, AnalysisSettings)
+                call ElementConstructor( ElementList(id)%el , ElemConec(1:ENnodes) ,ElemType , GlobalNodesList)
+
 
         enddo
 
@@ -1145,11 +1149,32 @@ contains
             call DataFile%RaiseError("End of block was expected. BlockName=MESH")
         endif
 
+
+
+        ! Material Constructor
+        do i = 1,size(MatID)
+
+            FoundMaterial=.false.
+            do j=1,size(MaterialList)
+                if (MaterialList(j)%MaterialID == MatID(i)) then
+                    Material => MaterialList(j)
+                    FoundMaterial = .true.
+                endif
+            enddo
+            if (.not.FoundMaterial) then
+                call DataFile%RaiseError("Element's Material was not found")
+            endif
+
+            call MaterialConstructor( ElementList(i)%El, ElementList, GlobalNodesList, Material, AnalysisSettings )
+
+        enddo
+
+
     end subroutine
     !=======================================================================================================================
 
     !=======================================================================================================================
-    subroutine ReadBoundaryConditions(TimeFileName,DataFile,BC,AnalysisSettings)
+    subroutine ReadBoundaryConditionsGiD(TimeFileName,DataFile,BC,AnalysisSettings)
         implicit none
 
         character(len=100)                              :: TimeFileName

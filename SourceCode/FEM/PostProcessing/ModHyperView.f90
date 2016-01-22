@@ -408,7 +408,7 @@ module ModHyperView
             write(FileNumber,'(a)') adjustl( '$RESULT_TYPE = '//trim(Name)//trim(DataType) )
             write(FileNumber,'(a)') adjustl( '$SYS_ID = 1' )
             write(FileNumber,'(a,1X,E16.9,a)') adjustl('$TIME  = '),Time,' sec'
-            ! NOTE (Thiago#1#): SYS_ID = 1 exporta os resultados no sistema global da análise. 
+            ! NOTE (Thiago#1#): SYS_ID = 1 exporta os resultados no sistema global da análise.
 
 ! TODO (Thiago#1#): HyperView - Resultados nos pontos de gauss coerentes com ordenação dos elementos em ordem crescente.
             do e=1,size(Variable,1)

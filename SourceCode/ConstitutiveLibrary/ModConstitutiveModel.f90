@@ -14,13 +14,11 @@ module ConstitutiveModel
 
     use ModStatus
 
-
     type ClassAdditionalVariables
 
         real(8) :: Jbar
 
     endtype
-
 
 
 
@@ -35,6 +33,7 @@ module ConstitutiveModel
         !real(8)                             :: Jbar
         real(8)                             :: Time = 0.0d0
 
+
         type (ClassAdditionalVariables) :: AdditionalVariables
 
         contains
@@ -44,23 +43,25 @@ module ConstitutiveModel
 
             !Dummy Procedures: To be used by the superclasses
             !------------------------------------------------------------------------------------
-            procedure :: UpdateStressAndStateVariables => UpdateStressAndStateVariablesBase
-            procedure :: GetTangentModulus => GetTangentModulusBase
-            procedure :: SwitchConvergedState => SwitchConvergedStateBase
-            procedure :: ConstitutiveModelConstructor => ConstitutiveModelConstructorBase
-            procedure :: ReadMaterialParameters => ReadMaterialParametersBase
-            procedure :: GetResult => GetResultBase
-            procedure :: GetMatrixOfStresses => GetMatrixOfStressesBase
-            procedure :: SecondDerivativesOfPSI_Jbar => SecondDerivativesOfPSI_JbarBase
-            procedure :: CopyProperties => CopyPropertiesBase
+            procedure :: UpdateStressAndStateVariables  => UpdateStressAndStateVariablesBase
+            procedure :: GetTangentModulus              => GetTangentModulusBase
+            procedure :: SwitchConvergedState           => SwitchConvergedStateBase
+            procedure :: ConstitutiveModelConstructor   => ConstitutiveModelConstructorBase
+            procedure :: ConstitutiveModelDestructor    => ConstitutiveModelDestructorBase
+            procedure :: ReadMaterialParameters         => ReadMaterialParametersBase
+            procedure :: GetResult                      => GetResultBase
+            procedure :: GetMatrixOfStresses            => GetMatrixOfStressesBase
+            procedure :: SecondDerivativesOfPSI_Jbar    => SecondDerivativesOfPSI_JbarBase
+            procedure :: CopyProperties                 => CopyPropertiesBase
 
-            procedure :: LoadProperties => LoadPropertiesBase
-            procedure :: LoadInternalVariables => LoadInternalVariablesBase
-            procedure :: ExportInternalVariables => ExportInternalVariablesBase
-            procedure :: LoadDataFromAnsys => LoadDataFromAnsysBase
+            procedure :: LoadProperties                 => LoadPropertiesBase
+            procedure :: LoadInternalVariables          => LoadInternalVariablesBase
+            procedure :: ExportInternalVariables        => ExportInternalVariablesBase
+            procedure :: LoadDataFromAnsys              => LoadDataFromAnsysBase
 
         end type
 
+! TODO (Thiago#1#): Criar as rotinas de destrutor em casa modelo material
 
 
 
@@ -81,12 +82,17 @@ module ConstitutiveModel
 		!==========================================================================================
         ! Dummy Procedures: To be used by the superclasses
         !==========================================================================================
-        !==========================================================================================
+            !==========================================================================================
             subroutine ConstitutiveModelConstructorBase(this,AnalysisSettings)
                 use Analysis
-                type(ClassAnalysis)::AnalysisSettings
-                class(ClassConstitutiveModel)::this
+                type(ClassAnalysis)                        :: AnalysisSettings
+                class(ClassConstitutiveModel) :: this
                 stop "Error: ConstitutiveModelConstructor"
+            end subroutine
+            !==========================================================================================
+            subroutine ConstitutiveModelDestructorBase(this)
+                class(ClassConstitutiveModel)::this
+                stop "Error: ConstitutiveModelDestructor"
             end subroutine
             !==========================================================================================
             subroutine GetTangentModulusBase(this,D)
