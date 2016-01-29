@@ -13,7 +13,8 @@ module ModProbe
 
     !Variable Names - Default variables and user defined variables
     type ClassVariableNames
-        integer  :: Displacements=1 , Temperature=2, CauchyStress=3, LogarithmicStrain=4, DeformationGradient=5 , UserDefined=6
+        integer  :: Displacements=1 , Temperature=2, CauchyStress=3, LogarithmicStrain=4, &
+                    DeformationGradient=5 , FirstPiolaStress=6, UserDefined=7
     end type
     type (ClassVariableNames), parameter :: VariableNames = ClassVariableNames()
 
@@ -119,6 +120,8 @@ module ModProbe
             enu = VariableNames%LogarithmicStrain
         ELSEIF ( Comp%CompareStrings( Variable,'Temperature') ) then
             enu = VariableNames%Temperature
+        ELSEIF ( Comp%CompareStrings( Variable,'First Piola Stress') ) then
+            enu = VariableNames%FirstPiolaStress
         ELSE
             enu = VariableNames%UserDefined
         ENDIF
@@ -634,7 +637,8 @@ module ModProbe
             logical :: FoundUserVariable
             class(ClassConstitutiveModel) , pointer :: GP
             real(8)                                 :: HomogenizedF(3,3),HomogenizedF_voigt(9)
-
+            real(8)                                 :: HomogenizedP(3,3),HomogenizedP_voigt(9)
+            real(8)                                 :: HomogenizedCauchy(3,3)
             !************************************************************************************
             ! Teste se probe esta ativo
             if (.not. this%Active) then
@@ -650,6 +654,7 @@ module ModProbe
                 class is (ClassMultiscaleAnalysis)
 
                     select case (this%VariableNameID)
+
                         ! Writing Cauchy Stress
                         case (VariableNames%CauchyStress)
 
@@ -689,6 +694,46 @@ module ModProbe
 
                             endif
 
+                        ! Writing First Piola Stress
+                        case (VariableNames%FirstPiolaStress)
+
+                            ! Computing Homogenized Cauchy Stress (in Voigt Notation)
+                            call FEA%HomogenizeStress(HomogenizedStress)
+
+                            ! Mapping Cauchy Stress in Voigt to Tensor 3D
+                            HomogenizedCauchy = 0.0d0
+                            if (FEA%AnalysisSettings%Hypothesis == HypothesisOfAnalysis%PlaneStrain) then
+                                HomogenizedCauchy(1,1) = HomogenizedStress(1)
+                                HomogenizedCauchy(2,2) = HomogenizedStress(2)
+                                HomogenizedCauchy(1,2) = HomogenizedStress(3)
+                                HomogenizedCauchy(2,1) = HomogenizedStress(3)
+                                HomogenizedCauchy(3,3) = HomogenizedStress(4)
+                            elseif (FEA%AnalysisSettings%Hypothesis == HypothesisOfAnalysis%ThreeDimensional) then
+                                HomogenizedCauchy = Convert_to_Tensor_3D_Sym(HomogenizedStress)
+                            endif
+
+                            ! Computing Homogenized Deformation Gradient (in Tensor Notation)
+                            call FEA%HomogenizeDeformationGradient(HomogenizedF)
+
+                            ! Pull-back Cauchy to First Piola
+                            HomogenizedP = StressTransformation(HomogenizedF,HomogenizedCauchy,StressMeasures%Cauchy,StressMeasures%FirstPiola)
+
+                            HomogenizedP_voigt = Convert_to_Voigt_3D(HomogenizedP)
+
+                            NumberOfComp = 9
+                            if ( any( this%Components .gt. NumberOfComp ) ) then
+                                call this%WriteOnFile('ERROR - Homogenized First Piola Stress component is greater than Max Stress Size')
+                                this%Active = .false.
+                            else
+                                if (this%AllComponents) then
+                                    call this%WriteOnFile(FEA%Time , HomogenizedP_voigt)
+                                else
+                                    ProbeVariable = HomogenizedP_voigt(this%Components)
+                                    call this%WriteOnFile(FEA%Time , ProbeVariable)
+                                endif
+                            endif
+
+
                         case default
                         stop 'Error in ModProbe - WriteProbeResult_MicroStructure - VariableNameID - not identified'
 
@@ -697,7 +742,7 @@ module ModProbe
                 class default
                     call this%WriteOnFile('Not a multiscale analysis')
                     this%Active = .false.
-                    
+
 
             end select
 

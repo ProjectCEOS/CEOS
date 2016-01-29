@@ -269,6 +269,11 @@ module Element
                 i1 = 1
                 i2 = 4
                 i3 = 5
+            else if (AnalysisSettings%Hypothesis == HypothesisOfAnalysis%PlaneStrain) then
+! TODO (Thiago#1#): Verificar o Div para o Plane Strain usando o Mean Dilatation
+                i1 = 1
+                i2 = 4
+                i3 = 5
             else
                 write(*,*) 'error ElementStiffnessMatrix'
                 stop
@@ -600,6 +605,10 @@ module Element
             B(3,[(i,i=1,nDOFel,2)])=DifSF(:,2) ; B(3,[(i,i=2,nDOFel,2)])=DifSF(:,1) !Strain 12
 
             G = 0.0d0
+            G(1,[(i,i=1,nDOFel,2)])=DifSF(:,1) !d_Displacement1/d_x1
+            G(2,[(i,i=1,nDOFel,2)])=DifSF(:,2) !d_Displacement1/d_x2
+            G(3,[(i,i=2,nDOFel,2)])=DifSF(:,1) !d_Displacement2/d_x1
+            G(4,[(i,i=2,nDOFel,2)])=DifSF(:,2) !d_Displacement2/d_x2
 
 		    !************************************************************************************
 

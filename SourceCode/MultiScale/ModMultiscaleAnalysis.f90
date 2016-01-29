@@ -136,6 +136,8 @@ module ModMultiscaleAnalysis
 
     !=================================================================================================
     subroutine HomogenizeStress( this, HomogenizedStress )
+! NOTE (Thiago#1#): A Homogeneização das tensões e do gradiente de deformação são funcionam para RVEs sem furos. Se o RVE tiver furo, discretizar o furo com um material "mole"
+
 
         !************************************************************************************
         ! DECLARATIONS OF VARIABLES
@@ -245,7 +247,7 @@ module ModMultiscaleAnalysis
         ! -----------------------------------------------------------------------------------
         integer							    :: NDOFel , gp, e, nNodes, DimProb,i,j,n
         real(8)							    :: detJX, TotalVolX , rX
-        real(8) , pointer , dimension(:)    :: Weight 
+        real(8) , pointer , dimension(:)    :: Weight
         real(8) , pointer , dimension(:,:)  :: NaturalCoord
         real(8)                             :: FactorAxiX
         real(8)                             :: F(3,3)
@@ -265,6 +267,7 @@ module ModMultiscaleAnalysis
         do e = 1,size(this%ElementList)
             TotalVolX = TotalVolX + this%ElementList(e)%El%VolumeX
         enddo
+
 
         FactorAxiX = 1.0d0
         HomogenizedF = 0.0d0

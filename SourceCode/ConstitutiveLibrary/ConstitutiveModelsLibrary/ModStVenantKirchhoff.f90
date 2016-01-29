@@ -58,6 +58,23 @@ module StVenantKirchhoff
     end type
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    ! Class"NameOfTheMaterialModel"_PlaneStrain: Attributes and methods of the constitutive model
+    ! in Plane Strain analysis.
+	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    type , extends(ClassStVenantKirchhoff) :: ClassStVenantKirchhoff_PlaneStrain
+
+         contains
+
+            ! Class Methods
+            !----------------------------------------------------------------------------------
+
+             procedure :: UpdateStressAndStateVariables  =>  UpdateStressAndStateVariables_StVenantKirchhoff_PlaneStrain
+             procedure :: GetTangentModulus              =>  GetTangentModulus_StVenantKirchhoff_PlaneStrain
+
+
+    end type
+	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     ! Class"NameOfTheMaterialModel"_PlaneStrain: Attributes and methods of the constitutive model
@@ -255,6 +272,144 @@ module StVenantKirchhoff
         end subroutine
         !==========================================================================================
 
+        !==========================================================================================
+        ! Method UpdateStateVariables_"NameOfTheMaterialModel"_ThreeDimensional: Routine that
+        ! contains the algorithm employed to update the state variables in the Three-Dimensional
+        ! analysis.
+        !------------------------------------------------------------------------------------------
+        ! Modifications:
+        ! Date:         Author:
+        !==========================================================================================
+        subroutine UpdateStressAndStateVariables_StVenantKirchhoff_PlaneStrain(this,Status)
+
+		    !************************************************************************************
+            ! DECLARATIONS OF VARIABLES
+		    !************************************************************************************
+            ! Object
+            ! ---------------------------------------------------------------------------------
+            use MathRoutines
+
+            class(ClassStVenantKirchhoff_PlaneStrain) :: this
+            type(ClassStatus) :: Status
+
+            ! Input variables
+            ! -----------------------------------------------------------------------------------
+            real(8) :: E(3,3), I(3,3), S(3,3)
+
+            ! Internal variables
+            ! -----------------------------------------------------------------------------------
+            real(8) :: D(6,6)
+            real(8) :: J, trE, Lambda, Mu
+
+		    !************************************************************************************
+
+            !************************************************************************************
+            ! ALGORITHM THAT UPDATES STATE VARIABLES IN PLANE STRAIN ANALYSIS
+		    !************************************************************************************
+            Lambda = this%Properties%Lambda
+            Mu = this%Properties%Mu
+
+
+            !Green-Lagrange Strain
+            I = 0.0d0
+            I(1,1) = 1.0d0
+            I(2,2) = 1.0d0
+            I(3,3) = 1.0d0
+
+            E = (1.0d0/2.0d0)*( matmul(transpose(this%F),this%F) - I )
+
+            ! Second Piola-Kirchhoff Stress
+            trE = E(1,1) + E(2,2) + E(3,3)
+
+            S = Lambda*trE*I + 2.0d0*Mu*E
+
+            !Cauchy
+            J = det(this%F)
+
+            !S = matmul(matmul(this%F,S),transpose(this%F))/J
+
+            S = StressTransformation(This%F,S,StressMeasures%SecondPiola,StressMeasures%Cauchy)
+
+            this%Stress(1)=S(1,1)
+            this%Stress(2)=S(2,2)
+            this%Stress(3)=S(1,2)
+            this%Stress(4)=S(3,3)
+
+
+		    !************************************************************************************
+
+        end subroutine
+        !==========================================================================================
+
+        !==========================================================================================
+        ! Method GetTangentModulus_"NameOfTheMaterialModel"_3D: Routine that evaluates the
+        ! Tangente Modulus in Plane Strain analysis.
+        !------------------------------------------------------------------------------------------
+        ! Modifications:
+        ! Date:         Author:
+        !==========================================================================================
+        subroutine GetTangentModulus_StVenantKirchhoff_PlaneStrain(this,D)
+
+
+		    !************************************************************************************
+            ! DECLARATIONS OF VARIABLES
+		    !************************************************************************************
+            ! Object
+            ! -----------------------------------------------------------------------------------
+             use MathRoutines
+
+            class(ClassStVenantKirchhoff_PlaneStrain) :: this
+
+            ! Input/Output variables
+            ! -----------------------------------------------------------------------------------
+            real(8) , dimension(:,:) , intent(inout) :: D
+
+            ! Internal variables
+            ! -----------------------------------------------------------------------------------
+            real(8) :: cte, YoungModulus, Poisson
+            real(8) , parameter :: R0=0.0d0 , R1=1.0d0 , R2=2.0d0
+
+            integer :: i,j,k,l
+            real(8) :: aux, detF
+            real(8) :: b(3,3), Daux(6,6)
+
+            class (StVenantKirchhoffProperties), pointer :: p
+
+		    !************************************************************************************
+
+            !************************************************************************************
+            ! TANGENT MODULUS
+		    !************************************************************************************
+
+            !Montagem da matriz D espacial
+            b = matmul(this%F,Transpose(this%F))
+
+            detF = det(this%F)
+
+            p => this%Properties
+
+            ! Upper Triangular!!!
+            Daux(1,1:6) = [ Cs(b,p,detF,1,1,1,1) , Cs(b,p,detF,1,1,2,2)  , Cs(b,p,detF,1,1,3,3)  , Cs(b,p,detF,1,1,1,2) , Cs(b,p,detF,1,1,2,3) , Cs(b,p,detF,1,1,1,3)  ]
+            Daux(2,2:6) = [                        Cs(b,p,detF,2,2,2,2)  , Cs(b,p,detF,2,2,3,3)  , Cs(b,p,detF,2,2,1,2) , Cs(b,p,detF,2,2,2,3) , Cs(b,p,detF,2,2,1,3)  ]
+            Daux(3,3:6) = [                                                Cs(b,p,detF,3,3,3,3)  , Cs(b,p,detF,3,3,1,2) , Cs(b,p,detF,3,3,2,3) , Cs(b,p,detF,3,3,1,3)  ]
+            Daux(4,4:6) = [                                                                        Cs(b,p,detF,1,2,1,2) , Cs(b,p,detF,1,2,2,3) , Cs(b,p,detF,1,2,1,3)  ]
+            Daux(5,5:6) = [                                                                                               Cs(b,p,detF,2,3,2,3) , Cs(b,p,detF,2,3,1,3)  ]
+            Daux(6,6)   =                                                                                                                        Cs(b,p,detF,1,3,1,3)
+
+            D(1,1) = Daux(1,1)
+            D(1,2) = Daux(1,2)
+            D(1,3) = Daux(1,4)
+
+            D(2,1) = Daux(2,1)
+            D(2,2) = Daux(2,2)
+            D(2,3) = Daux(2,4)
+
+            D(3,1) = Daux(4,1)
+            D(3,2) = Daux(4,2)
+            D(3,3) = Daux(4,4)
+		    !************************************************************************************
+
+        end subroutine
 
         !==========================================================================================
         ! Method UpdateStateVariables_"NameOfTheMaterialModel"_Axisymmetric: Routine that

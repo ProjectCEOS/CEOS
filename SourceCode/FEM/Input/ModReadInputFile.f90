@@ -677,9 +677,13 @@ contains
                         case (185) ! Ansys Element 185 - Hexa8
                             ndime = 3
                             ElemType = ElementTypes%Hexa8
-                        case (42) ! Ansys Element 2 - Quad4
+                        case (42) ! Ansys Element 42 - Quad4
                             ndime = 2
                             ElemType = ElementTypes%Quad4
+                        case (55) ! Ansys Element 55 - Tri3 (Quad4 colapsado)
+                            ! NOTE (Thiago#1#): Ansys não tem elemento com 3 nós. Implementação para ler malha do ansys modificada manualmente para Tri3
+                            ndime = 2
+                            ElemType = ElementTypes%Tri3
                         case default
                             write(*,*)trim(Line)
                             stop 'Error: Ansys Element Type Not Identified'
@@ -709,9 +713,27 @@ contains
 
                         ElementMaterialID(ElemID) = MaterialID
 
-                        do i = 1,ENnodes
-                            ElemConec(i) = AuxString(11+i)
-                        enddo
+                        ! Leitura da conectividade
+                        if (ElemType == ElementTypes%Hexa8) then
+
+                            do i = 1,ENnodes
+                                ElemConec(i) = AuxString(11+i)
+                            enddo
+
+                        else if (ElemType == ElementTypes%Quad4) then
+                        ! NOTE (Thiago#1#): HyperMesh informa a conectividade em sentido horário p o quad4. A leitura está sendo realizada de forma anti-horária!
+
+                            do i = 1,ENnodes
+                                ElemConec(5-i) = AuxString(11+i)
+                            enddo
+                            
+                        else if (ElemType == ElementTypes%Tri3) then
+ 
+                            do i = 1,ENnodes-1
+                                ElemConec(4-i) = AuxString(11+i)
+                            enddo
+                            
+                        endif
 
                         call ElementConstructor( ElementList(ElemID)%el , ElemConec(1:ENnodes) ,ElemType , GlobalNodesList)
 

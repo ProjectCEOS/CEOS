@@ -299,7 +299,7 @@ module ModHyperView
             elseif ((VariableType==Vector).and.(nComponents==2)) then
                 DataType = '(v)'
                 Form = '2(1X,E16.9)'
-                Complement = '0.0'
+                Complement = '   0.0'
 
             elseif ((VariableType==Vector).and.(nComponents==3)) then
                 DataType = '(v)'
@@ -314,7 +314,7 @@ module ModHyperView
             elseif ((VariableType==Tensor).and.(nComponents==4)) then
                 DataType = '(t)'
                 Form = '4(1X,E16.9)'
-                Complement='0.0   0.0'
+                Complement='   0.0   0.0'
 
             elseif ((VariableType==Tensor).and.(nComponents==6)) then
                 DataType = '(t)'

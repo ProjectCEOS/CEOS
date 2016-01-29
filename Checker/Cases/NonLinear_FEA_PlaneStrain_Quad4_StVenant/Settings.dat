@@ -1,0 +1,116 @@
+!################################ SCRIPT DE EXEMPLO PARA O CODIGO #########################
+! DATA DE CRIAÇÃO  7/1/2015
+! o caractere para comentários é !
+! Este script é "case insensitive" , e ignora espaços (verticais e horizontais)
+! o caractere para determinar atribuições é o =
+!aceita o comando pause e disp para poder debugar
+!exemplo: 
+!disp=mostrar este texto
+!pause 
+! ########################################################################################
+
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+ANALYSIS SETTINGS
+
+	Multiscale Analysis = False !True 
+	Problem Type = Mechanical
+	Analysis Type = Quasi Static
+	Nonlinear Analysis = True !False !
+	Hypothesis of Analysis = Plane Strain !3D !Axisymmetric !
+	Element Technology =  Full Integration !Mean Dilatation ! 
+	Maximum Cut Backs = 10
+	
+END ANALYSIS SETTINGS
+
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+LINEAR SOLVER
+
+	PARDISO
+	
+END LINEAR SOLVER
+
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+NONLINEAR SOLVER
+
+	Newton_Raphson_Full
+	
+	Tol = 1e-3
+	MaxIter = 10
+
+	
+END NONLINEAR SOLVER
+
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+MATERIAL
+
+	Number of Materials = 1
+
+	!Material ID = 1
+	!Compressible_Neo_Hookean
+	!Lambda = 60.49e9
+	!Mu = 25.93e9
+	
+	Material ID = 1
+	St_Venant_Kirchhoff
+	Young Modulus = 100.0E9 
+	Poisson = 0.3
+
+	!Material ID = 1
+	!Generalized_Hookes_Law
+	!Young Modulus = 210.0E9 
+	!Poisson = 0.3		
+
+	
+	!Material ID = 1
+	!J2_Plasticity	
+	!Young Modulus = 200.0E9 
+	!Poisson = 0.3 
+	!Yield Stress = 250.0E6
+	!Hardening Modulus = 20.0E9
+	
+	!Material ID = 1
+	!Neo_Hookean
+	!C10 = 1.0e0
+	!Bulk Modulus = 1.0e2
+
+	!Material ID = 1
+	!Neo_Hookean
+	!C10 = 5.0d9
+	!Bulk Modulus = 5.0d13
+	
+	
+END MATERIAL 
+
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+MESH AND BOUNDARY CONDITIONS
+
+	Mesh File = Malha_Quad4.cdb
+	Preprocessor = HyperMesh !Gid 12
+	Time Discretization File = Time_Discretization.dat
+		
+END MESH AND BOUNDARY CONDITIONS
+
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+MULTISCALE SETTINGS
+
+	Kinematical Constraints = Linear !Taylor !Periodic
+	F11 = F11.dat
+	F12 = Zero !F12.dat
+	F13 = Zero 
+	F21 = Zero
+	F22 = One
+	F23 = Zero
+	F31 = Zero
+	F32 = Zero
+	F33 = One	
+		
+END MULTISCALE SETTINGS
+
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+

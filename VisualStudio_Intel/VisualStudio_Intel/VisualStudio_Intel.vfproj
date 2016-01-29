@@ -50,11 +50,13 @@
 		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
 		<Filter Name="ConstitutiveLibrary">
 		<Filter Name="ConstitutiveModelsLibrary">
+		<File RelativePath="..\..\SourceCode\ConstitutiveLibrary\ConstitutiveModelsLibrary\ModCompressibleNeoHookean.f90"/>
 		<File RelativePath="..\..\SourceCode\ConstitutiveLibrary\ConstitutiveModelsLibrary\ModConstitutiveModelLibrary.f90"/>
 		<File RelativePath="..\..\SourceCode\ConstitutiveLibrary\ConstitutiveModelsLibrary\ModGeneralizedHookesLaw .f90"/>
 		<File RelativePath="..\..\SourceCode\ConstitutiveLibrary\ConstitutiveModelsLibrary\ModHyperelasticQ1P0.f90"/>
 		<File RelativePath="..\..\SourceCode\ConstitutiveLibrary\ConstitutiveModelsLibrary\ModJ2Plasticity.f90"/>
 		<File RelativePath="..\..\SourceCode\ConstitutiveLibrary\ConstitutiveModelsLibrary\ModNeoHookean.f90"/>
+		<File RelativePath="..\..\SourceCode\ConstitutiveLibrary\ConstitutiveModelsLibrary\ModNeoHookeanIsochoric.f90"/>
 		<File RelativePath="..\..\SourceCode\ConstitutiveLibrary\ConstitutiveModelsLibrary\ModNeoHookeanQ1P0.f90"/>
 		<File RelativePath="..\..\SourceCode\ConstitutiveLibrary\ConstitutiveModelsLibrary\ModStVenantKirchhoff.f90"/></Filter>
 		<File RelativePath="..\..\SourceCode\ConstitutiveLibrary\ModConstitutiveModel.f90"/>

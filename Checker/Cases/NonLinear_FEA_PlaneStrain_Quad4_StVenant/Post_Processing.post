@@ -1,0 +1,67 @@
+
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! Post Processor Results
+!-----------------------------------------------------------------------------------------
+POST PROCESSOR 
+
+	Post Processor = None !HyperView 12 !None !GiD 7 !
+	Results = Displacements!  , Cauchy Stress , Logarithmic Strain !, von Mises Cauchy Stress
+	File Name = hypermesh_results.hwascii
+	
+END POST PROCESSOR 
+
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+
+
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+! Defaut Probes
+!-----------------------------------------------------------------------------------------
+! Variable Name: Displacements
+! Components: 1=X ; 2=Y ; 3=Z ; All
+!-----------------------------------------------------------------------------------------
+! Variable Name: Cauchy Stress or Logarithmic Strain
+! Components: 1=XX ; 2=YY ; 3=ZZ ; 4=XY ; 5=YZ; 6=XZ ; All
+!-----------------------------------------------------------------------------------------
+! Variable Name: Deformation Gradient:
+! Components: 1=XX ; 2=YX ; 3=ZX ; 4=XY ; 5=YY ; 6=ZY ; 7=XZ ; 8=YZ ; 9=ZZ ; All
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+NUMBER OF PROBES = 2
+
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+PROBE
+	Location = Node
+	File Name = CEOS_Disp_X.probe
+	Variable Name = Displacements 
+	Node = 9
+	Components = 1
+END PROBE 
+
+PROBE
+	Location = Node
+	File Name = CEOS_Disp_Y.probe
+	Variable Name = Displacements 
+	Node = 9
+	Components = 2
+END PROBE 
+
+PROBE
+	Location = Gauss Point
+	File Name = CEOS_von_mises_Stress.probe
+	Variable Name = von Mises Stress 
+	Element = 81
+	Gauss Point = 1	
+	Components = 1
+END PROBE
+ 
+PROBE
+	Location = Gauss Point
+	File Name = CEOS_Strain.probe
+	Variable Name = Strain 
+	Element = 81
+	Gauss Point = 1
+	Components = 3	
+END PROBE 
+!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX

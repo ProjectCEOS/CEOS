@@ -24,6 +24,8 @@ module ConstitutiveModelLibrary
     use NeoHookeanQ1P0
     use HyperelasticQ1P0
     use StVenantKirchhoff
+    use CompressibleNeoHookean
+    use NeoHookeanIsochoric
 
     ! Constitutive Models ID registered:
     type ClassConstitutiveModels
@@ -34,6 +36,7 @@ module ConstitutiveModelLibrary
         integer   :: StVenantKirchhoffModel         = 5
         integer   :: HyperelasticQ1P0Model          = 6
         integer   :: CompressibleNeoHookeanModel    = 7
+        integer   :: NeoHookeanIsochoricModel       = 8
     end type
 
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -81,11 +84,15 @@ module ConstitutiveModelLibrary
 
             type(ClassStVenantKirchhoff_3D)            , pointer , dimension(:) :: StVK_ThreeDimensional
             type(ClassStVenantKirchhoff_Axisymmetric)  , pointer , dimension(:) :: StVK_Axisymmetric
+            type(ClassStVenantKirchhoff_PlaneStrain)   , pointer , dimension(:) :: StVK_PlaneStrain
 
             type(ClassHyperelasticQ1P0_3D)             , pointer , dimension(:) :: HEQ1P0_3D
             type(ClassHyperelasticQ1P0_Axisymmetric)   , pointer , dimension(:) :: HEQ1P0_Axisymmetric
 
-            !type(ClassCompressibleNeoHookean_3D)       , pointer , dimension(:) :: CNH_3D
+            type(ClassCompressibleNeoHookean_3D)       , pointer , dimension(:) :: CNH_3D
+            type(ClassCompressibleNeoHookean_PlaneStrain) , pointer , dimension(:) :: CNH_PlaneStrain
+
+            type(ClassNeoHookeanIsochoric_PlaneStrain) , pointer , dimension(:) :: NHI_PlaneStrain
 
 ! TODO (Thiago#1#02/13/15): Trocar threeDimensional para 3D
 
@@ -191,6 +198,11 @@ module ConstitutiveModelLibrary
                             allocate( StVK_Axisymmetric(nGP) )
                             GaussPoints => StVK_Axisymmetric
 
+                    elseif ( AnalysisSettings%Hypothesis == HypothesisOfAnalysis%PlaneStrain ) then
+
+                            allocate( StVK_PlaneStrain(nGP) )
+                            GaussPoints => StVK_PlaneStrain
+
                     else
                             call Error("Error: St. Venant-Kirchhoff Model - analysis type not available.")
 
@@ -221,23 +233,40 @@ module ConstitutiveModelLibrary
                 ! -------------------------------------------------------------------------------
                 ! Compressible Neo-Hookean Model
                 ! -------------------------------------------------------------------------------
-!                case (ConstitutiveModels % CompressibleNeoHookeanModel)
-!
-!                    if ( AnalysisSettings%Hypothesis == HypothesisOfAnalysis%ThreeDimensional ) then
-!
-!                            allocate( NH_3D(nGP) )
-!                            GaussPoints => NH_3D
-!
-!!                    elseif ( AnalysisSettings%Hypothesis == HypothesisOfAnalysis%Axisymmetric ) then
-!!
-!!                            allocate( NH_Axisymmetric(nGP) )
-!!                            GaussPoints => NH_Axisymmetric
-!
-!                    else
-!                            call Error("Error: Compressible Neo Hookean Model - analysis type not available.")
-!
-!                    endif
+                case (ConstitutiveModels % CompressibleNeoHookeanModel)
+
+                    if ( AnalysisSettings%Hypothesis == HypothesisOfAnalysis%ThreeDimensional ) then
+
+                            allocate( CNH_3D(nGP) )
+                            GaussPoints => CNH_3D
+
+                    elseif ( AnalysisSettings%Hypothesis == HypothesisOfAnalysis%PlaneStrain ) then
+
+                            allocate( CNH_PlaneStrain(nGP) )
+                            GaussPoints => CNH_PlaneStrain
+
+                    else
+                            call Error("Error: Compressible Neo Hookean Model - analysis type not available.")
+
+                    endif
                 ! -------------------------------------------------------------------------------
+
+                ! -------------------------------------------------------------------------------
+                ! Neo-Hookean Isochoric Model
+                ! -------------------------------------------------------------------------------
+                case (ConstitutiveModels % NeoHookeanIsochoricModel)
+
+                    if ( AnalysisSettings%Hypothesis == HypothesisOfAnalysis%PlaneStrain ) then
+
+                            allocate( NHI_PlaneStrain(nGP) )
+                            GaussPoints => NHI_PlaneStrain
+
+                    else
+                            call Error("Error: Neo Hookean Isochoric Model - analysis type not available.")
+
+                    endif
+                ! -------------------------------------------------------------------------------
+
                 case default
 
                     call Error( "Error: Constitutive Model not registered.")
@@ -322,6 +351,10 @@ module ConstitutiveModelLibrary
             elseif ( Comp%CompareStrings('compressible_neo_hookean', model) .and. (AnalysisSettings%ElementTech == ElementTechnologies%Full_Integration) ) then
 
                 modelID = ConstitutiveModels%CompressibleNeoHookeanModel
+
+            elseif ( Comp%CompareStrings('neo_hookean_isochoric', model) .and. (AnalysisSettings%ElementTech == ElementTechnologies%Full_Integration) ) then
+
+                modelID = ConstitutiveModels%NeoHookeanIsochoricModel
 
             else
                 call Error( "Error: Material Model not identified: "//trim(model))

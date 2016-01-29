@@ -195,17 +195,17 @@ module ConstitutiveModel
            S = 0.0d0
            select case (AnalysisSettings%Hypothesis)
 
-                !case (HypothesisOfAnalysis%PlaneStrain)
+                case (HypothesisOfAnalysis%PlaneStrain)
 
-                    !S(1,1) = this%Stress(1)
-                    !S(2,2) = this%Stress(2)
-                    !S(1,2) = this%Stress(3)
-                    !S(2,1) = this%Stress(3)
+                    S(1,1) = this%Stress(1)
+                    S(2,2) = this%Stress(2)
+                    S(1,2) = this%Stress(3)
+                    S(2,1) = this%Stress(3)
 
-                    !S(3,3) = S(1,1)
-                    !S(4,4) = S(2,2)
-                    !S(3,4) = S(1,2)
-                    !S(4,3) = S(1,2)
+                    S(3,3) = S(1,1)
+                    S(4,4) = S(2,2)
+                    S(3,4) = S(1,2)
+                    S(4,3) = S(1,2)
 
                 !case (HypothesisOfAnalysis%PlaneStress)
 
