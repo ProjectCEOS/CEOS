@@ -26,6 +26,7 @@ module ConstitutiveModelLibrary
     use StVenantKirchhoff
     use CompressibleNeoHookean
     use NeoHookeanIsochoric
+    use ModHyperelasticTransIso
 
     ! Constitutive Models ID registered:
     type ClassConstitutiveModels
@@ -37,6 +38,7 @@ module ConstitutiveModelLibrary
         integer   :: HyperelasticQ1P0Model          = 6
         integer   :: CompressibleNeoHookeanModel    = 7
         integer   :: NeoHookeanIsochoricModel       = 8
+        integer   :: HyperelasticTransIsoModel      = 9
     end type
 
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -93,6 +95,8 @@ module ConstitutiveModelLibrary
             type(ClassCompressibleNeoHookean_PlaneStrain) , pointer , dimension(:) :: CNH_PlaneStrain
 
             type(ClassNeoHookeanIsochoric_PlaneStrain) , pointer , dimension(:) :: NHI_PlaneStrain
+
+            type(ClassHyperelasticTransIso_3D)         , pointer , dimension(:) :: HTI_3D
 
 ! TODO (Thiago#1#02/13/15): Trocar threeDimensional para 3D
 
@@ -267,6 +271,22 @@ module ConstitutiveModelLibrary
                     endif
                 ! -------------------------------------------------------------------------------
 
+                ! -------------------------------------------------------------------------------
+                ! Hyperelastic Transverse Isotropic Model
+                ! -------------------------------------------------------------------------------
+                case (ConstitutiveModels % HyperelasticTransIsoModel)
+
+                    if ( AnalysisSettings%Hypothesis == HypothesisOfAnalysis%ThreeDimensional ) then
+
+                            allocate( HTI_3D(nGP) )
+                            GaussPoints => HTI_3D
+
+                    else
+                            call Error("Error: Hyperelastic Transverse Isotropic Model - analysis type not available.")
+
+                    endif
+                ! -------------------------------------------------------------------------------
+
                 case default
 
                     call Error( "Error: Constitutive Model not registered.")
@@ -356,6 +376,9 @@ module ConstitutiveModelLibrary
 
                 modelID = ConstitutiveModels%NeoHookeanIsochoricModel
 
+            elseif ( Comp%CompareStrings('hyperelastic_tranverse_isotropic', model) .and. (AnalysisSettings%ElementTech == ElementTechnologies%Full_Integration) ) then
+
+                modelID = ConstitutiveModels%HyperelasticTransIsoModel
             else
                 call Error( "Error: Material Model not identified: "//trim(model))
             endif

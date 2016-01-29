@@ -509,19 +509,80 @@ module FEMAnalysis
 		    !************************************************************************************
             ! Modules and implicit declarations
             ! -----------------------------------------------------------------------------------
+            use MathRoutines
             implicit none
 
             ! Object
             ! -----------------------------------------------------------------------------------
-            class(ClassFEMAnalysis) :: this
+            class (ClassFEMAnalysis) :: this
+
 
             ! Input variables
             ! -----------------------------------------------------------------------------------
+            real(8) :: R, L, pitch, hand, theta, Xgp, X0ref, tXgp, norm_mX
+            real(8) :: mX(3), NodalValuesX(50)
+            integer :: ElemRef, NodeRef, e, gp, n, NumberOfNodes
+            
+
+            real(8) , pointer , dimension(:,:) :: NaturalCoord
+            real(8) , pointer , dimension(:)   :: Weight
 
  		    !************************************************************************************
-            ! SELECT PARAMETERS OF THE analysis type
+            ! ADDITIONAL COMPUTATIONS ON GAUSS POINTS
 		    !************************************************************************************
+! TODO (Thiago#1#): Passar os enumeradores dos modelos para realizar as contas somente nos elementos que possuem o devido modelo material.
 
+
+            !####################################################################################
+            ! Cálculo das tangentes da hélice
+            !####################################################################################
+
+            ! Parâmetros da Hélice
+            R = 2.50d0
+            L = 50.0d0
+            pitch = 1.0d0
+            hand = -1.0d0
+            theta = 0.0d0
+
+            ! Elemento e Nó de Referência
+            ElemRef = 181
+            NodeRef = 7
+
+
+            ! Cálculando a tangente nos pontos de Gauss (Para toda a malha!!!!)
+            NodalValuesX = 0.0d0
+            do e = 1 , size(this%ElementList)
+
+                NumberOfNodes = this%ElementList(e)%El%GetNumberOfNodes()
+
+                do gp = 1,size(this%ElementList(e)%El%GaussPoints)
+
+                    ! Obtendo as coordenadas nodais X do elemento
+                    do n = 1,NumberOfNodes
+                        NodalValuesX(n) = this%ElementList(e)%El%ElementNodes(n)%Node%CoordX(1)
+                    enddo
+
+                    call this%ElementList(e)%El%GetGaussPoints(NaturalCoord,Weight)
+
+                    call this%ElementList(e)%El%ElementInterpolation(NodalValuesX(1:NumberOfNodes),NaturalCoord(gp,:),Xgp)
+
+                    ! Coordenada X do nó de referência (ponto onde o parâmetro t=0)
+                    X0ref = this%ElementList(ElemRef)%El%ElementNodes(NodeRef)%Node%CoordX(1)
+
+                    tXgp = (2.0d0*Pi*pitch/L)*( Xgp - X0ref )
+
+                    mX(1) =  L/(2.0d0*Pi*pitch )
+                    mX(2) = -R*dsin( tXgp + (theta*Pi/180.0d0) )
+                    mX(3) =  hand*R*dcos( tXgp + (theta*Pi/180.0d0) )
+
+                    norm_mX = ( mX(1)*mX(1)+mX(2)*mX(2)+mX(3)*mX(3) )**0.50d0
+                    mX = mX/norm_mX
+
+                    this%ElementList(e)%El%GaussPoints(gp)%AdditionalVariables%mX = mX
+
+                enddo
+            enddo
+            !####################################################################################
 
             !
             !***********************************************************************************

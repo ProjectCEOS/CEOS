@@ -726,13 +726,13 @@ contains
                             do i = 1,ENnodes
                                 ElemConec(5-i) = AuxString(11+i)
                             enddo
-                            
+
                         else if (ElemType == ElementTypes%Tri3) then
- 
+
                             do i = 1,ENnodes-1
                                 ElemConec(4-i) = AuxString(11+i)
                             enddo
-                            
+
                         endif
 
                         call ElementConstructor( ElementList(ElemID)%el , ElemConec(1:ENnodes) ,ElemType , GlobalNodesList)

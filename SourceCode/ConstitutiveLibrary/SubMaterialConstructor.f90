@@ -30,7 +30,7 @@ subroutine MaterialConstructor( Element, ElementList, GlobalNodesList, Material,
     type (ClassElementsWrapper) , pointer , dimension(:)  :: ElementList
 	type(ClassAnalysis)                                   :: AnalysisSettings
 	type(ClassNodes) , dimension(:) , pointer             :: GlobalNodesList
-	class(ClassConstitutiveModelWrapper)  , pointer :: Material
+	class(ClassConstitutiveModelWrapper)  , pointer       :: Material
 
 	! Internal variables
 	! -----------------------------------------------------------------------------------

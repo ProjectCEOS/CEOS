@@ -75,7 +75,7 @@ module ModHyperView
             type (ClassParser)                      :: Comp
 
             real(8) , dimension(9)            :: UD_Variable
-            integer                           :: UD_ID, UD_Length, UD_VariableType
+            integer                           :: UD_ID, UD_Length, UD_VariableType, VariableType, VariableLength
             character(len=255)                :: UD_Name
             logical :: FoundUserVariable
             character(len=255)                :: LoadCaseChar
@@ -177,46 +177,105 @@ module ModHyperView
                     nnodes = size(FEA%ElementList(1)%El%ElementNodes)
                     allocate( GaussPointlValues( nelem , ngp , 6 ) )
                     allocate( Conec(nelem , nnodes ) )
+                    GaussPointlValues = 0.0d0
+                    Conec = 0
 
-                    GaussPoint => FEA%ElementList(1)%El%GaussPoints(1)
+       
+                    !8888888888888888888888888888888888888888888888888888888888888888888
+                    do e=1,nelem
+                            
+                        do gp=1,ngp
+                                
+                                GaussPoint => FEA%ElementList(e)%El%GaussPoints(gp)
+                                
+                                UD_ID = 0 !Pegar o numero de variaveis implementadas no ponto de Gauss                         
+                                call GaussPoint%GetResult( UD_ID, UD_Name, UD_Length, UD_Variable, UD_VariableType )                               
+                              
+                                !Loop sobre as numero de variaveis do ponto de gauss
+                                FoundUserVariable = .false.
+                                LOOP_USER_DEFINED: do UD_ID = 1,UD_Length
+                                
+                                    !Acessando o Ponto de Gauss para obter o nome das variáveis
+                                    call GaussPoint%GetResult( UD_ID, UD_Name, UD_Length, UD_Variable, UD_VariableType ) 
+                                    
+                                    !Encontrar a variável que o usuário quer
+                                    FoundUserVariable = Comp%CompareStrings( this%VariableNames(v),UD_Name)
+                                
+                                    if (FoundUserVariable) then  
+                                        ! Armazenando a variável
+                                        GaussPointlValues(e,gp,1:UD_Length) = UD_Variable(1:UD_Length)
+                                        ! Armazendo o tipo e tamanho de variável para a rotina de exportação
+                                        VariableType = UD_VariableType
+                                        VariableLength = UD_Length
+                                    endif
+                                
+                            enddo  LOOP_USER_DEFINED
+                                
+                            
+                        enddo 
+ 
+                        do n = 1,nnodes
+                            Conec(e,n) = FEA%ElementList(e)%El%ElementNodes(n)%Node%ID
+                        enddo
+                        
+                    enddo
+                    
+                    
+                        
+                    LoadCaseChar = FEA%LoadCase
+                    LoadCaseChar = RemoveSpaces(LoadCaseChar)
+                    call this%ExportOnGaussPointsHV( this%VariableNames(v), LoadCaseChar, FEA%Time, Conec, &
+                                                     GaussPointlValues(:,:,1:VariableLength), VariableType )
+                            
+                        
+                    deallocate(GaussPointlValues, Conec)
+                        
+                    !888888888888888888888888888888888888888888888888888888888888888888888888888
+                    
+                    ! só funciona se todos os materiais tiverem as mesmas variaveis nos pontos de gauss
+                    !GaussPoint => FEA%ElementList(1)%El%GaussPoints(1)
 
-                    UD_ID = 0 !Pegar o numero de variaveis implementadas no ponto de gauss
-                    call GaussPoint%GetResult( UD_ID, UD_Name, UD_Length, UD_Variable, UD_VariableType )
+                    !UD_ID = 0 !Pegar o numero de variaveis implementadas no ponto de gauss
+                    !call GaussPoint%GetResult( UD_ID, UD_Name, UD_Length, UD_Variable, UD_VariableType )
 
                    ! Loop sobre as numero de variaveis do ponto de gauss
                     !Primeiramente vamos encontrar a variável que o usuário quer
-                    FoundUserVariable = .false.
-                    LOOP_USER_DEFINED: do UD_ID = 1,UD_Length
-
-                        GaussPoint => FEA%ElementList(1)%El%GaussPoints(1)
-
-                        call GaussPoint%GetResult( UD_ID, UD_Name, UD_Length, UD_Variable, UD_VariableType )
-
-                        FoundUserVariable = Comp%CompareStrings( this%VariableNames(v),UD_Name)
-
-                        if (FoundUserVariable) then
-
-                            do e=1,nelem
-                                do gp=1,ngp
-                                    GaussPoint => FEA%ElementList(e)%El%GaussPoints(gp)
-                                    call GaussPoint%GetResult( UD_ID, UD_Name, UD_Length, UD_Variable, UD_VariableType )
-                                    GaussPointlValues(e,gp,1:UD_Length) = UD_Variable(1:UD_Length)
-                                enddo
-                                do n = 1,nnodes
-                                    Conec(e,n) = FEA%ElementList(e)%El%ElementNodes(n)%Node%ID
-                                enddo
-                            enddo
-
-                            LoadCaseChar = FEA%LoadCase
-                            LoadCaseChar = RemoveSpaces(LoadCaseChar)
-                            call this%ExportOnGaussPointsHV( this%VariableNames(v), LoadCaseChar, FEA%Time, Conec, &
-                                                             GaussPointlValues(:,:,1:UD_Length), UD_VariableType )
-
-                            deallocate(GaussPointlValues, Conec)
-
-                        endif
-
-                    enddo LOOP_USER_DEFINED
+                    !FoundUserVariable = .false.
+                    !LOOP_USER_DEFINED: do UD_ID = 1,UD_Length
+                    !
+                    !     
+                    !    
+                    !    GaussPoint => FEA%ElementList(1)%El%GaussPoints(1)
+                    !    
+                    !    call GaussPoint%GetResult( UD_ID, UD_Name, UD_Length, UD_Variable, UD_VariableType )
+                    !    
+                    !    FoundUserVariable = Comp%CompareStrings( this%VariableNames(v),UD_Name)
+                    !    
+                    !    if (FoundUserVariable) then
+                    !    
+                    !        do e=1,nelem
+                    !            do gp=1,ngp
+                    !                GaussPoint => FEA%ElementList(e)%El%GaussPoints(gp)
+                    !                call GaussPoint%GetResult( UD_ID, UD_Name, UD_Length, UD_Variable, UD_VariableType )
+                    !                GaussPointlValues(e,gp,1:UD_Length) = UD_Variable(1:UD_Length)
+                    !            enddo
+                    !            do n = 1,nnodes
+                    !                Conec(e,n) = FEA%ElementList(e)%El%ElementNodes(n)%Node%ID
+                    !            enddo
+                    !        enddo
+                    !    
+                    !        LoadCaseChar = FEA%LoadCase
+                    !        LoadCaseChar = RemoveSpaces(LoadCaseChar)
+                    !        call this%ExportOnGaussPointsHV( this%VariableNames(v), LoadCaseChar, FEA%Time, Conec, &
+                    !                                         GaussPointlValues(:,:,1:UD_Length), UD_VariableType )
+                    !    
+                    !        deallocate(GaussPointlValues, Conec)
+                    !    
+                    !    endif
+                    !    
+                    !    
+                    !
+                    !enddo LOOP_USER_DEFINED
 
 
 

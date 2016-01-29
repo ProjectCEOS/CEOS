@@ -17,6 +17,7 @@ module ConstitutiveModel
     type ClassAdditionalVariables
 
         real(8) :: Jbar
+        real(8) :: mX(3)
 
     endtype
 
@@ -30,7 +31,6 @@ module ConstitutiveModel
         real(8) , pointer , dimension(:)    :: Stress => null()
         real(8)                             :: F(3,3)=0.0d0
         real(8)                             :: T
-        !real(8)                             :: Jbar
         real(8)                             :: Time = 0.0d0
 
 
