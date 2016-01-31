@@ -18,6 +18,7 @@ module ModHyperelasticTransIso
     ! Modules and implicit declarations
     ! --------------------------------------------------------------------------------------------
     use ConstitutiveModel
+    use ModContinuumMechanics
 
     implicit none
 
@@ -29,7 +30,7 @@ module ModHyperelasticTransIso
 
         ! Variables of material parameters
         !----------------------------------------------------------------------------------------------
-        real(8) :: C10, BulkModulus
+        real(8) :: FiberVolumeFraction, Mu_Matrix, Lambda_Matrix, Cte1_Fiber, Cte2_Fiber
 
     end type
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -43,6 +44,9 @@ module ModHyperelasticTransIso
 		! Class Attributes : Usually the state variables (instant and internal variables)
 		!----------------------------------------------------------------------------------------
         type (HyperelasticTransIsoProperties), pointer :: Properties => null()
+        
+        ! Variables
+         real(8) , allocatable , dimension(:) :: Cauchy_Stress_Fiber, Cauchy_Stress_Matrix
 
         contains
 
@@ -107,6 +111,12 @@ module ModHyperelasticTransIso
             ! ALLOCATE THE STATE VARIABLES
 		    !************************************************************************************
 
+            allocate( this%Cauchy_Stress_Fiber( AnalysisSettings%StressSize ) ) 
+            allocate( this%Cauchy_Stress_Matrix( AnalysisSettings%StressSize ) ) 
+            
+            this%Cauchy_Stress_Fiber = 0.0d0
+            this%Cauchy_Stress_Matrix = 0.0d0
+            
 		    !************************************************************************************
 
         end subroutine
@@ -142,6 +152,8 @@ module ModHyperelasticTransIso
             ! DEALLOCATE THE STATE VARIABLES
 		    !************************************************************************************
 
+            if (allocated(this%Cauchy_Stress_Fiber)) deallocate( this%Cauchy_Stress_Fiber ) 
+            if (allocated(this%Cauchy_Stress_Matrix)) deallocate( this%Cauchy_Stress_Matrix )
 
 		    !************************************************************************************
 
@@ -173,8 +185,8 @@ module ModHyperelasticTransIso
             type(ClassParser)::DataFile
 
 		    !************************************************************************************
-		    character(len=100),dimension(2)::ListOfOptions,ListOfValues
-		    logical,dimension(2)::FoundOption
+		    character(len=100),dimension(5)::ListOfOptions,ListOfValues
+		    logical,dimension(5)::FoundOption
 		    integer::i
 
             !************************************************************************************
@@ -182,10 +194,9 @@ module ModHyperelasticTransIso
 		    !************************************************************************************
             allocate (this%Properties)
 
-            ListOfOptions=["C10","BulkModulus"]
+            ListOfOptions=[ "Fiber Volume Fraction", "Mu Matrix", "Lambda Matrix", "Cte1 Fiber", "Cte2 Fiber"]
 
             call DataFile%FillListOfOptions(ListOfOptions,ListOfValues,FoundOption)
-            !call DataFile%FillListOfOptions(ListOfOptions,ListOfValues,FoundOption,'barreira')
             call DataFile%CheckError
 
             do i=1,size(FoundOption)
@@ -195,17 +206,13 @@ module ModHyperelasticTransIso
                 endif
             enddo
 
-            this%Properties%C10 = ListOfValues(1)
-
-            this%Properties%BulkModulus = ListOfValues(2)
-
-            !************************************************************************************
-            ! READ THE MATERIAL PARAMETERS
+            this%Properties%FiberVolumeFraction = ListOfValues(1)
+            this%Properties%Mu_Matrix           = ListOfValues(2)
+            this%Properties%Lambda_Matrix       = ListOfValues(3)
+            this%Properties%Cte1_Fiber          = ListOfValues(4)
+            this%Properties%Cte2_Fiber          = ListOfValues(5)
+            
 		    !************************************************************************************
-
-            !Read(FileNum,*) YoungModulus, Poisson
-
-            !************************************************************************************
 
         end subroutine
         !==========================================================================================
@@ -256,48 +263,93 @@ module ModHyperelasticTransIso
             class(ClassHyperelasticTransIso_3D) :: this
             type(ClassStatus) :: Status
 
-            ! Input variables
-            ! -----------------------------------------------------------------------------------
-            real(8) :: b(3,3), I(3,3), S(3,3)
 
             ! Internal variables
             ! -----------------------------------------------------------------------------------
-            real(8) :: J, trb, p, BulkModulus, C10
+            real(8) :: vf, Mu, Lambda, C1, C2, I4, D_Psif_DI4, J
+            real(8) :: mX(3), A(3,3)
+            real(8) :: F(3,3), C(3,3), b(3,3), I(3,3)
+            real(8) :: S(3,3), Sm(3,3), Sf(3,3)
 
 		    !************************************************************************************
 
             !************************************************************************************
-            ! ALGORITHM THAT UPDATES STATE VARIABLES IN PLANE STRAIN ANALYSIS
+            ! ALGORITHM THAT UPDATES STATE VARIABLES
 		    !************************************************************************************
 
-            BulkModulus = this%Properties%BulkModulus
-            C10 = this%Properties%C10
+            ! Optional: Retrieve Variables
+            ! -----------------------------------------------------------------------------------
+            vf = this%Properties%FiberVolumeFraction
+            Mu = this%Properties%Mu_Matrix
+            Lambda = this%Properties%Lambda_Matrix
+            C1 = this%Properties%Cte1_Fiber
+            C2 = this%Properties%Cte2_Fiber
 
-            !Left-Cauchy Green Strain
+            F = this%F
+            mX = this%AdditionalVariables%mX
+            ! -----------------------------------------------------------------------------------
+
+            ! Kinematic Variables
+            ! -----------------------------------------------------------------------------------
+
+            ! Identity
             I = 0.0d0
             I(1,1) = 1.0d0
             I(2,2) = 1.0d0
             I(3,3) = 1.0d0
 
-            b = matmul(this%F,transpose(this%F))
+            ! Jacobian
+            J = det(F)
 
-            ! Cauchy
-            trb = b(1,1) + b(2,2) + b(3,3)
+            !Right-Cauchy Green Strain
+            C = matmul(transpose(F),F)
 
-            J = det(this%F)
+            !Left-Cauchy Green Strain
+            b = matmul(F,transpose(F))
 
-            p = 3.0d0*BulkModulus*( J**(-2.0d0/3.0d0) )*( J**(1.0d0/3.0d0) - 1.0d0 )
-            !p = 9.0d0*BulkModulus*( J - 1.0d0 )
+            !Material Structural Tensor
+            A = Tensor_Product(mX,mX)
 
-            S = 2.0d0*C10*(J**(-5.0d0/3.0d0))*( b - (trb/3.0d0)*I ) + p*I
+            !Fourth Invariant
+            I4 = Tensor_Inner_Product(C,A)
 
-            this%Stress(1)=S(1,1)
-            this%Stress(2)=S(2,2)
-            this%Stress(3)=S(3,3)
-            this%Stress(4)=S(1,2)
-            this%Stress(5)=S(2,3)
-            this%Stress(6)=S(1,3)
+            ! -----------------------------------------------------------------------------------
 
+
+            ! STRESS IN MATRIX - Calculated in 3D Tensorial Format
+            ! -----------------------------------------------------------------------------------
+
+            ! Cauchy Stress - Compressible Neo-Hookean (Bonet and Wood, 2008)
+            Sm = (Mu/J)*(b-I) + (Lambda/J)*dlog(J)*I
+            ! -----------------------------------------------------------------------------------
+
+
+            ! STRESS IN FIBER - Calculated in 3D Tensorial Format
+            ! -----------------------------------------------------------------------------------
+
+            ! First derivative of the fiber strain energy related to I4(C)
+            ! -----------------------------------------------------------------------------------
+            !Polynomial
+            D_Psif_DI4 =  2.0d0*C1*(I4 - 1.0d0) + 3.0d0*C2*( (I4 - 1.0d0)**2.0d0 )
+
+
+            ! Second Piola-Kirchoof
+            Sf = 2.0d0*D_Psif_DI4*A
+
+            ! Cauchy Stress
+            Sf = StressTransformation(F,Sf,StressMeasures%SecondPiola,StressMeasures%Cauchy )
+            ! -----------------------------------------------------------------------------------
+
+            ! TOTAL STRESS
+            ! -----------------------------------------------------------------------------------
+
+            ! Cauchy Stress
+            !S = (1.0d0-vf)*Sm + vf*Sf
+            
+            this%Cauchy_Stress_Fiber = Convert_to_Voigt_3D_Sym( vf*Sf )
+            this%Cauchy_Stress_Matrix = Convert_to_Voigt_3D_Sym( (1.0d0-vf)*Sm )
+            
+            this%Stress =  this%Cauchy_Stress_Fiber + this%Cauchy_Stress_Matrix
 
 
 		    !************************************************************************************
@@ -331,14 +383,12 @@ module ModHyperelasticTransIso
 
             ! Internal variables
             ! -----------------------------------------------------------------------------------
-            real(8) :: J, p, D2psiDJ2, BulkModulus, C10
-            real(8) :: C(3,3),Cinv(3,3)  !, Ide(3,3), Sfric(3,3), devSfric(3,3), Siso(3,3)
-            !real(8) :: Pm(3,3,3,3), Ciso(3,3,3,3), Cvol(3,3,3,3), Cbar(3,3,3,3)
 
-            real(8) :: CV(6), CinvV(6), SfricV(6), devSfricV(6), SisoV(6)
-            real(8) :: PmV(6,6) , CisoV(6,6), CvolV(6,6), CbarV(6,6)
-
-
+             ! Internal variables
+            ! -----------------------------------------------------------------------------------
+            real(8) :: vf, Mu, Lambda, C1, C2,  I4, D2_Psif_DI4, J
+            real(8) :: F(3,3), C(3,3), I(3,3), mX(3), A(3,3)
+            real(8) :: Ivoigt(6), IT4voigt(6,6), Dm(6,6), Df(6,6), Avoigt(6)
 
 		    !************************************************************************************
 
@@ -346,106 +396,75 @@ module ModHyperelasticTransIso
             ! TANGENT MODULUS
 		    !************************************************************************************
 
-            !Montagem da matriz D espacial
-            !Ide = 0.0d0
-            !Ide(1,1) = 1.0d0
-            !Ide(2,2) = 1.0d0
-            !Ide(3,3) = 1.0d0
+            ! Optional: Retrieve Variables
+            ! -----------------------------------------------------------------------------------
+            vf = this%Properties%FiberVolumeFraction
+            Mu = this%Properties%Mu_Matrix
+            Lambda = this%Properties%Lambda_Matrix
+            C1 = this%Properties%Cte1_Fiber
+            C2 = this%Properties%Cte2_Fiber
 
-!            C = matmul(Transpose(this%F),this%F)
-!
-!            Cinv = inverse(C)
-!
-!            CinvV = Convert_to_Voigt(Cinv)
-!
-!
-!
-!            J = det(this%F)
-!
-!            p = 3.0d0*BulkModulus*( J**(-2.0d0/3.0d0) )*( J**(1.0d0/3.0d0) - 1.0d0 )
-!
-!            Sfric = 2.0d0*C10*Ide
-!
-!            devSfric = Sfric - (1.0d0/3.0d0)*Tensor_Inner_Product(Sfric,C)*Cinv
-!
-!            Siso = (J**(-2.0d0/3.0d0))*devSfric
-!
-!            Pm = Tensor_4_Double_Contraction(Isym(),Tensor_Product_Square(Cinv,Cinv)) - (1.0d0/3.0d0)*Tensor_Product_Ball(Cinv,Cinv)
-!
-!            D2psiDJ2 = - BulkModulus*(J**(-5.0d0/3.0d0))*( (J**(1.0d0/3.0d0)) - 2.0d0 )
-!
-!
-!
-!            Ciso = (2.0d0/3.0d0)*(J**(-2.0d0/3.0d0))*Tensor_Inner_Product(Sfric,C)*Pm - (2.0d0/3.0d0)*( Tensor_Product_Ball(Siso,Cinv) + Tensor_Product_Ball(Cinv,Siso) )
-!
-!            Cvol = J*( p +J*D2psiDJ2 )*Tensor_Product_Ball(Cinv,Cinv) - 2.0d0*J*p*( Tensor_4_Double_Contraction(Isym(),Tensor_Product_Square(Cinv,Cinv)) )
-!
-!            Cbar = Ciso + Cvol
+            F = this%F
+            mX = this%AdditionalVariables%mX
+            ! -----------------------------------------------------------------------------------
 
-            !Push-Forward
-            !Cbar = Push_Forward_Tensor_4(Cbar,this%F)
+            ! Kinematic Variables
+            ! -----------------------------------------------------------------------------------
+
+            ! Identity
+            I = 0.0d0
+            I(1,1) = 1.0d0
+            I(2,2) = 1.0d0
+            I(3,3) = 1.0d0
+
+            ! Jacobian
+            J = det(F)
+
+            !Right-Cauchy Green Strain
+            C = matmul(transpose(F),F)
+            
+            !Material Structural Tensor
+            A = Tensor_Product(mX,mX)
+
+            !Fourth Invariant
+            I4 = Tensor_Inner_Product(C,A)
+
+            ! -----------------------------------------------------------------------------------
+
+            ! MATRIX CONTRIBUTION - Compressible Neo-Hookean (Bonet and Wood, 2008)
+            ! -----------------------------------------------------------------------------------
+
+            Ivoigt = Convert_to_Voigt_3D_Sym(I)
+
+            IT4voigt = Ball_Voigt(Ivoigt,Ivoigt)
+
+            ! Spatial Tangent Modulus - In Voigt Notation
+            Dm = (Lambda/J)*IT4voigt + (2.0d0/J)*(Mu - Lambda*dlog(J))*IsymV()
+            ! -----------------------------------------------------------------------------------
 
 
-            !D(1,:) = [ Cs(b,detF,1,1,1,1) , Cs(b,detF,1,1,2,2)  , Cs(b,detF,1,1,3,3)  , Cs(b,detF,1,1,2,3) , Cs(b,detF,1,1,1,3) , Cs(b,detF,1,1,1,2)  ]
-            !D(2,:) = [ Cs(b,detF,2,2,1,1) , Cs(b,detF,2,2,2,2)  , Cs(b,detF,2,2,3,3)  , Cs(b,detF,2,2,2,3) , Cs(b,detF,2,2,1,3) , Cs(b,detF,2,2,1,2)  ]
-            !D(3,:) = [ Cs(b,detF,3,3,1,1) , Cs(b,detF,3,3,2,2)  , Cs(b,detF,3,3,3,3)  , Cs(b,detF,3,3,2,3) , Cs(b,detF,3,3,1,3) , Cs(b,detF,3,3,1,2)  ]
-            !D(4,:) = [ Cs(b,detF,2,3,1,1) , Cs(b,detF,2,3,2,2)  , Cs(b,detF,2,3,3,3)  , Cs(b,detF,2,3,2,3) , Cs(b,detF,2,3,1,3) , Cs(b,detF,2,3,1,2)  ]
-            !D(5,:) = [ Cs(b,detF,1,3,1,1) , Cs(b,detF,1,3,2,2)  , Cs(b,detF,1,3,3,3)  , Cs(b,detF,1,3,2,3) , Cs(b,detF,1,3,1,3) , Cs(b,detF,1,3,1,2)  ]
-            !D(6,:) = [ Cs(b,detF,1,2,1,1) , Cs(b,detF,1,2,2,2)  , Cs(b,detF,1,2,3,3)  , Cs(b,detF,1,2,2,3) , Cs(b,detF,1,2,1,3) , Cs(b,detF,1,2,1,2)  ]
+            ! FIBER CONTRIBUTION
+            ! -----------------------------------------------------------------------------------
 
-            ! Upper Triangular!!!
-!            D(1,1:6) = [ Cs(b,detF,1,1,1,1) , Cs(b,detF,1,1,2,2)  , Cs(b,detF,1,1,3,3)  , Cs(b,detF,1,1,2,3) , Cs(b,detF,1,1,1,3) , Cs(b,detF,1,1,1,2)  ]
-!            D(2,2:6) = [                      Cs(b,detF,2,2,2,2)  , Cs(b,detF,2,2,3,3)  , Cs(b,detF,2,2,2,3) , Cs(b,detF,2,2,1,3) , Cs(b,detF,2,2,1,2)  ]
-!            D(3,3:6) = [                                            Cs(b,detF,3,3,3,3)  , Cs(b,detF,3,3,2,3) , Cs(b,detF,3,3,1,3) , Cs(b,detF,3,3,1,2)  ]
-!            D(4,4:6) = [                                                                  Cs(b,detF,2,3,2,3) , Cs(b,detF,2,3,1,3) , Cs(b,detF,2,3,1,2)  ]
-!            D(5,5:6) = [                                                                                       Cs(b,detF,1,3,1,3) , Cs(b,detF,1,3,1,2)  ]
-!            D(6,6) =  Cs(b,detF,1,2,1,2)
+            ! Second derivative of the fiber strain energy related to I4(C)
+            ! -----------------------------------------------------------------------------------
+            !Polynomial
+            D2_Psif_DI4 =  2.0d0*C1 + 6.0d0*C2*(I4 - 1.0d0)
 
-            ! Upper Triangular!!!
-!            D(1,1:6) = [ Cbar(1,1,1,1) , Cbar(1,1,2,2)  , Cbar(1,1,3,3)  , Cbar(1,1,1,2) , Cbar(1,1,2,3) , Cbar(1,1,1,3)  ]
-!            D(2,2:6) = [                 Cbar(2,2,2,2)  , Cbar(2,2,3,3)  , Cbar(2,2,1,2) , Cbar(2,2,2,3) , Cbar(2,2,1,3)  ]
-!            D(3,3:6) = [                                  Cbar(3,3,3,3)  , Cbar(3,3,1,2) , Cbar(3,3,2,3) , Cbar(3,3,1,3)  ]
-!            D(4,4:6) = [                                                   Cbar(1,2,1,2) , Cbar(1,2,2,3) , Cbar(1,2,1,3)  ]
-!            D(5,5:6) = [                                                                   Cbar(2,3,2,3) , Cbar(2,3,1,3)  ]
-!            D(6,6)   =                                                                                     Cbar(1,3,1,3)
-!
-!            D = Push_Forward_Voigt (D,this%F)
+            Avoigt = Convert_to_Voigt_3D_Sym(A)
 
-            BulkModulus = this%Properties%BulkModulus
-            C10 = this%Properties%C10
+            ! Material Tangent Modulus - In Voigt Notation
+            Df = 4.0d0*D2_Psif_DI4*Ball_Voigt(Avoigt,Avoigt)
 
-            C = matmul(Transpose(this%F),this%F)
+            ! Spatial Tangent Modulus - In Voigt Notation
+            Df = Push_Forward_Voigt(Df,F)
 
-            Cinv = inverse(C)
+            ! -----------------------------------------------------------------------------------
 
-            CV = Convert_to_Voigt(C)
 
-            CinvV = Convert_to_Voigt(Cinv)
-
-            J = det(this%F)
-
-            p = 3.0d0*BulkModulus*( J**(-2.0d0/3.0d0) )*( J**(1.0d0/3.0d0) - 1.0d0 )
-            !p = 9.0d0*BulkModulus*( J - 1.0d0 )
-
-            SfricV = 2.0d0*C10*[1.0d0, 1.0d0, 1.0d0, 0.0d0, 0.0d0, 0.0d0]
-
-            devSfricV = SfricV - (1.0d0/3.0d0)*Inner_Product_Voigt(SfricV,CV)*CinvV
-
-            SisoV = (J**(-2.0d0/3.0d0))*devSfricV
-
-            PmV = Square_Voigt(CinvV,CinvV) - (1.0d0/3.0d0)*Ball_Voigt(CinvV,CinvV)
-
-            D2psiDJ2 = - BulkModulus*(J**(-5.0d0/3.0d0))*( (J**(1.0d0/3.0d0)) - 2.0d0 )
-            !D2psiDJ2 =  9*BulkModulus
-
-            CisoV = (2.0d0/3.0d0)*(J**(-2.0d0/3.0d0))*Inner_Product_Voigt(SfricV,CV)*PmV - (2.0d0/3.0d0)*( Ball_Voigt(SisoV,CinvV) + Ball_Voigt(CinvV,SisoV) )
-
-            CvolV = J*( p +J*D2psiDJ2 )*Ball_Voigt(CinvV,CinvV) - 2.0d0*J*p*( Square_Voigt(CinvV,CinvV))
-
-            CbarV = CisoV + CvolV
-
-            !Push-Forward
-            D = Push_Forward_Voigt(CbarV,this%F)
+            ! TOTAL TANGENT MODULUS
+            ! -----------------------------------------------------------------------------------
+            D = (1.0d0-vf)*Dm + vf*Df
 
 
 		    !************************************************************************************
@@ -465,33 +484,79 @@ module ModHyperelasticTransIso
         !==========================================================================================
         subroutine GetResult_HyperelasticTransIso(this, ID , Name , Length , Variable , VariableType  )
 
-            implicit none
+		    !************************************************************************************
+            ! DECLARATIONS OF VARIABLES
+		    !************************************************************************************
+            ! Modules and implicit declarations
+            ! ---------------------------------------------------------------------------------
+            use MathRoutines
+
+            ! Object
+            ! -----------------------------------------------------------------------------------
             class(ClassHyperelasticTransIso) :: this
-            integer                   :: ID,Length,VariableType
-            character(len=*)          :: Name
-            real(8) , dimension(:)    :: Variable
 
-            integer,parameter :: Scalar=1,Vector=2,Tensor=3
-            real (8) :: h , c(6)
+            ! Input variables
+            ! -----------------------------------------------------------------------------------
+            integer :: ID
 
-            Name=''
+            ! Output variables
+            ! -----------------------------------------------------------------------------------
+            character(len=*)            :: Name
+            integer                     :: Length, VariableType
+            real(8) , dimension(:)      :: Variable
+
+            ! Internal variables
+            ! -----------------------------------------------------------------------------------
+            integer, parameter :: Scalar=1,Vector=2,Tensor=3
+            real (8) :: FiberStretch, C(3,3), mX(3), m(3), A(3,3)
+		    !************************************************************************************
+
+		    !___________________   WARNIG! DO NOT CHANGE OR ERASE THIS BLOCK    _________________
+		    ! Initializing variable name.
+		    Name = ''
+		    !____________________________________________________________________________________
 
             select case (ID)
-                case(0)
-                    Length=2
-                case(1)
-                    Name='Stress'
-                    VariableType=Tensor
-                    Length=size(this%Stress)
-                    Variable(1:Length) = this%Stress
 
-                case (2)
-                    Name='FiberDirection'
+                case(0)
+
+                    Length=3
+
+                case (1)
+
+                    Name='Fiber_Direction'
                     VariableType = Vector
                     Length=size(this%AdditionalVariables%mX)
-                    Variable(1:Length) = this%AdditionalVariables%mX
+                    !-----------------------------------------------------------------
+                    mX = this%AdditionalVariables%mX
+
+                    C = matmul(transpose(this%F),this%F)
+                    A = Tensor_Product(mX,mX)
+                    FiberStretch = dsqrt( Tensor_Inner_Product(C,A) )
+                    m = matmul(this%F,mX)/FiberStretch
+                    !-----------------------------------------------------------------
+                    Variable(1:Length) = m
+
+                case (2)
+
+                    Name='Cauchy_Stress_Fiber_Contribution'
+                    VariableType = Tensor
+                    Length=size(this%Stress)
+
+                    Variable(1:Length) = this%Cauchy_Stress_Fiber
+                    
+                case (3)
+
+                    Name='Cauchy_Stress_Matrix_Contribution'
+                    VariableType = Tensor
+                    Length=size(this%Stress)
+
+                    Variable(1:Length) = this%Cauchy_Stress_Matrix
+                    
                 case default
+
                     call Error("Error retrieving result :: GetResult_HyperelasticTransIso")
+
             end select
 
         end subroutine

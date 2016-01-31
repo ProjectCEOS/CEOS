@@ -195,10 +195,9 @@ module CompressibleNeoHookean
 		    !************************************************************************************
             allocate (this%Properties)
 
-            ListOfOptions=["Lambda","Mu"]
+            ListOfOptions=["Mu","Lambda"]
 
             call DataFile%FillListOfOptions(ListOfOptions,ListOfValues,FoundOption)
-            !call DataFile%FillListOfOptions(ListOfOptions,ListOfValues,FoundOption,'barreira')
             call DataFile%CheckError
 
             do i=1,size(FoundOption)

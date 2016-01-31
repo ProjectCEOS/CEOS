@@ -13,11 +13,11 @@
 
 ANALYSIS SETTINGS
 
-	Multiscale Analysis =  True ! False !
+	Multiscale Analysis = False  ! True !
 	Problem Type = Mechanical
 	Analysis Type = Quasi Static
-	Nonlinear Analysis = True ! False !
-	Hypothesis of Analysis = 3D !Axisymmetric !
+	Nonlinear Analysis = True !False !
+	Hypothesis of Analysis = 3D ! Axisymmetric ! Plane Strain !  
 	Element Technology =  Full Integration !Mean Dilatation ! 
 	Maximum Cut Backs = 10
 	
@@ -47,24 +47,58 @@ END NONLINEAR SOLVER
 
 MATERIAL
 
-	Number of Materials = 1
+	Number of Materials = 2
 
 	Material ID = 1
-	St_Venant_Kirchhoff
-	Young Modulus = 100.0E9 
-	Poisson = 0.3
+	Hyperelastic_Tranverse_Isotropic
+	Fiber Volume Fraction = 0.70e0
+	Mu Matrix = 2.0e5
+	Lambda Matrix = 2.0e5
+	Cte1 Fiber = 3.966140e7
+	Cte2 Fiber = 1.12401e9
+
+	Material ID = 2
+	Compressible_Neo_Hookean
+	Mu = 2.0e5
+	Lambda = 2.0e5
+	
+	
+	!Material ID = 1
+	!Compressible_Neo_Hookean
+	!Mu = 2.0e7
+	!Lambda = 2.0e7
+
+	
+	!Material ID = 1
+	!Neo_Hookean_Isochoric
+	!G = 889.0e0
+	!Bulk Modulus = 2667.0e0
+	
+	!Material ID = 2
+	!St_Venant_Kirchhoff
+	!Young Modulus = 1.0e-3
+	!Poisson = 0.2e0
+	
+
+
+	!Material ID = 1
+	!St_Venant_Kirchhoff
+	!Young Modulus = 100.0E9 
+	!Poisson = 0.3
+
 	
 	!Material ID = 1
 	!Generalized_Hookes_Law
-	!Young Modulus = 100.0E9 
-	!Poisson = 0.3	
+	!Young Modulus = 210.0E9 
+	!Poisson = 0.3		
+
 	
-	!Material ID = 22
+	!Material ID = 1
 	!J2_Plasticity	
-	!Young Modulus = 100.0E9 
+	!Young Modulus = 200.0E9 
 	!Poisson = 0.3 
 	!Yield Stress = 250.0E6
-	!Hardening Modulus = 21.0E9
+	!Hardening Modulus = 20.0E9
 	
 	!Material ID = 1
 	!Neo_Hookean
@@ -83,7 +117,7 @@ END MATERIAL
 
 MESH AND BOUNDARY CONDITIONS
 
-	Mesh File = Malha_Multiescala.cdb
+	Mesh File = Malha_Trans_Iso.cdb
 	Preprocessor = HyperMesh !Gid 12
 	Time Discretization File = Time_Discretization.dat
 		
@@ -93,17 +127,18 @@ END MESH AND BOUNDARY CONDITIONS
 
 MULTISCALE SETTINGS
 
-	Kinematical Constraints = Taylor ! Periodic ! Linear !
-	F11 = F11.dat !Zero !One
-	F12 = F12.dat
-	F13 = F12.dat
-	F21 = F12.dat
-	F22 = F11.dat
-	F23 = F12.dat
-	F31 = F12.dat
-	F32 = F12.dat
-	F33 = F11.dat	
+	Kinematical Constraints =  Taylor !  Linear  !  Periodic
+	F11 = F11.dat !One !
+	F12 = Zero !F12.dat
+	F13 = Zero 
+	F21 = Zero
+	F22 = One
+	F23 = Zero
+	F31 = Zero
+	F32 = Zero
+	F33 = One	
 		
 END MULTISCALE SETTINGS
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
