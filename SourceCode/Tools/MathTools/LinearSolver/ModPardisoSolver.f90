@@ -106,6 +106,7 @@ module PardisoSolver
             allocate(this%pt(64))
             this%pt = 0
 
+
             ! Maximum number of factors with identical sparsity structure that must be kept in
             ! memory at the same time. In most applications this value is equal to 1
             this%maxfct = 1
@@ -315,7 +316,7 @@ module PardisoSolver
 		    !************************************************************************************
 
             if (associated(this%pt)) then
-
+                 
                 deallocate(this%pt)
                 deallocate(this%iparm)
                 deallocate(this%perm)
