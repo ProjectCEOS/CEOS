@@ -522,7 +522,7 @@ module FEMAnalysis
             real(8) :: R, L, pitch, hand, theta, Xgp, X0ref, tXgp, norm_mX
             real(8) :: mX(3), NodalValuesX(50)
             integer :: ElemRef, NodeRef, e, gp, n, NumberOfNodes
-            
+
 
             real(8) , pointer , dimension(:,:) :: NaturalCoord
             real(8) , pointer , dimension(:)   :: Weight
@@ -537,16 +537,27 @@ module FEMAnalysis
             ! Cálculo das tangentes da hélice
             !####################################################################################
 
+    if ( n .eq. 1234123312 ) then
+
             ! Parâmetros da Hélice
-            R = 2.50d0
-            L = 50.0d0
+            R = 2.30d0
+            L = 99.30d0
             pitch = 1.0d0
             hand = -1.0d0
-            theta = 0.0d0
+            theta = 90.0d0  !CUIDAR A ORDEM DO DESENHO NO SOLIDWORKS!!!!!
 
             ! Elemento e Nó de Referência
-            ElemRef = 181
-            NodeRef = 7
+            ElemRef = 901 !7921
+            NodeRef = 4967 !15238
+
+            !Obtendo o ID do Nó de Referência
+            NumberOfNodes =  this%ElementList(ElemRef)%El%GetNumberOfNodes()
+            do n = 1,NumberOfNodes
+                if (this%ElementList(ElemRef)%El%ElementNodes(n)%Node%ID .eq. NodeRef) then
+                    NodeRef = n
+                    exit
+                endif
+            enddo
 
 
             ! Cálculando a tangente nos pontos de Gauss (Para toda a malha!!!!)
@@ -584,9 +595,9 @@ module FEMAnalysis
             enddo
             !####################################################################################
 
-            !
-            !***********************************************************************************
 
+            !***********************************************************************************
+    endif
 
 		    !************************************************************************************
 

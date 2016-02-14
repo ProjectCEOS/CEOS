@@ -82,9 +82,23 @@ module NeoHookeanIsochoric
              procedure :: UpdateStressAndStateVariables  =>  UpdateStressAndStateVariables_NeoHookeanIsochoric_PlaneStrain
              procedure :: GetTangentModulus              =>  GetTangentModulus_NeoHookeanIsochoric_PlaneStrain
 
-    end type
+         end type
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    ! Class"NameOfTheMaterialModel"_3D: Attributes and methods of the constitutive model
+    ! in Three-Dimensional analysis.
+	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    type , extends(ClassNeoHookeanIsochoric) :: ClassNeoHookeanIsochoric_3D
+
+         contains
+            ! Class Methods
+            !----------------------------------------------------------------------------------
+             procedure :: UpdateStressAndStateVariables  =>  UpdateStressAndStateVariables_NeoHookeanIsochoric_3D
+             procedure :: GetTangentModulus              =>  GetTangentModulus_NeoHookeanIsochoric_3D
+
+    end type
+	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX         
 
     contains
 
@@ -508,6 +522,238 @@ module NeoHookeanIsochoric
         end subroutine
         !==========================================================================================
 
+        !==========================================================================================
+        ! Method UpdateStateVariables_"NameOfTheMaterialModel"_3D: Routine that
+        ! contains the algorithm employed to update the state variables.
+        !------------------------------------------------------------------------------------------
+        ! Modifications:
+        ! Date:         Author:
+        !==========================================================================================
+        subroutine UpdateStressAndStateVariables_NeoHookeanIsochoric_3D(this,Status)
+
+		    !************************************************************************************
+            ! DECLARATIONS OF VARIABLES
+		    !************************************************************************************
+            ! Modules and implicit declarations
+            ! ---------------------------------------------------------------------------------
+            use MathRoutines
+
+            ! Object
+            ! ---------------------------------------------------------------------------------
+            class(ClassNeoHookeanIsochoric_3D) :: this
+            type(ClassStatus) :: Status
+
+            ! Internal variables
+            ! -----------------------------------------------------------------------------------
+            real(8) :: F(3,3), C(3,3), Cinv(3,3),Ciso(3,3), I(3,3), S(3,3), Sfric(3,3), devSfric(3,3)
+            real(8) :: J, p, BulkModulus, G
+
+		    !************************************************************************************
+
+            !___________________________________________________________________________________
+            !______________________________    REMARK    _______________________________________
+            !
+            !  DUE TO THE UPDATED LAGRANGIAN FORMULATION, THE OUTPUT STRESS MUST BE THE
+            !  CAUCHY STRESS IN VOIGT NOTATION.
+            !___________________________________________________________________________________
+
+
+            !************************************************************************************
+            ! ALGORITHM THAT UPDATES STRESS AND STATE VARIABLES
+		    !************************************************************************************
+
+            ! Optional: Retrieve Variables
+            ! -----------------------------------------------------------------------------------
+            BulkModulus = this%Properties%BulkModulus
+            G           = this%Properties%G
+            F           = this%F
+            ! -----------------------------------------------------------------------------------
+
+            ! Right-Cauchy Green Strain - Calculated in 3D Tensorial Format
+            ! -----------------------------------------------------------------------------------
+            ! Identity
+            I = 0.0d0
+            I(1,1) = 1.0d0
+            I(2,2) = 1.0d0
+            I(3,3) = 1.0d0
+
+            ! Right-Cauchy Green Strain
+            C = matmul(transpose(F),F)
+            ! -----------------------------------------------------------------------------------
+
+
+            ! Modified Second Piola-Kirchhoff Stress - Calculated in 3D Tensorial Format
+            ! -----------------------------------------------------------------------------------
+            ! Jacobian
+            J = det(F)
+
+            ! Inverse of Right-Cauchy Green Strain
+            Cinv = inverse(C)
+
+            ! Isochoric part of the Right-Cauchy Green Strain
+            Ciso = (J**(-2.0d0/3.0d0))*C
+
+            ! Second Piola-Kirchhoff Frictional
+            Sfric = G*I
+
+            ! Hydrostatic Pressure
+            p = BulkModulus*( 1.0d0 - (1.0d0/J) )
+
+            ! Deviatoric part of the Second Piola-Kirchhoff Frictional
+            devSfric = Sfric - (1.0d0/3.0d0)*Tensor_Inner_Product(Sfric,C)*Cinv
+
+
+            ! Modified Second Piola-Kirchhoff Stress
+            S = (J**(-2.0d0/3.0d0))*devSfric + J*p*Cinv
+            ! -----------------------------------------------------------------------------------
+
+            ! Modified Cauchy Stress - Calculated in 3D Tensorial Format and converted to Voigt
+            ! notation.
+            ! -----------------------------------------------------------------------------------
+            S = matmul(matmul(F,S),transpose(F))/J
+            
+            this%Stress = Convert_to_Voigt_3D_Sym( S )
+            ! -----------------------------------------------------------------------------------
+
+
+		    !************************************************************************************
+
+        end subroutine
+        !==========================================================================================
+
+        !==========================================================================================
+        ! Method GetTangentModulus_"NameOfTheMaterialModel"_3D: Routine that evaluates the
+        ! Tangente Modulus.
+        !------------------------------------------------------------------------------------------
+        ! Modifications:
+        ! Date:         Author:
+        !==========================================================================================
+        subroutine GetTangentModulus_NeoHookeanIsochoric_3D(this,D)
+
+
+		    !************************************************************************************
+            ! DECLARATIONS OF VARIABLES
+		    !************************************************************************************
+            ! Modules and implicit declarations
+            ! ---------------------------------------------------------------------------------
+            use MathRoutines
+
+            ! Object
+            ! -----------------------------------------------------------------------------------
+            class(ClassNeoHookeanIsochoric_3D) :: this
+
+            ! Output variables
+            ! -----------------------------------------------------------------------------------
+            real(8) , dimension(:,:),intent(inout) :: D
+
+            ! Internal variables
+            ! -----------------------------------------------------------------------------------
+            real(8) :: J, p, BulkModulus, G, d2PSIvol_dJ2
+            real(8) :: F(3,3), C(3,3),Cinv(3,3), Ciso(3,3), Sfric(3,3), I(3,3)
+
+
+            real(8) :: CV(6), CinvV(6), CisoV(6), SfricV(6), devSfricV(6), SisoV(6)
+            real(8) :: PmV(6,6) , PV(6,6), Diso(6,6), Dvol(6,6), Is(6,6), Daux(6,6)
+
+            real(8) :: devSfric(3,3), Siso(3,3)
+
+		    !************************************************************************************
+
+            !************************************************************************************
+            ! TANGENT MODULUS
+		    !************************************************************************************
+
+            ! Optional: Retrieve Variables
+            ! -----------------------------------------------------------------------------------
+            BulkModulus = this%Properties%BulkModulus
+            G           = this%Properties%G
+            F           = this%F
+            ! -----------------------------------------------------------------------------------
+
+            ! Quantities calculated in 3D Tensorial Format
+            ! -----------------------------------------------------------------------------------
+            ! Identity
+            I = 0.0d0
+            I(1,1) = 1.0d0
+            I(2,2) = 1.0d0
+            I(3,3) = 1.0d0
+            
+            ! Right-Cauchy Green Strain
+            C = matmul(transpose(F),F)
+
+            ! Inverse of Right-Cauchy Green Strain
+            Cinv = inverse(C)
+
+            ! Isochoric part of the Right-Cauchy Green Strain
+            Ciso = (J**(-2.0d0/3.0d0))*C
+
+            ! Jacobian
+            J = det(F)
+
+            ! Second Piola-Kirchhoff Frictional
+            Sfric = G*I
+
+            ! Hydrostatic Pressure
+            p = BulkModulus*( 1.0d0 - (1.0d0/J) )
+
+            ! Derivative of Hydrostatic Pressure
+            d2PSIvol_dJ2 = BulkModulus/(J**2.0d0)
+
+
+            ! -----------------------------------------------------------------------------------
+            ! The subsequent computations are made in Voigt notation
+            ! -----------------------------------------------------------------------------------
+
+
+            ! Material tangent modulus in referential configuration
+            ! -----------------------------------------------------------------------------------
+
+            ! Right-Cauchy Green Strain
+            CV = Convert_to_Voigt(C)
+
+            ! Inverse of Right-Cauchy Green Strain
+            CinvV = Convert_to_Voigt(Cinv)
+
+            ! Isochoric part of the Right-Cauchy Green Strain
+            CisoV = Convert_to_Voigt(Ciso)
+
+            ! Second Piola-Kirchhoff Frictional
+            SfricV = Convert_to_Voigt(Sfric)
+
+            ! Deviatoric part of the Second Piola-Kirchhoff Frictional
+            devSfricV = SfricV - (1.0d0/3.0d0)*Inner_Product_Voigt(SfricV,CV)*CinvV
+
+            ! Isochoric part of the Second Piola-Kirchhoff
+            SisoV = (J**(-2.0d0/3.0d0))*devSfricV
+
+            ! Modified Projection Operator
+            PmV = Square_Voigt(CinvV,CinvV) - (1.0d0/3.0d0)*Ball_Voigt(CinvV,CinvV)
+
+
+            ! Isochoric part of the material tangent modulus in referential configuration
+            Diso = (2.0d0/3.0d0)*(J**(-2.0d0/3.0d0))*Inner_Product_Voigt(SfricV,CV)*PmV - &
+                   (2.0d0/3.0d0)*( Ball_Voigt(SisoV,CinvV) + Ball_Voigt(CinvV,SisoV) )
+
+            ! Pressure component of the material tangent modulus in referential configuration
+            Dvol  = J*( p + J*d2PSIvol_dJ2 )*Ball_Voigt(CinvV,CinvV) - 2.0d0*J*p*Square_Voigt(CinvV,CinvV)
+
+            ! Material tangent modulus in referential configuration
+            Daux = Diso + Dvol
+
+            ! -----------------------------------------------------------------------------------
+
+            ! Push-Forward:
+            ! Computation of the spatial tangent modulus
+            ! -----------------------------------------------------------------------------------
+            D = Push_Forward_Voigt(Daux,F)
+            ! -----------------------------------------------------------------------------------
+
+		    !************************************************************************************
+
+        end subroutine
+        !==========================================================================================
+
+        
 
         !==========================================================================================
         ! Method SwitchConvergedState_"NameOfTheMaterialModel": Routine that save de converged state.

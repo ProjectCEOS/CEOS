@@ -95,7 +95,8 @@ module ConstitutiveModelLibrary
             type(ClassCompressibleNeoHookean_PlaneStrain) , pointer , dimension(:) :: CNH_PlaneStrain
 
             type(ClassNeoHookeanIsochoric_PlaneStrain) , pointer , dimension(:) :: NHI_PlaneStrain
-
+            type(ClassNeoHookeanIsochoric_3D)          , pointer , dimension(:) :: NHI_3D
+            
             type(ClassHyperelasticTransIso_3D)         , pointer , dimension(:) :: HTI_3D
 
 ! TODO (Thiago#1#02/13/15): Trocar threeDimensional para 3D
@@ -264,6 +265,12 @@ module ConstitutiveModelLibrary
 
                             allocate( NHI_PlaneStrain(nGP) )
                             GaussPoints => NHI_PlaneStrain
+
+                    
+                    elseif ( AnalysisSettings%Hypothesis == HypothesisOfAnalysis%ThreeDimensional ) then
+
+                            allocate( NHI_3D(nGP) )
+                            GaussPoints => NHI_3D
 
                     else
                             call Error("Error: Neo Hookean Isochoric Model - analysis type not available.")

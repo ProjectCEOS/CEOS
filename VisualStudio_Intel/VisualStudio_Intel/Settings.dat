@@ -13,13 +13,13 @@
 
 ANALYSIS SETTINGS
 
-	Multiscale Analysis = False  ! True !
+	Multiscale Analysis = True ! False  !
 	Problem Type = Mechanical
 	Analysis Type = Quasi Static
 	Nonlinear Analysis = True !False !
 	Hypothesis of Analysis = 3D ! Axisymmetric ! Plane Strain !  
 	Element Technology =  Full Integration !Mean Dilatation ! 
-	Maximum Cut Backs = 10
+	Maximum Cut Backs = 20
 	
 END ANALYSIS SETTINGS
 
@@ -38,7 +38,7 @@ NONLINEAR SOLVER
 	Newton_Raphson_Full
 	
 	Tol = 1e-3
-	MaxIter = 10
+	MaxIter = 15
 
 	
 END NONLINEAR SOLVER
@@ -49,24 +49,48 @@ MATERIAL
 
 	Number of Materials = 2
 
+	! Material ID = 1
+	! Hyperelastic_Tranverse_Isotropic
+	! Fiber Volume Fraction = 0.764e0
+	! Mu Matrix = 2.0e5 !  ! E=2.50e3
+	! Lambda Matrix = 2.0e5 ! !v=0.25
+	! Cte1 Fiber = 2.0e7
+	! Cte2 Fiber = 0.50e9
+	
 	Material ID = 1
-	Hyperelastic_Tranverse_Isotropic
-	Fiber Volume Fraction = 0.70e0
-	Mu Matrix = 2.0e5
-	Lambda Matrix = 2.0e5
-	Cte1 Fiber = 3.966140e7
-	Cte2 Fiber = 1.12401e9
-
-	Material ID = 2
 	Compressible_Neo_Hookean
-	Mu = 2.0e5
-	Lambda = 2.0e5
+	Mu = 2.8e3   ! E=0.50e5
+	Lambda = 2.8e3   !v=0.3
+	
+	Material ID = 2
+	Neo_Hookean_Isochoric
+	G = 2.0e5   ! E=10.0e3
+	Bulk Modulus = 7.0e5  ! v=0.4	
+
+	
+	! Material ID = 1
+	! Neo_Hookean_Isochoric
+	! G = 4.0e2   ! E=1.0e3
+	! Bulk Modulus = 6.6666e2  ! v=0.25
+
+	! Material ID = 1
+	! Compressible_Neo_Hookean
+	! Mu = 1.92308e4   ! E=0.50e5
+	! Lambda = 2.88462e4   !v=0.3
+	
+	! Material ID = 2
+	! Compressible_Neo_Hookean
+	! Mu = 1.92308e5   ! E=0.50e6
+	! Lambda = 2.88462e5   !v=0.3
 	
 	
 	!Material ID = 1
-	!Compressible_Neo_Hookean
-	!Mu = 2.0e7
-	!Lambda = 2.0e7
+	!Hyperelastic_Tranverse_Isotropic
+	!Fiber Volume Fraction = 0.70e0
+	!Mu Matrix = 2.0e5
+	!Lambda Matrix = 2.0e5
+	!Cte1 Fiber = 3.966140e7
+	!Cte2 Fiber = 1.12401e9
 
 	
 	!Material ID = 1
@@ -117,7 +141,7 @@ END MATERIAL
 
 MESH AND BOUNDARY CONDITIONS
 
-	Mesh File = Malha_Trans_Iso.cdb
+	Mesh File = malha_menor_rve_1.cdb !Malha_Menor_Fibras9_fracao70.cdb ! ! Malha_Fibras9_fracao70.cdb
 	Preprocessor = HyperMesh !Gid 12
 	Time Discretization File = Time_Discretization.dat
 		
@@ -127,16 +151,16 @@ END MESH AND BOUNDARY CONDITIONS
 
 MULTISCALE SETTINGS
 
-	Kinematical Constraints =  Taylor !  Linear  !  Periodic
-	F11 = F11.dat !One !
-	F12 = Zero !F12.dat
+	Kinematical Constraints =  Linear  !  Taylor !   Periodic
+	F11 = One !F11.dat !One !
+	F12 = Zero !F12.dat  
 	F13 = Zero 
 	F21 = Zero
-	F22 = One
+	F22 = F22.dat 
 	F23 = Zero
 	F31 = Zero
 	F32 = Zero
-	F33 = One	
+	F33 = F33.dat !One	
 		
 END MULTISCALE SETTINGS
 

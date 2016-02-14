@@ -351,6 +351,7 @@ module ModMultiscaleAnalysis
 
         ! Calling the quasi-static analysis routine
         !************************************************************************************
+        
         call this%TranslateCentroidToOrigin()
 
         call SolveFEMAnalysis(this)

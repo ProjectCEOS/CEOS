@@ -327,17 +327,25 @@ module ModHyperelasticTransIso
             ! STRESS IN FIBER - Calculated in 3D Tensorial Format
             ! -----------------------------------------------------------------------------------
 
-            ! First derivative of the fiber strain energy related to I4(C)
-            ! -----------------------------------------------------------------------------------
-            !Polynomial
-            D_Psif_DI4 =  2.0d0*C1*(I4 - 1.0d0) + 3.0d0*C2*( (I4 - 1.0d0)**2.0d0 )
+            if ( I4 .gt. 0.99999999990d0) then
+                
+                ! First derivative of the fiber strain energy related to I4(C)
+                ! Polynomial
+                !----------
+                D_Psif_DI4 =  2.0d0*C1*(I4 - 1.0d0) + 3.0d0*C2*( (I4 - 1.0d0)**2.0d0 )
 
+                ! Second Piola-Kirchoof
+                Sf = 2.0d0*D_Psif_DI4*A
 
-            ! Second Piola-Kirchoof
-            Sf = 2.0d0*D_Psif_DI4*A
-
-            ! Cauchy Stress
-            Sf = StressTransformation(F,Sf,StressMeasures%SecondPiola,StressMeasures%Cauchy )
+                ! Cauchy Stress
+                Sf = StressTransformation(F,Sf,StressMeasures%SecondPiola,StressMeasures%Cauchy )
+                
+            else
+                
+                Sf = 0.0d0
+                
+            endif
+                
             ! -----------------------------------------------------------------------------------
 
             ! TOTAL STRESS
@@ -388,7 +396,7 @@ module ModHyperelasticTransIso
             ! -----------------------------------------------------------------------------------
             real(8) :: vf, Mu, Lambda, C1, C2,  I4, D2_Psif_DI4, J
             real(8) :: F(3,3), C(3,3), I(3,3), mX(3), A(3,3)
-            real(8) :: Ivoigt(6), IT4voigt(6,6), Dm(6,6), Df(6,6), Avoigt(6)
+            real(8) :: Ivoigt(6), Dm(6,6), Df(6,6), Avoigt(6)
 
 		    !************************************************************************************
 
@@ -416,6 +424,8 @@ module ModHyperelasticTransIso
             I(1,1) = 1.0d0
             I(2,2) = 1.0d0
             I(3,3) = 1.0d0
+            
+            Ivoigt = Convert_to_Voigt_3D_Sym(I)
 
             ! Jacobian
             J = det(F)
@@ -425,7 +435,9 @@ module ModHyperelasticTransIso
             
             !Material Structural Tensor
             A = Tensor_Product(mX,mX)
-
+            
+            Avoigt = Convert_to_Voigt_3D_Sym(A)
+            
             !Fourth Invariant
             I4 = Tensor_Inner_Product(C,A)
 
@@ -434,31 +446,31 @@ module ModHyperelasticTransIso
             ! MATRIX CONTRIBUTION - Compressible Neo-Hookean (Bonet and Wood, 2008)
             ! -----------------------------------------------------------------------------------
 
-            Ivoigt = Convert_to_Voigt_3D_Sym(I)
-
-            IT4voigt = Ball_Voigt(Ivoigt,Ivoigt)
-
             ! Spatial Tangent Modulus - In Voigt Notation
-            Dm = (Lambda/J)*IT4voigt + (2.0d0/J)*(Mu - Lambda*dlog(J))*IsymV()
+            Dm = (Lambda/J)*Ball_Voigt(Ivoigt,Ivoigt) + (2.0d0/J)*(Mu - Lambda*dlog(J))*IsymV()
             ! -----------------------------------------------------------------------------------
 
 
             ! FIBER CONTRIBUTION
             ! -----------------------------------------------------------------------------------
+            if ( I4 .gt. 0.99999999990d0) then
+                 
+                ! Second derivative of the fiber strain energy related to I4(C)
+                ! -----------------------------------------------------------------------------------
+                ! Polynomial
+                D2_Psif_DI4 =  2.0d0*C1 + 6.0d0*C2*(I4 - 1.0d0)
 
-            ! Second derivative of the fiber strain energy related to I4(C)
-            ! -----------------------------------------------------------------------------------
-            !Polynomial
-            D2_Psif_DI4 =  2.0d0*C1 + 6.0d0*C2*(I4 - 1.0d0)
+                ! Material Tangent Modulus - In Voigt Notation
+                Df = 4.0d0*D2_Psif_DI4*Ball_Voigt(Avoigt,Avoigt)
 
-            Avoigt = Convert_to_Voigt_3D_Sym(A)
-
-            ! Material Tangent Modulus - In Voigt Notation
-            Df = 4.0d0*D2_Psif_DI4*Ball_Voigt(Avoigt,Avoigt)
-
-            ! Spatial Tangent Modulus - In Voigt Notation
-            Df = Push_Forward_Voigt(Df,F)
-
+                ! Spatial Tangent Modulus - In Voigt Notation
+                Df = Push_Forward_Voigt(Df,F)
+                
+             else
+                 
+                Df = 0.0d0
+                 
+            endif
             ! -----------------------------------------------------------------------------------
 
 
