@@ -27,6 +27,7 @@ module ConstitutiveModelLibrary
     use CompressibleNeoHookean
     use NeoHookeanIsochoric
     use ModHyperelasticTransIso
+    use ModHyperelasticTransIsoComp
 
     ! Constitutive Models ID registered:
     type ClassConstitutiveModels
@@ -39,6 +40,7 @@ module ConstitutiveModelLibrary
         integer   :: CompressibleNeoHookeanModel    = 7
         integer   :: NeoHookeanIsochoricModel       = 8
         integer   :: HyperelasticTransIsoModel      = 9
+        integer   :: HyperelasticTransIsoCompModel  = 10
     end type
 
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -96,9 +98,10 @@ module ConstitutiveModelLibrary
 
             type(ClassNeoHookeanIsochoric_PlaneStrain) , pointer , dimension(:) :: NHI_PlaneStrain
             type(ClassNeoHookeanIsochoric_3D)          , pointer , dimension(:) :: NHI_3D
-            
+
             type(ClassHyperelasticTransIso_3D)         , pointer , dimension(:) :: HTI_3D
 
+            type(ClassHyperelasticTransIsoComp_3D)         , pointer , dimension(:) :: HTIC_3D
 ! TODO (Thiago#1#02/13/15): Trocar threeDimensional para 3D
 
 		    !************************************************************************************
@@ -266,7 +269,7 @@ module ConstitutiveModelLibrary
                             allocate( NHI_PlaneStrain(nGP) )
                             GaussPoints => NHI_PlaneStrain
 
-                    
+
                     elseif ( AnalysisSettings%Hypothesis == HypothesisOfAnalysis%ThreeDimensional ) then
 
                             allocate( NHI_3D(nGP) )
@@ -290,6 +293,22 @@ module ConstitutiveModelLibrary
 
                     else
                             call Error("Error: Hyperelastic Transverse Isotropic Model - analysis type not available.")
+
+                    endif
+                ! -------------------------------------------------------------------------------
+
+                ! -------------------------------------------------------------------------------
+                ! Hyperelastic Transverse Isotropic (Compressive Transition) Model
+                ! -------------------------------------------------------------------------------
+                case (ConstitutiveModels % HyperelasticTransIsoCompModel)
+
+                    if ( AnalysisSettings%Hypothesis == HypothesisOfAnalysis%ThreeDimensional ) then
+
+                            allocate( HTIC_3D(nGP) )
+                            GaussPoints => HTIC_3D
+
+                    else
+                            call Error("Error: Hyperelastic Transverse Isotropic (Compressive Transition) Model - analysis type not available.")
 
                     endif
                 ! -------------------------------------------------------------------------------
@@ -386,6 +405,10 @@ module ConstitutiveModelLibrary
             elseif ( Comp%CompareStrings('hyperelastic_tranverse_isotropic', model) .and. (AnalysisSettings%ElementTech == ElementTechnologies%Full_Integration) ) then
 
                 modelID = ConstitutiveModels%HyperelasticTransIsoModel
+
+            elseif ( Comp%CompareStrings('hyperelastic_tranverse_isotropic_(compressive_transition)', model) .and. (AnalysisSettings%ElementTech == ElementTechnologies%Full_Integration) ) then
+
+                modelID = ConstitutiveModels%HyperelasticTransIsoCompModel
             else
                 call Error( "Error: Material Model not identified: "//trim(model))
             endif

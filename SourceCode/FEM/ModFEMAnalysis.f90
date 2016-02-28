@@ -537,18 +537,18 @@ module FEMAnalysis
             ! Cálculo das tangentes da hélice
             !####################################################################################
 
-    if ( n .eq. 1234123312 ) then
+    !if ( n .eq. 1234123312 ) then
 
             ! Parâmetros da Hélice
             R = 2.30d0
             L = 99.30d0
             pitch = 1.0d0
             hand = -1.0d0
-            theta = 90.0d0  !CUIDAR A ORDEM DO DESENHO NO SOLIDWORKS!!!!!
+            theta = 0.0d0 !90.0d0  !CUIDAR A ORDEM DO DESENHO NO SOLIDWORKS!!!!!
 
             ! Elemento e Nó de Referência
-            ElemRef = 901 !7921
-            NodeRef = 4967 !15238
+            ElemRef = 1776 ! 9FibrasRetas=2601! 16Fibras=3876 ! 9Fibras=1776 ! 4Fibras=576
+            NodeRef = 102  ! 9FibrasRetas=4241! 16Fibras=221  ! 9Fibras=102  ! 4Fibras=34
 
             !Obtendo o ID do Nó de Referência
             NumberOfNodes =  this%ElementList(ElemRef)%El%GetNumberOfNodes()
@@ -589,6 +589,13 @@ module FEMAnalysis
                     norm_mX = ( mX(1)*mX(1)+mX(2)*mX(2)+mX(3)*mX(3) )**0.50d0
                     mX = mX/norm_mX
 
+                    ! Fibras Retas em X
+                    !----------------------
+                    !mX(1) = 1.0d0
+                    !mX(2) = 0.0d0
+                    !mX(3) = 0.0d0
+                    !-----------------------
+                    
                     this%ElementList(e)%El%GaussPoints(gp)%AdditionalVariables%mX = mX
 
                 enddo
@@ -597,7 +604,7 @@ module FEMAnalysis
 
 
             !***********************************************************************************
-    endif
+    !endif
 
 		    !************************************************************************************
 

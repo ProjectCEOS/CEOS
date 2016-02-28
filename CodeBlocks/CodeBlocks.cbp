@@ -36,6 +36,7 @@
 		<Unit filename="../SourceCode/ConstitutiveLibrary/ConstitutiveModelsLibrary/ModGeneralizedHookesLaw .f90" />
 		<Unit filename="../SourceCode/ConstitutiveLibrary/ConstitutiveModelsLibrary/ModHyperelasticQ1P0.f90" />
 		<Unit filename="../SourceCode/ConstitutiveLibrary/ConstitutiveModelsLibrary/ModHyperelasticTransIso.f90" />
+		<Unit filename="../SourceCode/ConstitutiveLibrary/ConstitutiveModelsLibrary/ModHyperelasticTransIsoComp.f90" />
 		<Unit filename="../SourceCode/ConstitutiveLibrary/ConstitutiveModelsLibrary/ModJ2Plasticity.f90" />
 		<Unit filename="../SourceCode/ConstitutiveLibrary/ConstitutiveModelsLibrary/ModNeoHookean.f90" />
 		<Unit filename="../SourceCode/ConstitutiveLibrary/ConstitutiveModelsLibrary/ModNeoHookeanIsochoric.f90" />

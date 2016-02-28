@@ -55,6 +55,7 @@
 		<File RelativePath="..\..\SourceCode\ConstitutiveLibrary\ConstitutiveModelsLibrary\ModGeneralizedHookesLaw .f90"/>
 		<File RelativePath="..\..\SourceCode\ConstitutiveLibrary\ConstitutiveModelsLibrary\ModHyperelasticQ1P0.f90"/>
 		<File RelativePath="..\..\SourceCode\ConstitutiveLibrary\ConstitutiveModelsLibrary\ModHyperelasticTransIso.f90"/>
+		<File RelativePath="..\..\SourceCode\ConstitutiveLibrary\ConstitutiveModelsLibrary\ModHyperelasticTransIsoComp.f90"/>
 		<File RelativePath="..\..\SourceCode\ConstitutiveLibrary\ConstitutiveModelsLibrary\ModJ2Plasticity.f90"/>
 		<File RelativePath="..\..\SourceCode\ConstitutiveLibrary\ConstitutiveModelsLibrary\ModNeoHookean.f90"/>
 		<File RelativePath="..\..\SourceCode\ConstitutiveLibrary\ConstitutiveModelsLibrary\ModNeoHookeanIsochoric.f90"/>
