@@ -351,11 +351,16 @@ module ModHyperelasticTransIso
             ! TOTAL STRESS
             ! -----------------------------------------------------------------------------------
 
-            ! Cauchy Stress
-            !S = (1.0d0-vf)*Sm + vf*Sf
+            ! Cauchy Stress  !S = (1.0d0-vf)*Sm + vf*Sf
+            
             
             this%Cauchy_Stress_Fiber = Convert_to_Voigt_3D_Sym( vf*Sf )
             this%Cauchy_Stress_Matrix = Convert_to_Voigt_3D_Sym( (1.0d0-vf)*Sm )
+            
+            !*********************** 
+            !this%Cauchy_Stress_Fiber = Convert_to_Voigt_3D_Sym( Sf )
+            !this%Cauchy_Stress_Matrix = Convert_to_Voigt_3D_Sym( 0.20d0*Sm )
+            !*********************** 
             
             this%Stress =  this%Cauchy_Stress_Fiber + this%Cauchy_Stress_Matrix
 
@@ -470,14 +475,17 @@ module ModHyperelasticTransIso
                  
                 Df = 0.0d0
                  
-            endif
+             endif
             ! -----------------------------------------------------------------------------------
 
 
             ! TOTAL TANGENT MODULUS
             ! -----------------------------------------------------------------------------------
             D = (1.0d0-vf)*Dm + vf*Df
-
+            
+            !*********************** 
+            !D = 0.20d0*Dm + vf*Df
+            !*********************** 
 
 		    !************************************************************************************
 
@@ -532,7 +540,7 @@ module ModHyperelasticTransIso
 
                 case(0)
 
-                    Length=3
+                    Length=4
 
                 case (1)
 
@@ -564,6 +572,18 @@ module ModHyperelasticTransIso
                     Length=size(this%Stress)
 
                     Variable(1:Length) = this%Cauchy_Stress_Matrix
+                    
+                case (4)
+
+                    Name='Fiber_Stretch'
+                    VariableType = Scalar
+                    Length=1
+                    !-----------------------------------------------------------------
+                    C = matmul(transpose(this%F),this%F)
+                    A = Tensor_Product(mX,mX)
+                    FiberStretch = dsqrt( Tensor_Inner_Product(C,A) )
+                    !-----------------------------------------------------------------
+                    Variable(1:Length) = FiberStretch
                     
                 case default
 

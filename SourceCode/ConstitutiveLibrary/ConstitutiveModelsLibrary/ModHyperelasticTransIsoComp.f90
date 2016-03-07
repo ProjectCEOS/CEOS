@@ -675,7 +675,7 @@ module ModHyperelasticTransIsoComp
 
                 case(0)
 
-                    Length=3
+                    Length=4
 
                 case (1)
 
@@ -707,6 +707,18 @@ module ModHyperelasticTransIsoComp
                     Length=size(this%Stress)
 
                     Variable(1:Length) = this%Cauchy_Stress_Matrix
+                    
+                case (4)
+
+                    Name='Fiber_Stretch'
+                    VariableType = Scalar
+                    Length=1
+                    !-----------------------------------------------------------------
+                    C = matmul(transpose(this%F),this%F)
+                    A = Tensor_Product(mX,mX)
+                    FiberStretch = dsqrt( Tensor_Inner_Product(C,A) )
+                    !-----------------------------------------------------------------
+                    Variable(1:Length) = FiberStretch
 
                 case default
 
