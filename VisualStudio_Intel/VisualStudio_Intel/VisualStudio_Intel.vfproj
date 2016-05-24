@@ -15,7 +15,7 @@
 				<Tool Name="VFPostBuildEventTool"/>
 				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
 		<Configuration Name="Release|Win32">
-				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Optimization="optimizeFull" Parallelization="true" UseMkl="mklParallel"/>
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Optimization="optimizeMinSpace" FavorSizeOrSpeed="favorNone" Parallelization="true" UseMkl="mklParallel"/>
 				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" SubSystem="subSystemConsole" StackReserveSize="100000000"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
@@ -70,6 +70,7 @@
 		<File RelativePath="..\..\SourceCode\FEM\elements\ElementLibrary\ModElementHexa8.f90"/>
 		<File RelativePath="..\..\SourceCode\FEM\elements\ElementLibrary\ModElementLibrary.f90"/>
 		<File RelativePath="..\..\SourceCode\FEM\elements\ElementLibrary\ModElementQuad4.f90"/>
+		<File RelativePath="..\..\SourceCode\FEM\Elements\ElementLibrary\ModElementTetra10.f90"/>
 		<File RelativePath="..\..\SourceCode\FEM\elements\ElementLibrary\ModElementTetra4.f90"/>
 		<File RelativePath="..\..\SourceCode\FEM\elements\ElementLibrary\ModElementTri3.f90"/></Filter>
 		<Filter Name="ElementMethod">

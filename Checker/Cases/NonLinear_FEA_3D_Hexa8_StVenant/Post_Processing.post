@@ -35,7 +35,7 @@ PROBE
 	Location = Node
 	File Name = CEOS_Disp_X.probe
 	Variable Name = Displacements 
-	Node = 11
+	Node = 3
 	Components = 1
 END PROBE 
 
@@ -43,7 +43,7 @@ PROBE
 	Location = Node
 	File Name = CEOS_Disp_Y.probe
 	Variable Name = Displacements 
-	Node = 11
+	Node = 3
 	Components = 2 
 END PROBE
  
@@ -51,7 +51,7 @@ PROBE
 	Location = Node
 	File Name = CEOS_Disp_Z.probe
 	Variable Name = Displacements 
-	Node = 11
+	Node = 3
 	Components = 3 
 END PROBE 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX

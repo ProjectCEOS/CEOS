@@ -83,8 +83,8 @@ END MATERIAL
 
 MESH AND BOUNDARY CONDITIONS
 
-	Mesh File = Mesh.dat
-	Preprocessor = Gid 12
+	Mesh File = Mesh_Block_96elem.cdb
+	Preprocessor = HyperMesh !Gid 12
 	Time Discretization File = Time_Discretization.dat
 		
 END MESH AND BOUNDARY CONDITIONS

@@ -684,6 +684,9 @@ contains
                             ! NOTE (Thiago#1#): Ansys não tem elemento com 3 nós. Implementação para ler malha do ansys modificada manualmente para Tri3
                             ndime = 2
                             ElemType = ElementTypes%Tri3
+                        case (92) ! Ansys Element 92 - Tetra10
+                            ndime = 3
+                            ElemType = ElementTypes%Tetra10
                         case default
                             write(*,*)trim(Line)
                             stop 'Error: Ansys Element Type Not Identified'
@@ -705,6 +708,44 @@ contains
                     read(FileNumber,*)
                     read(FileNumber,'(a255)') line
                     call Split(Line,AuxString,' ')
+
+
+                     !Leitura do Tetra10 - Arquivo .cdb com a conectividade em duas linhas
+                     !Obs. Com esta implementação a malha deverá ser somente de Tetra10.
+                    if (ElemType == ElementTypes%Tetra10) then
+                    
+                        do while ( .not. Compare(AuxString(1),'-1') )
+                    
+                            if ( size(AuxString,1) .ne. 2 ) then
+                    
+                                ElemID = AuxString(11)
+                                ENnodes = AuxString(9)
+                                MaterialID = AuxString(1)
+                    
+                                ElementMaterialID(ElemID) = MaterialID
+                    
+                                do i = 1,ENnodes-2
+                                    ElemConec(i) = AuxString(11+i)
+                                enddo
+                    
+                            elseif ( size(AuxString,1) .eq. 2 ) then
+                    
+                                ElemConec(9)  = AuxString(1)
+                                ElemConec(10) = AuxString(2)
+                    
+                                call ElementConstructor( ElementList(ElemID)%el , ElemConec(1:ENnodes) ,ElemType , GlobalNodesList)
+                    
+                            endif
+                    
+                    
+                            read(FileNumber,'(a255)') line
+                            call Split(Line,AuxString,' ')
+                    
+                        end do
+                    
+                    else
+
+                    ! Leitura dos demais elementos
                     do while ( .not. Compare(AuxString(1),'-1') )
 
                         ElemID = AuxString(11)
@@ -721,18 +762,19 @@ contains
                             enddo
 
                         else if (ElemType == ElementTypes%Quad4) then
-                        ! NOTE (Thiago#1#): HyperMesh informa a conectividade em sentido horário p o quad4. A leitura está sendo realizada de forma anti-horária!
+                        ! NOTE (Thiago#1#): HyperMesh informa a conectividade em sentido horário p o quad4.
+                        ! A leitura está sendo realizada de forma anti-horária!
 
                             do i = 1,ENnodes
                                 ElemConec(5-i) = AuxString(11+i)
                             enddo
-                            
+
                         else if (ElemType == ElementTypes%Tri3) then
- 
+
                             do i = 1,ENnodes-1
                                 ElemConec(4-i) = AuxString(11+i)
                             enddo
-                            
+
                         endif
 
                         call ElementConstructor( ElementList(ElemID)%el , ElemConec(1:ENnodes) ,ElemType , GlobalNodesList)
@@ -741,6 +783,8 @@ contains
                         call Split(Line,AuxString,' ')
 
                     enddo
+
+                    endif
 
 
                 endif
