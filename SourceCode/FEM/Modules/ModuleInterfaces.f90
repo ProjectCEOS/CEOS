@@ -144,13 +144,13 @@ module Interfaces
 
             ! Input variables
             ! -----------------------------------------------------------------------------------
-            type(ClassElementsWrapper) , dimension(:) , intent(in) :: ElementList
-            type(ClassAnalysis)                       , intent(in) :: AnalysisSettings
-            type(ClassStatus)                                      :: Status
+            type(ClassElementsWrapper) , dimension(:)  :: ElementList
+            type(ClassAnalysis)                        :: AnalysisSettings
+            type(ClassStatus)                          :: Status
 
             ! Output variables
             ! -----------------------------------------------------------------------------------
-            real(8) , dimension(:) , intent(out) :: Fint
+            real(8) , dimension(:)  :: Fint
 
         end subroutine
         !==========================================================================================

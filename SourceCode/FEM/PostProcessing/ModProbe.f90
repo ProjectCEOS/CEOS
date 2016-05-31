@@ -1,6 +1,9 @@
 module ModProbe
 
+    use ModTools
+    
     implicit none
+
 
 
     ! Enumerators
@@ -45,21 +48,31 @@ module ModProbe
         end subroutine
     end interface
 
+    ! Node
     type, extends(ClassProbe) :: ClassNodeProbe
         integer :: Node
     contains
         procedure :: WriteProbeResult => WriteProbeResult_Node
     end type
 
+    ! Gauss Point
     type, extends(ClassProbe) :: ClassGaussPointProbe
         integer :: Element, GaussPoint
     contains
         procedure :: WriteProbeResult => WriteProbeResult_GaussPoint
     end type
 
+    ! Micro Structure
     type, extends(ClassProbe) :: ClassMicroStructureProbe
     contains
         procedure :: WriteProbeResult => WriteProbeResult_MicroStructure
+    end type
+
+    ! Nodal Force
+    type, extends(ClassProbe) :: ClassNodalForceProbe
+        integer , allocatable , dimension (:) :: Nodes
+    contains
+        procedure :: WriteProbeResult => WriteProbeResult_NodalForce
     end type
 
 
@@ -595,6 +608,161 @@ module ModProbe
 
     end subroutine
     !==========================================================================================
+
+    !==========================================================================================
+    subroutine NodalForceProbeConstructor(Probe, ProbeHyperMeshFile, FileName, ProbeLoadCollector)
+
+
+            !************************************************************************************
+            ! DECLARATIONS OF VARIABLES
+            !************************************************************************************
+            ! Modules and implicit declarations
+            ! -----------------------------------------------------------------------------------
+            use Parser
+            implicit none
+
+            ! Object
+            ! -----------------------------------------------------------------------------------
+            class(ClassProbe), pointer :: Probe
+
+            ! Input variables
+            ! -----------------------------------------------------------------------------------
+            character(*) :: ProbeHyperMeshFile, FileName, ProbeLoadCollector
+
+            ! Internal variables
+            ! -----------------------------------------------------------------------------------
+            type(ClassNodalForceProbe), pointer :: NodalForceProbe
+
+            character(len=255), allocatable , dimension(:) :: AuxString
+            integer, allocatable , dimension(:) :: NodalForceList
+            integer ::  FileNumber, Node
+            character(len=255) :: Line
+            logical :: found
+
+            !************************************************************************************
+
+            allocate(NodalForceProbe)
+
+            NodalForceProbe%FileName = FileName
+
+            FileNumber = FreeFile()
+            open (FileNumber,File=ProbeHyperMeshFile,status="old")
+
+            found = .false.
+            LOOP_LOAD_COLLECTORS: do while (.not. EOF(FileNumber))
+
+                read(FileNumber,'(a255)') Line
+
+                if ( Compare(RemoveSpaces(Line),'!!hmnameloadcol') ) then
+
+                    read(FileNumber,'(a255)') Line
+
+                    call Split(Line,AuxString,'"')
+
+                    if ( Compare(RemoveSpaces(AuxString(2)),ProbeLoadCollector) ) then
+                        found = .true.
+                        exit lOOP_LOAD_COLLECTORS
+                    end if
+
+                endif
+
+            enddo LOOP_LOAD_COLLECTORS
+
+            if (.not. found) then
+                write(*,*)'Load Collector (Nodal Force) could not be found in HyperMesh .cdb File'
+                stop
+            end if
+
+            ! Ler duas linhas dummy
+            read(FileNumber,'(a255)') Line
+            read(FileNumber,'(a255)') Line
+
+            LOOP_NODES: do while (.not. EOF(FileNumber))
+
+                read(FileNumber,'(a255)') Line
+
+                call Split(Line,AuxString,',')
+
+                if ( size(AuxString) == 4 ) then
+
+                    Node = AuxString(2)
+                    call AppendInteger( NodalForceList, Node )
+
+                else
+                    exit LOOP_NODES
+                endif
+
+            enddo LOOP_NODES
+
+            if (size(NodalForceList) == 0) then
+                write(*,*) 'Vector NodalForceList is empty'
+                stop
+            end if
+            allocate ( NodalForceProbe%Nodes,source=NodalForceList)
+
+
+            Probe => NodalForceProbe
+
+            close(FileNumber)
+
+    end subroutine
+    !==========================================================================================
+
+
+    !==========================================================================================
+    subroutine WriteProbeResult_NodalForce(this,FEA)
+
+
+            !************************************************************************************
+            ! DECLARATIONS OF VARIABLES
+            !************************************************************************************
+            ! Modules and implicit declarations
+            ! -----------------------------------------------------------------------------------
+            use FEMAnalysis
+            use Interfaces
+            implicit none
+
+            ! Object
+            ! -----------------------------------------------------------------------------------
+            class(ClassNodalForceProbe) :: this
+
+            ! Input variables
+            ! -----------------------------------------------------------------------------------
+            class(ClassFEMAnalysis) :: FEA
+
+            ! Internal variables
+            ! -----------------------------------------------------------------------------------
+            real(8) , allocatable , dimension(:) :: Fint , TotalForce
+            integer :: DOF
+            type(ClassStatus) :: Status
+            !************************************************************************************
+
+            ! teste se probe esta ativo
+            if (.not. this%Active) then
+                return
+            endif
+
+            if ( any( this%Nodes >  size(FEA%GlobalNodesList)) ) then
+                call this%WriteOnFile('ERROR - Node Number is greater than the Max Number of Nodes in the Mesh')
+                this%Active = .false.
+                return
+            endif
+
+            allocate( Fint , mold = FEA%U )
+            Fint = 0.0d0
+            call InternalForce(FEA%ElementList , FEA%AnalysisSettings , Fint , Status )
+
+            allocate(TotalForce( FEA%AnalysisSettings%NDOFnode )  )
+            do DOF=1,FEA%AnalysisSettings%NDOFnode
+                TotalForce(DOF) = sum( Fint( FEA%AnalysisSettings%NDOFnode * ( this%Nodes - 1 ) + DOF ) )
+            enddo
+
+            call this%WriteOnFile( FEA%Time , TotalForce )
+
+    end subroutine
+    !==========================================================================================
+
+
 
 
     !==========================================================================================

@@ -1,4 +1,4 @@
-module modTools
+module ModTools
 
     contains
 
@@ -31,6 +31,48 @@ module modTools
         end if
 
     end subroutine
+
+
+    !=======================================================================================================================
+    subroutine AppendString(List,NewString)
+
+        character(len=*), allocatable, dimension(:) :: List
+        character(len=*)                            :: NewString
+
+        character(len=len(List)), dimension(size(List)) :: AuxList
+
+        AuxList = List
+
+        if (allocated(List)) deallocate(List)
+
+        allocate( List(size(AuxList)+1) )
+
+        List(1:size(AuxList)) = AuxList
+        List(size(AuxList)+1) = NewString
+
+    end subroutine
+    !=======================================================================================================================
+
+    !=======================================================================================================================
+    subroutine AppendInteger(List,NewInteger)
+
+        integer, allocatable, dimension(:) :: List
+        integer                            :: NewInteger
+
+        integer, dimension(size(List)) :: AuxList
+
+        AuxList = List
+
+        if (allocated(List)) deallocate(List)
+
+        allocate( List(size(AuxList)+1) )
+
+        List(1:size(AuxList)) = AuxList
+        List(size(AuxList)+1) = NewInteger
+
+    end subroutine
+    !=======================================================================================================================
+
 
 
 end module
