@@ -28,6 +28,7 @@ module ConstitutiveModelLibrary
     use NeoHookeanIsochoric
     use ModHyperelasticTransIso
     use ModHyperelasticTransIsoComp
+    use ModViscoelasticFiber
 
     ! Constitutive Models ID registered:
     type ClassConstitutiveModels
@@ -41,6 +42,7 @@ module ConstitutiveModelLibrary
         integer   :: NeoHookeanIsochoricModel       = 8
         integer   :: HyperelasticTransIsoModel      = 9
         integer   :: HyperelasticTransIsoCompModel  = 10
+        integer   :: ViscoelasticFiberModel         = 11
     end type
 
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -101,7 +103,10 @@ module ConstitutiveModelLibrary
 
             type(ClassHyperelasticTransIso_3D)         , pointer , dimension(:) :: HTI_3D
 
-            type(ClassHyperelasticTransIsoComp_3D)         , pointer , dimension(:) :: HTIC_3D
+            type(ClassHyperelasticTransIsoComp_3D)     , pointer , dimension(:) :: HTIC_3D
+
+            type(ClassViscoelasticFiber_3D)            , pointer , dimension(:) :: VF_3D
+
 ! TODO (Thiago#1#02/13/15): Trocar threeDimensional para 3D
 
 		    !************************************************************************************
@@ -313,6 +318,23 @@ module ConstitutiveModelLibrary
                     endif
                 ! -------------------------------------------------------------------------------
 
+                ! -------------------------------------------------------------------------------
+                ! Viscoelastic Fiber Model - (Elastic Matrix)
+                ! -------------------------------------------------------------------------------
+                case (ConstitutiveModels % ViscoelasticFiberModel)
+
+                    if ( AnalysisSettings%Hypothesis == HypothesisOfAnalysis%ThreeDimensional ) then
+
+                            allocate( VF_3D(nGP) )
+                            GaussPoints => VF_3D
+
+                    else
+                            call Error("Error: Viscoelastic Fiber Model - (Elastic Matrix) - analysis type not available.")
+
+                    endif
+                ! -------------------------------------------------------------------------------
+
+
                 case default
 
                     call Error( "Error: Constitutive Model not registered.")
@@ -409,6 +431,10 @@ module ConstitutiveModelLibrary
             elseif ( Comp%CompareStrings('hyperelastic_tranverse_isotropic_(compressive_transition)', model) .and. (AnalysisSettings%ElementTech == ElementTechnologies%Full_Integration) ) then
 
                 modelID = ConstitutiveModels%HyperelasticTransIsoCompModel
+
+            elseif ( Comp%CompareStrings('Matrix_Elastic_And_Fiber_Viscoelastic', model) .and. (AnalysisSettings%ElementTech == ElementTechnologies%Full_Integration) ) then
+
+                modelID = ConstitutiveModels%ViscoelasticFiberModel
             else
                 call Error( "Error: Material Model not identified: "//trim(model))
             endif

@@ -43,6 +43,7 @@
 		<Unit filename="../SourceCode/ConstitutiveLibrary/ConstitutiveModelsLibrary/ModNeoHookeanQ1P0.f90" />
 		<Unit filename="../SourceCode/ConstitutiveLibrary/ConstitutiveModelsLibrary/ModStVenantKirchhoff.f90" />
 		<Unit filename="../SourceCode/ConstitutiveLibrary/ConstitutiveModelsLibrary/ModVariationalAnandGurtin.f90" />
+		<Unit filename="../SourceCode/ConstitutiveLibrary/ConstitutiveModelsLibrary/ModViscoelasticFiber.f90" />
 		<Unit filename="../SourceCode/ConstitutiveLibrary/ConstitutiveModelsLibrary/TEMPLATE.f90" />
 		<Unit filename="../SourceCode/ConstitutiveLibrary/ModConstitutiveModel.f90" />
 		<Unit filename="../SourceCode/ConstitutiveLibrary/SubMaterialConstructor.f90" />

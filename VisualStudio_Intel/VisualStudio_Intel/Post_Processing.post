@@ -5,7 +5,7 @@
 POST PROCESSOR 
 
 	Post Processor = HyperView 12 !None !GiD 7 !
-	Results = Displacements  , Cauchy Stress  !, Fiber_Direction , Cauchy_Stress_Fiber_Contribution, Cauchy_Stress_Matrix_Contribution ! , First Piola Stress, Deformation Grad !,  , Logarithmic Strain !, von Mises Cauchy Stress
+	Results = Displacements  , Cauchy Stress  , Fiber_Direction, Cauchy_Stress_Fiber_Contribution, Cauchy_Stress_Matrix_Contribution ! , First Piola Stress, Deformation Grad !,  , Logarithmic Strain !, von Mises Cauchy Stress
 	File Name = hypermesh_results.hwascii
 	
 END POST PROCESSOR 
@@ -43,7 +43,7 @@ END POST PROCESSOR
 !-----------------------------------------------------------------------------------------
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-NUMBER OF PROBES = 3
+NUMBER OF PROBES = 2
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -53,14 +53,14 @@ PROBE
 	Location = Micro Structure
 	File Name = Homogenized_F.probe
 	Variable Name = Deformation Gradient
-	Components = All
+	Components = All !1 , 5 , 9 !
 END PROBE
 
 PROBE
 	Location = Micro Structure
 	File Name = Homogenized_First_Piola.probe
 	Variable Name = First Piola Stress 
-	Components = All
+	Components = All !1 !All
 END PROBE
 
 PROBE
