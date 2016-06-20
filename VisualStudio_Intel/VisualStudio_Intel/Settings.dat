@@ -54,11 +54,11 @@ MATERIAL
 	Fiber Volume Fraction = 0.75e0 !0.764e0
 	Mu Matrix = 1.00e3 ! E=2kPa
 	Lambda Matrix = 4.93e4 ! v=0.49
-	Cinf1 Fiber = 3.40e7  !2.43e7 !5.0e6 !8.9e6 
-	Cinf2 Fiber = 1.17e9 !3.57e8 !7.50e7 !1.2e6 
-	Ce1 Fiber = 3.40e7  !2.43e7 !5.0e6 !8.9e6 
-	Ce2 Fiber = 1.17e9 !3.57e8 !7.50e7 !1.2e6 
-	Ni Fiber = 1.0e8
+	Cinf1 Fiber = 970.174e6 
+	Cinf2 Fiber = 2.828e0 
+	Ce1 Fiber = 194.162e6
+	Ce2 Fiber = 2.397e0
+	Ni Fiber = 565.612e6
 
 	Material ID = 2
 	Compressible_Neo_Hookean
@@ -107,7 +107,7 @@ END MATERIAL
 
 MESH AND BOUNDARY CONDITIONS
 
-	Mesh File = Malha_Menor_Cis_Fibras12_fracao70.cdb !Malha_RVE_1.cdb !Malha_Menor_Fibras9_fracao70.cdb ! ! Malha_Menor_Fibras4_fracao70.cdb ! Malha_Menor_Cubo_1x1x3.cdb ! !  Malha_Fibras9_fracao70.cdb
+	Mesh File =  Malha_Menor_Cis_Fibras12_fracao70.cdb !Malha_Menor_Cubo_1x1x3.cdb  !Mesh_Block_96elem_Disp_Z.cdb !Malha_RVE_1.cdb !Malha_Menor_Fibras9_fracao70.cdb ! ! Malha_Menor_Fibras4_fracao70.cdb ! !  Malha_Fibras9_fracao70.cdb
 	Preprocessor = HyperMesh !Gid 12
 	Time Discretization File = Time_Discretization.dat
 		

@@ -20,9 +20,10 @@ module ElementLibrary
 
     use ElementQuad4
     use ElementTri3
-
     use ElementTetra4
     use ElementHexa8
+    use ElementTetra10
+
 
     ! Elements ID used in the code: [Geometry][InterpolationDegree][ElementTechnology]
     !
@@ -70,10 +71,11 @@ module ElementLibrary
 
             ! Internal variables
             ! -----------------------------------------------------------------------------------
-			type(ClassElementTri3)  , pointer :: ElTri3   => null()
-            type(ClassElementQuad4) , pointer :: ElQuad4  => null()
-            type(ClassElementTetra4), pointer :: ElTetra4 => null()
-            type(ClassElementHexa8) , pointer :: ElHexa8  => null()
+			type(ClassElementTri3)    , pointer :: ElTri3     => null()
+            type(ClassElementQuad4)   , pointer :: ElQuad4    => null()
+            type(ClassElementTetra4)  , pointer :: ElTetra4   => null()
+            type(ClassElementHexa8)   , pointer :: ElHexa8    => null()
+            type(ClassElementTetra10) , pointer :: ElTetra10  => null()
 
 		    !************************************************************************************
 
@@ -102,6 +104,11 @@ module ElementLibrary
 
                     allocate(ElHexa8)
                     Element=>ElHexa8
+
+                case (ElementTypes % Tetra10)
+
+                    allocate(ElTetra10)
+                    Element => ElTetra10
 
             case default
                 call Error("AllocateNewElement :: Element not identified")
@@ -249,8 +256,9 @@ LOOP:      do el = 1 , size(AvailableElements)
         type(ClassElementQuad4)   :: ElQuad4
         type(ClassElementTetra4)  :: ElTetra4
         type(ClassElementHexa8)   :: ElHexa8
+        type(ClassElementTetra10) :: ElTetra10
 
-        NumberOfAvailableElements = 4
+        NumberOfAvailableElements = 5
 
         if (allocated(AvailableElements)) deallocate(AvailableElements)
         allocate( AvailableElements(NumberOfAvailableElements))
@@ -259,6 +267,7 @@ LOOP:      do el = 1 , size(AvailableElements)
         call ElQuad4 %GetProfile(AvailableElements(2)) ; AvailableElements(2)%ElementType = ElementTypes % Quad4
         call ElTetra4%GetProfile(AvailableElements(3)) ; AvailableElements(3)%ElementType = ElementTypes % Tetra4
         call ElHexa8 %GetProfile(AvailableElements(4)) ; AvailableElements(4)%ElementType = ElementTypes % Hexa8
+        call ElTetra10%GetProfile(AvailableElements(5)) ; AvailableElements(5)%ElementType = ElementTypes % Tetra10
 
     end subroutine
 

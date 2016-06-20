@@ -31,6 +31,7 @@ module ConstitutiveModel
         real(8) , pointer , dimension(:)    :: Stress => null()
         real(8)                             :: F(3,3)=0.0d0
         real(8)                             :: T
+        !real(8)                             :: Jbar
         real(8)                             :: Time = 0.0d0
 
 
@@ -96,10 +97,67 @@ module ConstitutiveModel
             end subroutine
             !==========================================================================================
             subroutine GetTangentModulusBase(this,D)
+
+                use ModContinuumMechanics
+                use MathRoutines
+                use ModStatus
+
                 class(ClassConstitutiveModel)::this
+                type(ClassStatus) :: Status
+
                 real(8),dimension(:,:),intent(inout)::D
-                stop "Error: GetTangentModulus"
+                integer :: i,j
+                real(8) :: h
+                real(8),dimension(3,3) :: F, S, Piola_forward, Piola_backward, Piola_Current
+                real(8),dimension(9,9) :: A
+
+
+                ! Perturbation
+                h = 1.0d-8
+
+                F = this%F
+
+                S = StressTransformation(this%F, Convert_to_Tensor_3D_Sym(this%Stress),StressMeasures%Cauchy,StressMeasures%SecondPiola)
+
+                !Piola_Current = StressTransformation(this%F, Convert_to_Tensor_3D_Sym(this%Stress),StressMeasures%Cauchy,StressMeasures%FirstPiola)
+
+
+                A = 0.0d0
+
+                do i = 1,3
+
+                    do j = 1,3
+
+                        ! Forward Perturbation
+                        this%F(i,j) = F(i,j) + h
+                        call this%UpdateStressAndStateVariables(Status)
+                        Piola_forward = StressTransformation(this%F, Convert_to_Tensor_3D_Sym(this%Stress),StressMeasures%Cauchy,StressMeasures%FirstPiola)
+
+                        ! Backward Perturbation
+                        this%F(i,j) = F(i,j) - h
+                        call this%UpdateStressAndStateVariables(Status)
+                        Piola_backward = StressTransformation(this%F, Convert_to_Tensor_3D_Sym(this%Stress),StressMeasures%Cauchy,StressMeasures%FirstPiola)
+
+                        ! Central Finite Difference
+                        A(3*(j-1)+i,:) = Convert_to_Voigt_3D( (Piola_forward-Piola_backward)/(2.0d0*h) )
+                        
+                        ! Forward Finite Difference
+                        !A(3*(j-1)+i,:) = Convert_to_Voigt_3D( (Piola_forward-Piola_Current)/h )
+
+                        this%F(i,j) = F(i,j)
+
+                    end do
+
+                end do
+
+                ! Convert First to Second Elasticity Tensor (Material Tensor)
+                D = First_Elasticity_Modulus_To_Second_Voigt (A,F,S)
+
+                ! Convert Second to Spatial Elasticity Tensor
+                D = Push_Forward_Voigt (D,F)
+
             end subroutine
+
             !==========================================================================================
             subroutine UpdateStressAndStateVariablesBase(this,Status)
                 class(ClassConstitutiveModel)::this

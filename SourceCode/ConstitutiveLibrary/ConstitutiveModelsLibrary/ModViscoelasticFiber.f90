@@ -221,8 +221,8 @@ module ModViscoelasticFiber
             this%Properties%Lambda_Matrix       = ListOfValues(3)
             this%Properties%Cinf1_Fiber         = ListOfValues(4)
             this%Properties%Cinf2_Fiber         = ListOfValues(5)
-            this%Properties%Ce1_Fiber          = ListOfValues(6)
-            this%Properties%Ce2_Fiber          = ListOfValues(7)
+            this%Properties%Ce1_Fiber           = ListOfValues(6)
+            this%Properties%Ce2_Fiber           = ListOfValues(7)
             this%Properties%Ni_Fiber            = ListOfValues(8)
 
 		    !************************************************************************************
@@ -282,7 +282,7 @@ module ModViscoelasticFiber
             real(8) :: vf, Mu, Lambda, cinf1, cinf2, ce1, ce2, nv, dt
             real(8) :: I4_new, I4e_new, J_new, D_Psif_DI4
             real(8) :: mX_new(3), M_new(3,3)
-            real(8) :: F_new(3,3), C_new(3,3), b_new(3,3), I_new(3,3)
+            real(8) :: F_new(3,3), C_new(3,3), b_new(3,3)
 
             real(8) :: dvf_new, lf_new, dvf_old, lvf_old, lvf_new, lef_new
 
@@ -299,20 +299,20 @@ module ModViscoelasticFiber
 
             ! Optional: Retrieve Variables
             ! -----------------------------------------------------------------------------------
-            vf = this%Properties%FiberVolumeFraction
-            Mu = this%Properties%Mu_Matrix
-            Lambda = this%Properties%Lambda_Matrix
-            cinf1 = this%Properties%Cinf1_Fiber
-            cinf2 = this%Properties%Cinf2_Fiber
-            ce1   = this%Properties%Ce1_Fiber
-            ce2   = this%Properties%Ce2_Fiber
-            nv    = this%Properties%Ni_Fiber
+            vf      = this%Properties%FiberVolumeFraction
+            Mu      = this%Properties%Mu_Matrix
+            Lambda  = this%Properties%Lambda_Matrix
+            cinf1   = this%Properties%Cinf1_Fiber
+            cinf2   = this%Properties%Cinf2_Fiber
+            ce1     = this%Properties%Ce1_Fiber
+            ce2     = this%Properties%Ce2_Fiber
+            nv      = this%Properties%Ni_Fiber
 
             F_new  = this%F
             mX_new = this%AdditionalVariables%mX
 
+            dvf_old = this%dvf_old
             lvf_old = this%lvf_old
-
             ! -----------------------------------------------------------------------------------
 
             ! Identity
@@ -354,11 +354,11 @@ module ModViscoelasticFiber
             ! FIBERS
             ! -----------------------------------------------------------------------------------
 
-            call Local_Newton_Raphson_FIBER( dvf_new, lf_new, dvf_old, lvf_old, ce1, ce2, nv, vf, dt )
+            call Local_Newton_Raphson_FIBER( dvf_new, lf_new, dvf_old, lvf_old, lvf_new, ce1, ce2, nv, vf, dt, Status )
 
             ! Save Updated Internal Variable
             this%dvf_new = dvf_new
-            this%lvf_new = lvf_old / (1.0d0 - dt*dvf_new)
+            this%lvf_new = lvf_new
             ! -----------------------------------------------------------------------------------
 
 
@@ -375,7 +375,7 @@ module ModViscoelasticFiber
 
             ! STRESS IN FIBER - Calculated in 3D Tensorial Format
             ! -----------------------------------------------------------------------------------
-            if ( lf_new .ge. 1.0d0) then
+            if ( lf_new .gt. 1.0d0) then
 
                 ! Equilibrium Stress - Scalar
                 ! -------------------------------------------------------------------------------
@@ -389,7 +389,6 @@ module ModViscoelasticFiber
                 ! Non-equilibrium Stress - Scalar
                 ! -------------------------------------------------------------------------------
                 ! Updated Variables
-                lvf_new = this%lvf_new
                 lef_new = lf_new/lvf_new
                 I4e_new = lef_new**2.0d0
 
@@ -425,6 +424,8 @@ module ModViscoelasticFiber
             this%Cauchy_Stress_Fiber = Convert_to_Voigt_3D_Sym( vf*Sf_new )
             this%Cauchy_Stress_Matrix = Convert_to_Voigt_3D_Sym( (1.0d0-vf)*Sm_new )
 
+            !this%Cauchy_Stress_Fiber = Convert_to_Voigt_3D_Sym( Sf_new )
+            !this%Cauchy_Stress_Matrix = Convert_to_Voigt_3D_Sym( Sm_new )
 
             this%Stress =  this%Cauchy_Stress_Fiber + this%Cauchy_Stress_Matrix
             ! -----------------------------------------------------------------------------------
@@ -438,16 +439,18 @@ module ModViscoelasticFiber
 
 
         !==========================================================================================
-        subroutine  Local_Newton_Raphson_FIBER( dvf_new, lf_new, dvf_old, lvf_old, ce1, ce2, nv, vf, dt )                                             
+        subroutine  Local_Newton_Raphson_FIBER( dvf_new, lf_new, dvf_old, lvf_old, lvf_new, ce1, ce2, nv, vf, dt, Status )
 
             ! Input/Output variables
-            real(8) :: dvf_new, lf_new, dvf_old, lvf_old
+            real(8) :: dvf_new, lf_new, dvf_old, lvf_old, lvf_new
             real(8) :: ce1, ce2, nv, vf, dt
+
+            type(ClassStatus) :: Status
 
             ! Internal Variables
             integer :: MaxIter, it
             real(8) :: Tol, Norm_Rf, Rf, Kf, delta_dvf
-            real(8) :: lvf_new, lef_new, I4e_new, lef_new_pr
+            real(8) :: lef_new, I4e_new, lef_new_pr
             real(8) :: Sef_new, Mef_new, Cef_new
             real(8) :: dPhie_dI4e, d2Phie_dI4e2, dPhiv_ddv, d2Phiv_ddv2
 
@@ -455,7 +458,7 @@ module ModViscoelasticFiber
             ! NR Parameters
             ! -----------------------------------------------------------------------------------
             MaxIter = 10
-            Tol     = 1.0d-6
+            Tol     = 1.0d-5
 
             ! Strategy of Solution - Vassoler(2012)
             ! -----------------------------------------------------------------------------------
@@ -468,6 +471,7 @@ module ModViscoelasticFiber
             endif
             if ((lef_new_pr .lt. 1.0d0) .and. (lf_new .lt. 1.0d0)) then
                 dvf_new = 0.0d0
+                lvf_new = lvf_old
                 return
             endif
 
@@ -475,7 +479,7 @@ module ModViscoelasticFiber
             ! -----------------------------------------------------------------------------------
 
             ! Guess
-            dvf_new = dvf_old
+            dvf_new = 0.0d0 !dvf_old
 
             ! NR Loop
             LOCAL_NR:  do it = 1 , MaxIter
@@ -515,7 +519,7 @@ module ModViscoelasticFiber
                 ! -------------------------------------------------------------------------------
                 Norm_Rf = dabs(Rf)
                 if (Norm_Rf .lt. Tol) then
-                    exit
+                    return !exit
                 endif
 
                 ! Jacobian
@@ -534,6 +538,10 @@ module ModViscoelasticFiber
 
 
             enddo LOCAL_NR
+
+            Status%Error = .true.
+            Status%ErrorDescription = 'Max Iteration in Local Newton-Raphson - Viscoelastic Fiber Model'
+
 
 
 
@@ -569,9 +577,18 @@ module ModViscoelasticFiber
 
              ! Internal variables
             ! -----------------------------------------------------------------------------------
-            real(8) :: vf, Mu, Lambda, C1, C2,  I4, D2_Psif_DI4, J
-            real(8) :: F(3,3), C(3,3), I(3,3), mX(3), A(3,3)
-            real(8) :: Ivoigt(6), Dm(6,6), Df(6,6), Avoigt(6)
+            real(8) :: vf, Mu, Lambda, cinf1, cinf2, ce1, ce2, nv, dt
+            real(8) :: I4_new, I4e_new, J_new, D_Psif_DI4
+            real(8) :: dvf_new, lf_new, dvf_old, lvf_old, lvf_new, lef_new
+
+            real(8) :: d2PhiInf_dI42, ddvf_dlf, drf_ddvf, drf_dlf
+            real(8) :: dPhie_dI4e, d2Phie_dI4e2, dPhiv_ddv, d2Phiv_ddv2
+            real(8) :: Sef_new, Mef_new, Cef_new, Cinff_new, Cf_new
+
+            real(8) :: mX_new(3), M_new(3,3)
+            real(8) :: F_new(3,3), C_new(3,3), I(3,3)
+
+            real(8) :: Ivoigt(6), Dm_voigt(6,6), Df_voigt(6,6), M_new_voigt(6)
 
 		    !************************************************************************************
 
@@ -579,19 +596,25 @@ module ModViscoelasticFiber
             ! TANGENT MODULUS
 		    !************************************************************************************
 
-            ! Optional: Retrieve Variables
+             ! Optional: Retrieve Variables
             ! -----------------------------------------------------------------------------------
-            vf = this%Properties%FiberVolumeFraction
-            Mu = this%Properties%Mu_Matrix
-            Lambda = this%Properties%Lambda_Matrix
-            C1 = this%Properties%Ce1_Fiber
-            C2 = this%Properties%Ce2_Fiber
+            vf      = this%Properties%FiberVolumeFraction
+            Mu      = this%Properties%Mu_Matrix
+            Lambda  = this%Properties%Lambda_Matrix
+            cinf1   = this%Properties%Cinf1_Fiber
+            cinf2   = this%Properties%Cinf2_Fiber
+            ce1     = this%Properties%Ce1_Fiber
+            ce2     = this%Properties%Ce2_Fiber
+            nv      = this%Properties%Ni_Fiber
 
-            F = this%F
-            mX = this%AdditionalVariables%mX
-            ! -----------------------------------------------------------------------------------
+            F_new  = this%F
+            mX_new = this%AdditionalVariables%mX
 
-            ! Kinematic Variables
+            dvf_old = this%dvf_old
+            dvf_new = this%dvf_new
+            lvf_old = this%lvf_old
+            lvf_new = this%lvf_new
+
             ! -----------------------------------------------------------------------------------
 
             ! Identity
@@ -602,60 +625,119 @@ module ModViscoelasticFiber
 
             Ivoigt = Convert_to_Voigt_3D_Sym(I)
 
+            ! Increment of Time
+            dt = this%Time - this%Time_old
+
+            ! Kinematic Variables
+            ! -----------------------------------------------------------------------------------
+
             ! Jacobian
-            J = det(F)
+            J_new = det(F_new)
 
             !Right-Cauchy Green Strain
-            C = matmul(transpose(F),F)
+            C_new = matmul(transpose(F_new),F_new)
 
             !Material Structural Tensor
-            A = Tensor_Product(mX,mX)
+            M_new = Tensor_Product(mX_new,mX_new)
 
-            Avoigt = Convert_to_Voigt_3D_Sym(A)
+            M_new_voigt = Convert_to_Voigt_3D_Sym(M_new)
 
             !Fourth Invariant
-            I4 = Tensor_Inner_Product(C,A)
+            I4_new = Tensor_Inner_Product(C_new,M_new)
+
+            !Total Stretch
+            lf_new = (I4_new)**(0.50d0)
 
             ! -----------------------------------------------------------------------------------
+
 
             ! MATRIX CONTRIBUTION - Compressible Neo-Hookean (Bonet and Wood, 2008)
             ! -----------------------------------------------------------------------------------
 
             ! Spatial Tangent Modulus - In Voigt Notation
-            Dm = (Lambda/J)*Ball_Voigt(Ivoigt,Ivoigt) + (2.0d0/J)*(Mu - Lambda*dlog(J))*IsymV()
+            Dm_voigt = (Lambda/J_new)*Ball_Voigt(Ivoigt,Ivoigt) + (2.0d0/J_new)*(Mu - Lambda*dlog(J_new))*IsymV()
             ! -----------------------------------------------------------------------------------
 
 
             ! FIBER CONTRIBUTION
             ! -----------------------------------------------------------------------------------
-            if ( I4 .gt. 0.99999999990d0) then
+            if ( lf_new .gt. 1.0d0) then
 
-                ! Second derivative of the fiber strain energy related to I4(C)
-                ! -----------------------------------------------------------------------------------
-                ! Polynomial
-                D2_Psif_DI4 =  2.0d0*C1 + 6.0d0*C2*(I4 - 1.0d0)
+                ! Equilibrium Modulus - Scalar
+                ! -------------------------------------------------------------------------------
+                ! POWER LAW - Balzani (2006)
+                d2PhiInf_dI42  = cinf1*cinf2*(cinf2-1.0d0)*((I4_new-1.0d0)**(cinf2-2.0d0))
+
+                ! Inf. Scalar Modulus
+                Cinff_new = 4.0d0*d2PhiInf_dI42
+
+
+                ! Non-equilibrium Modulus - Scalar
+                ! -------------------------------------------------------------------------------
+                ! Stretches
+                lef_new = lf_new/lvf_new
+
+                I4e_new = lef_new**2.0d0
+
+                ! Elastic Model - POWER LAW - Balzani (2006)
+                dPhie_dI4e   = ce1*ce2*((I4e_new-1.0d0)**(ce2-1.0d0))
+                d2Phie_dI4e2 = ce1*ce2*(ce2-1.0d0)*((I4e_new-1.0d0)**(ce2-2.0d0))
+
+                ! Viscous Model - QUADRATIC
+                dPhiv_ddv   = nv*dvf_new
+                d2Phiv_ddv2 = nv
+
+                ! Stresses
+                Sef_new = 2.0d0*dPhie_dI4e
+
+                Mef_new = (lef_new**2.0d0)*Sef_new
+
+                ! Elastic Modulus
+                Cef_new = 4.0d0*d2Phie_dI4e2
+
+                if (lef_new .lt. 1.0d0) then
+                    Sef_new = 0.0d0
+                    Mef_new = 0.0d0
+                    Cef_new = 0.0d0
+                endif
+
+
+                ! Computation of the Derivative - Ddvf_Dlf_new
+                ! -------------------------------------------------------------------------------
+                drf_ddvf = ( (dt*lvf_new/lvf_old)**2.0d0 )*(Mef_new + (lef_new**4.0d0)*Cef_new) + &
+                            dt*d2Phiv_ddv2
+
+                drf_dlf = -(dt*lvf_new/(lf_new*lvf_old))*(2.0d0*Mef_new + (lef_new**4.0d0)*Cef_new)
+
+                ddvf_dlf = -drf_dlf/drf_ddvf
+
+
+                ! Scalar Tangent Modulus
+                ! -------------------------------------------------------------------------------
+                Cf_new = Cinff_new + Cef_new/(lvf_new**4.0d0) - &
+                ( dt/(lf_new*lvf_new*lvf_old) )*( 2.0d0*Sef_new + (lef_new**2.0d0)*Cef_new )*ddvf_dlf
+
 
                 ! Material Tangent Modulus - In Voigt Notation
-                Df = 4.0d0*D2_Psif_DI4*Ball_Voigt(Avoigt,Avoigt)
+                ! -------------------------------------------------------------------------------
+                Df_voigt = Cf_new*Ball_Voigt(M_new_voigt,M_new_voigt)
 
                 ! Spatial Tangent Modulus - In Voigt Notation
-                Df = Push_Forward_Voigt(Df,F)
+                ! -------------------------------------------------------------------------------
+                Df_voigt = Push_Forward_Voigt(Df_voigt,F_new)
 
-             else
 
-                Df = 0.0d0
+            else
 
-             endif
+                Df_voigt = 0.0d0
+
+            endif
             ! -----------------------------------------------------------------------------------
 
 
             ! TOTAL TANGENT MODULUS
             ! -----------------------------------------------------------------------------------
-            D = (1.0d0-vf)*Dm + vf*Df
-
-            !***********************
-            !D = 0.20d0*Dm + vf*Df
-            !***********************
+            D = (1.0d0-vf)*Dm_voigt + vf*Df_voigt
 
 		    !************************************************************************************
 

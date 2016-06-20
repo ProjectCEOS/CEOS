@@ -73,6 +73,7 @@
 		<File RelativePath="..\..\SourceCode\FEM\elements\ElementLibrary\ModElementHexa8.f90"/>
 		<File RelativePath="..\..\SourceCode\FEM\elements\ElementLibrary\ModElementLibrary.f90"/>
 		<File RelativePath="..\..\SourceCode\FEM\elements\ElementLibrary\ModElementQuad4.f90"/>
+		<File RelativePath="..\..\SourceCode\FEM\Elements\ElementLibrary\ModElementTetra10.f90"/>
 		<File RelativePath="..\..\SourceCode\FEM\elements\ElementLibrary\ModElementTetra4.f90"/>
 		<File RelativePath="..\..\SourceCode\FEM\elements\ElementLibrary\ModElementTri3.f90"/></Filter>
 		<Filter Name="ElementMethod">

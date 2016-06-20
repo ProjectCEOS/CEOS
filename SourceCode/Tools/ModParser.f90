@@ -376,7 +376,7 @@ module Parser
 
         integer::nLines,nOptions,option,i
 
-        if ((Size(ListOfOptions).ne.size(ListOfValues)).or.(size(ListOfOptions))) then
+        if (Size(ListOfOptions).ne.size(ListOfValues)) then
             call This%SetError("FillListOfOptions:: ListOfOptions,ListOfValues must have the same size")
             return
         endif

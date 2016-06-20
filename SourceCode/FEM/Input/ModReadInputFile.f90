@@ -11,6 +11,7 @@ module ModReadInputFile
     use LinearSolverLibrary
     use Parser
     use ConstitutiveModel
+    use ModTools
 
     type ClassPreprocessors
         integer :: Gid7 = 1
@@ -684,6 +685,9 @@ contains
                             ! NOTE (Thiago#1#): Ansys não tem elemento com 3 nós. Implementação para ler malha do ansys modificada manualmente para Tri3
                             ndime = 2
                             ElemType = ElementTypes%Tri3
+                        case (92) ! Ansys Element 92 - Tetra10
+                            ndime = 3
+                            ElemType = ElementTypes%Tetra10
                         case default
                             write(*,*)trim(Line)
                             stop 'Error: Ansys Element Type Not Identified'
@@ -705,6 +709,44 @@ contains
                     read(FileNumber,*)
                     read(FileNumber,'(a255)') line
                     call Split(Line,AuxString,' ')
+
+
+                     !Leitura do Tetra10 - Arquivo .cdb com a conectividade em duas linhas
+                     !Obs. Com esta implementação a malha deverá ser somente de Tetra10.
+                    if (ElemType == ElementTypes%Tetra10) then
+
+                        do while ( .not. Compare(AuxString(1),'-1') )
+
+                            if ( size(AuxString,1) .ne. 2 ) then
+
+                                ElemID = AuxString(11)
+                                ENnodes = AuxString(9)
+                                MaterialID = AuxString(1)
+
+                                ElementMaterialID(ElemID) = MaterialID
+
+                                do i = 1,ENnodes-2
+                                    ElemConec(i) = AuxString(11+i)
+                                enddo
+
+                            elseif ( size(AuxString,1) .eq. 2 ) then
+
+                                ElemConec(9)  = AuxString(1)
+                                ElemConec(10) = AuxString(2)
+
+                                call ElementConstructor( ElementList(ElemID)%el , ElemConec(1:ENnodes) ,ElemType , GlobalNodesList)
+
+                            endif
+
+
+                            read(FileNumber,'(a255)') line
+                            call Split(Line,AuxString,' ')
+
+                        end do
+
+                    else
+
+                    ! Leitura dos demais elementos
                     do while ( .not. Compare(AuxString(1),'-1') )
 
                         ElemID = AuxString(11)
@@ -721,7 +763,8 @@ contains
                             enddo
 
                         else if (ElemType == ElementTypes%Quad4) then
-                        ! NOTE (Thiago#1#): HyperMesh informa a conectividade em sentido horário p o quad4. A leitura está sendo realizada de forma anti-horária!
+                        ! NOTE (Thiago#1#): HyperMesh informa a conectividade em sentido horário p o quad4.
+                        ! A leitura está sendo realizada de forma anti-horária!
 
                             do i = 1,ENnodes
                                 ElemConec(5-i) = AuxString(11+i)
@@ -741,6 +784,8 @@ contains
                         call Split(Line,AuxString,' ')
 
                     enddo
+
+                    endif
 
 
                 endif
@@ -838,6 +883,8 @@ contains
                 cycle
             elseif (Compare(RemoveSpaces(TableName(i)),"fixedsupports")) then
                 cycle
+            elseif (Compare(AuxString(1),"reaction")) then
+                cycle
             endif
             cont = cont + 1
         enddo
@@ -851,6 +898,8 @@ contains
             if (Compare(AuxString(1),"boundary")) then
                 cycle
             elseif (Compare(RemoveSpaces(TableName(i)),"fixedsupports")) then
+                cycle
+            elseif (Compare(AuxString(1),"reaction")) then
                 cycle
             endif
             cont = cont + 1
@@ -911,6 +960,8 @@ contains
                     BC%BoundaryNodes(cont_boundary)%Nodes(j-istart+1) = AuxString(2)
                 enddo
 
+            elseif (Compare(AuxString(1),"reaction")) then
+                cycle
 
             else
 
@@ -977,47 +1028,6 @@ contains
 
         endif
 
-
-    end subroutine
-    !=======================================================================================================================
-
-
-    !=======================================================================================================================
-    subroutine AppendString(List,NewString)
-
-        character(len=*), allocatable, dimension(:) :: List
-        character(len=*)                            :: NewString
-
-        character(len=len(List)), dimension(size(List)) :: AuxList
-
-        AuxList = List
-
-        if (allocated(List)) deallocate(List)
-
-        allocate( List(size(AuxList)+1) )
-
-        List(1:size(AuxList)) = AuxList
-        List(size(AuxList)+1) = NewString
-
-    end subroutine
-    !=======================================================================================================================
-
-    !=======================================================================================================================
-    subroutine AppendInteger(List,NewInteger)
-
-        integer, allocatable, dimension(:) :: List
-        integer                            :: NewInteger
-
-        integer, dimension(size(List)) :: AuxList
-
-        AuxList = List
-
-        if (allocated(List)) deallocate(List)
-
-        allocate( List(size(AuxList)+1) )
-
-        List(1:size(AuxList)) = AuxList
-        List(size(AuxList)+1) = NewInteger
 
     end subroutine
     !=======================================================================================================================

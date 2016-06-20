@@ -589,7 +589,7 @@ module FEMAnalysis
                     norm_mX = ( mX(1)*mX(1)+mX(2)*mX(2)+mX(3)*mX(3) )**0.50d0
                     mX = mX/norm_mX
 
-                    ! Fibras Retas em X
+                    ! Fibras Retas 
                     !----------------------
                     !mX(1) = 1.0d0
                     !mX(2) = 0.0d0

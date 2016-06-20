@@ -52,6 +52,7 @@
 		<Unit filename="../SourceCode/FEM/Elements/ElementLibrary/ModElementHexa8.f90" />
 		<Unit filename="../SourceCode/FEM/Elements/ElementLibrary/ModElementLibrary.f90" />
 		<Unit filename="../SourceCode/FEM/Elements/ElementLibrary/ModElementQuad4.f90" />
+		<Unit filename="../SourceCode/FEM/Elements/ElementLibrary/ModElementTetra10.f90" />
 		<Unit filename="../SourceCode/FEM/Elements/ElementLibrary/ModElementTetra4.f90" />
 		<Unit filename="../SourceCode/FEM/Elements/ElementLibrary/ModElementTri3.f90" />
 		<Unit filename="../SourceCode/FEM/Elements/ElementMethods/ModElement.f90" />
