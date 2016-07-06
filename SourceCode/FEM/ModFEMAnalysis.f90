@@ -361,6 +361,7 @@ module FEMAnalysis
             Flag_EndStep = 1
             call WriteFEMResults( U, 0.0d0, 1, 1, 0, 0, Flag_EndStep, FileID_FEMAnalysisResults, NumberOfIterations=0  )
 
+            
             !LOOP - LOAD CASES
             LOAD_CASE:  do LC = 1 , nLoadCases
 
@@ -376,7 +377,7 @@ module FEMAnalysis
                     write(*,*)''
 
                     call BC%GetBoundaryConditions(AnalysisSettings, LC, ST, Fext_alpha0, DeltaFext,FEMSoE%DispDOF, U, DeltaUPresc)
-
+                    
                     call BC%GetTimeInformation(LC,ST,Time_alpha0,DeltaTime)
 
                     ! Prescribed Incremental Displacement
@@ -537,7 +538,7 @@ module FEMAnalysis
             ! Cálculo das tangentes da hélice
             !####################################################################################
 
-    !if ( n .eq. 1234123312 ) then
+    if ( n .eq. 1234123312 ) then
 
             ! Parâmetros da Hélice
             R = 2.30d0
@@ -604,7 +605,7 @@ module FEMAnalysis
 
 
             !***********************************************************************************
-    !endif
+    endif
 
 		    !************************************************************************************
 
