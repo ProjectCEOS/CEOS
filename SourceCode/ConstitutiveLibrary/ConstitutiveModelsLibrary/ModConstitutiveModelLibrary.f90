@@ -29,6 +29,7 @@ module ConstitutiveModelLibrary
     use ModHyperelasticTransIso
     use ModHyperelasticTransIsoComp
     use ModViscoelasticFiber
+    use ModViscoelasticMatrix
 
     ! Constitutive Models ID registered:
     type ClassConstitutiveModels
@@ -43,6 +44,7 @@ module ConstitutiveModelLibrary
         integer   :: HyperelasticTransIsoModel      = 9
         integer   :: HyperelasticTransIsoCompModel  = 10
         integer   :: ViscoelasticFiberModel         = 11
+        integer   :: ViscoelasticMatrixModel        = 12
     end type
 
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -106,6 +108,8 @@ module ConstitutiveModelLibrary
             type(ClassHyperelasticTransIsoComp_3D)     , pointer , dimension(:) :: HTIC_3D
 
             type(ClassViscoelasticFiber_3D)            , pointer , dimension(:) :: VF_3D
+
+            type(ClassViscoelasticMatrix_3D)           , pointer , dimension(:) :: ViscoMatrix_3D
 
 ! TODO (Thiago#1#02/13/15): Trocar threeDimensional para 3D
 
@@ -334,6 +338,22 @@ module ConstitutiveModelLibrary
                     endif
                 ! -------------------------------------------------------------------------------
 
+                ! -------------------------------------------------------------------------------
+                ! Viscoelastic Model 3D (Matrix)
+                ! -------------------------------------------------------------------------------
+                case (ConstitutiveModels % ViscoelasticMatrixModel)
+
+                    if ( AnalysisSettings%Hypothesis == HypothesisOfAnalysis%ThreeDimensional ) then
+
+                            allocate( ViscoMatrix_3D(nGP) )
+                            GaussPoints => ViscoMatrix_3D
+
+                    else
+                            call Error("Error: Viscoelastic Model (Matrix) - analysis type not available.")
+
+                    endif
+                ! -------------------------------------------------------------------------------
+
 
                 case default
 
@@ -435,6 +455,10 @@ module ConstitutiveModelLibrary
             elseif ( Comp%CompareStrings('Matrix_Elastic_And_Fiber_Viscoelastic', model) .and. (AnalysisSettings%ElementTech == ElementTechnologies%Full_Integration) ) then
 
                 modelID = ConstitutiveModels%ViscoelasticFiberModel
+
+            elseif ( Comp%CompareStrings('Matrix_Viscoelastic', model) .and. (AnalysisSettings%ElementTech == ElementTechnologies%Full_Integration) ) then
+
+                modelID = ConstitutiveModels%ViscoelasticMatrixModel
             else
                 call Error( "Error: Material Model not identified: "//trim(model))
             endif
