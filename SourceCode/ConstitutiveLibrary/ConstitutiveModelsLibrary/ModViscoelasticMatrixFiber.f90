@@ -8,7 +8,7 @@
 ! Modifications:
 ! Date:         Author:
 !##################################################################################################
-module ModViscoelasticMatrix
+module ModViscoelasticMatrixFiber
 
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 	! DECLARATIONS OF VARIABLES
@@ -24,11 +24,14 @@ module ModViscoelasticMatrix
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     ! Class"NameOfTheMaterialModel": Attributes and methods of the constitutive model
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    type ViscoelasticMatrixProperties
+    type ViscoelasticMatrixFiberProperties
 
         ! Variables of material parameters
         !----------------------------------------------------------------------------------------------
-        real(8) :: K_inf, Mu_inf, Lambda_inf, K_e, Mu_e, Ni_v
+        ! Matrix
+        real(8) :: K_inf_Matrix, Mu_inf_Matrix, Lambda_inf_Matrix, K_e_Matrix, Mu_e_Matrix, Ni_v_Matrix
+        ! Fiber
+        real(8) :: FiberVolumeFraction, C1_inf_Fiber, C2_inf_Fiber, C1_e_Fiber, C2_e_Fiber, Ni_v_Fiber
 
     end type
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -37,27 +40,40 @@ module ModViscoelasticMatrix
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     ! Class"NameOfTheMaterialModel": Attributes and methods of the constitutive model
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    type , extends(ClassConstitutiveModel) :: ClassViscoelasticMatrix
+    type , extends(ClassConstitutiveModel) :: ClassViscoelasticMatrixFiber
 
 		! Class Attributes : Usually the state variables (instant and internal variables)
 		!----------------------------------------------------------------------------------------
-        type (ViscoelasticMatrixProperties), pointer :: Properties => null()
+        type (ViscoelasticMatrixFiberProperties), pointer :: Properties => null()
 
         ! Variables
+        !----------------------------------------------------------------------------------------
         real(8) :: Time_old
+
+        ! Matrix
         real(8) :: gama_new, gama_old
-        real(8) , allocatable , dimension(:) :: dvm_new, dvm_old, Fvm_new, Fvm_old
+        real(8), allocatable, dimension(:) :: dvm_new, dvm_old, Fvm_new, Fvm_old
+
+        ! Fiber
+        real(8) :: dvf_new, dvf_old, lvf_new, lvf_old
+
+        !real(8) , allocatable , dimension(:) :: Cauchy_Stress_Fiber, Cauchy_Stress_Matrix
+
 
         contains
 
             ! Class Methods
             !----------------------------------------------------------------------------------
-             procedure :: ConstitutiveModelConstructor => ConstitutiveModelConstructor_ViscoelasticMatrix
-             procedure :: ConstitutiveModelDestructor  => ConstitutiveModelDestructor_ViscoelasticMatrix
-             procedure :: ReadMaterialParameters       => ReadMaterialParameters_ViscoelasticMatrix
-             procedure :: GetResult                    => GetResult_ViscoelasticMatrix
-             procedure :: SwitchConvergedState         => SwitchConvergedState_ViscoelasticMatrix
-             procedure :: CopyProperties               => CopyProperties_ViscoelasticMatrix
+             procedure :: ConstitutiveModelConstructor => ConstitutiveModelConstructor_ViscoelasticMatrixFiber
+             procedure :: ConstitutiveModelDestructor  => ConstitutiveModelDestructor_ViscoelasticMatrixFiber
+             procedure :: ReadMaterialParameters       => ReadMaterialParameters_ViscoelasticMatrixFiber
+             procedure :: GetResult                    => GetResult_ViscoelasticMatrixFiber
+             procedure :: SwitchConvergedState         => SwitchConvergedState_ViscoelasticMatrixFiber
+             procedure :: CopyProperties               => CopyProperties_ViscoelasticMatrixFiber
+
+             procedure :: LoadPropertiesFromVector            => LoadPropertiesFromVector_ViscoelasticMatrixFiber
+             procedure :: LoadInternalVariablesFromVector     => LoadInternalVariablesFromVector_ViscoelasticMatrixFiber
+             procedure :: ExportInternalVariablesToVector     => ExportInternalVariablesToVector_ViscoelasticMatrixFiber
 
     end type
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -67,19 +83,22 @@ module ModViscoelasticMatrix
     ! Class"NameOfTheMaterialModel"_PlaneStrain: Attributes and methods of the constitutive model
     ! in Three-Dimensional analysis.
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    type , extends(ClassViscoelasticMatrix) :: ClassViscoelasticMatrix_3D
+    type , extends(ClassViscoelasticMatrixFiber) :: ClassViscoelasticMatrixFiber_3D
 
          contains
             ! Class Methods
             !----------------------------------------------------------------------------------
-             procedure :: UpdateStressAndStateVariables  =>  UpdateStressAndStateVariables_ViscoelasticMatrix_3D
-             procedure :: GetTangentModulus              =>  GetTangentModulus_ViscoelasticMatrix_3D
+             procedure :: UpdateStressAndStateVariables  =>  UpdateStressAndStateVariables_ViscoelasticMatrixFiber_3D
+             procedure :: GetTangentModulus              =>  GetTangentModulus_ViscoelasticMatrixFiber_3D
 
     end type
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
     contains
+
+
+
 
         !==========================================================================================
         ! Method ConstitutiveModelConstructor_"NameOfTheMaterialModel": Routine that constructs the
@@ -88,7 +107,163 @@ module ModViscoelasticMatrix
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-        subroutine ConstitutiveModelConstructor_ViscoelasticMatrix(this,AnalysisSettings)
+        subroutine LoadPropertiesFromVector_ViscoelasticMatrixFiber(this,Props)
+
+		    !************************************************************************************
+            ! DECLARATIONS OF VARIABLES
+		    !************************************************************************************
+            ! Modules and implicit declarations
+            ! -----------------------------------------------------------------------------------
+
+            ! Object
+            ! -----------------------------------------------------------------------------------
+            class(ClassViscoelasticMatrixFiber) :: this
+
+            ! Input variables
+            ! -----------------------------------------------------------------------------------
+            real(8), dimension(:) :: Props
+
+		    !************************************************************************************
+            if (associated(this%Properties)) deallocate(this%Properties)
+
+            allocate (this%Properties)
+
+            ! Abaqus Properties
+            this%Properties%FiberVolumeFraction = Props(1)
+            this%Properties%K_inf_Matrix        = Props(2)
+            this%Properties%Mu_inf_Matrix       = Props(3)
+            this%Properties%Lambda_inf_Matrix   = Props(4)
+            this%Properties%K_e_Matrix          = Props(5)
+            this%Properties%Mu_e_Matrix         = Props(6)
+            this%Properties%Ni_v_Matrix         = Props(7)
+            this%Properties%C1_inf_Fiber        = Props(8)
+            this%Properties%C2_inf_Fiber        = Props(9)
+            this%Properties%C1_e_Fiber          = Props(10)
+            this%Properties%C2_e_Fiber          = Props(11)
+            this%Properties%Ni_v_Fiber          = Props(12)
+
+		    !************************************************************************************
+
+        end subroutine
+        !==========================================================================================
+
+        !==========================================================================================
+        ! Method ConstitutiveModelConstructor_"NameOfTheMaterialModel": Routine that constructs the
+        ! Constitutive Model
+        !------------------------------------------------------------------------------------------
+        ! Modifications:
+        ! Date:         Author:
+        !==========================================================================================
+        subroutine LoadInternalVariablesFromVector_ViscoelasticMatrixFiber(this,IntVars)
+
+		    !************************************************************************************
+            ! DECLARATIONS OF VARIABLES
+		    !************************************************************************************
+            ! Modules and implicit declarations
+            ! -----------------------------------------------------------------------------------
+
+            ! Object
+            ! -----------------------------------------------------------------------------------
+            class(ClassViscoelasticMatrixFiber) :: this
+
+            ! Input variables
+            ! -----------------------------------------------------------------------------------
+            real(8), dimension(:) :: IntVars
+
+		    !************************************************************************************
+
+
+		    !************************************************************************************
+            ! Abaqus Internal Variables
+		    !************************************************************************************
+
+            ! Matrix
+            ! -----------------------------------------------------------------------------------
+            this%dvm_old  = IntVars(1:9)
+            this%Fvm_old  = IntVars(10:18)
+            this%gama_old = IntVars(19)
+
+
+            ! Fiber
+            ! -----------------------------------------------------------------------------------
+            this%dvf_old  = IntVars(20)
+            this%lvf_old  = IntVars(21)
+
+
+		    ! Time t_n
+            ! -----------------------------------------------------------------------------------
+            this%Time_old = IntVars(22)
+
+		    !************************************************************************************
+
+        end subroutine
+        !==========================================================================================
+
+
+        !==========================================================================================
+        ! Method ConstitutiveModelConstructor_"NameOfTheMaterialModel": Routine that constructs the
+        ! Constitutive Model
+        !------------------------------------------------------------------------------------------
+        ! Modifications:
+        ! Date:         Author:
+        !==========================================================================================
+        subroutine ExportInternalVariablesToVector_ViscoelasticMatrixFiber(this,IntVars)
+
+		    !************************************************************************************
+            ! DECLARATIONS OF VARIABLES
+		    !************************************************************************************
+            ! Modules and implicit declarations
+            ! -----------------------------------------------------------------------------------
+
+            ! Object
+            ! -----------------------------------------------------------------------------------
+            class(ClassViscoelasticMatrixFiber) :: this
+
+            ! Input variables
+            ! -----------------------------------------------------------------------------------
+            real(8), dimension(:) :: IntVars
+
+		    !************************************************************************************
+
+
+		    !************************************************************************************
+            ! Abaqus Internal Variables
+		    !************************************************************************************
+
+            ! Matrix
+            ! -----------------------------------------------------------------------------------
+            IntVars(1:9)   = this%dvm_new
+            IntVars(10:18) = this%Fvm_new 
+            IntVars(19)    = this%gama_new 
+
+
+            ! Fiber
+            ! -----------------------------------------------------------------------------------
+            IntVars(20) = this%dvf_new
+            IntVars(21) = this%lvf_new 
+
+
+		    ! Time t_n
+            ! -----------------------------------------------------------------------------------
+            IntVars(22) = this%Time 
+
+		    !************************************************************************************
+
+        end subroutine
+        !==========================================================================================
+
+
+
+
+
+        !==========================================================================================
+        ! Method ConstitutiveModelConstructor_"NameOfTheMaterialModel": Routine that constructs the
+        ! Constitutive Model
+        !------------------------------------------------------------------------------------------
+        ! Modifications:
+        ! Date:         Author:
+        !==========================================================================================
+        subroutine ConstitutiveModelConstructor_ViscoelasticMatrixFiber(this,AnalysisSettings)
 
 		    !************************************************************************************
             ! DECLARATIONS OF VARIABLES
@@ -100,7 +275,7 @@ module ModViscoelasticMatrix
 
             ! Object
             ! -----------------------------------------------------------------------------------
-            class(ClassViscoelasticMatrix) :: this
+            class(ClassViscoelasticMatrixFiber) :: this
 
             ! Input variables
             ! -----------------------------------------------------------------------------------
@@ -121,6 +296,10 @@ module ModViscoelasticMatrix
             I(5) = 1.0d0
             I(9) = 1.0d0
 
+            this%Time_old = 0.0d0
+
+            ! Matrix
+            ! -----------------------------------------------------------------------------------
             allocate( this%dvm_new(9) )
             allocate( this%dvm_old(9) )
             allocate( this%Fvm_new(9) )
@@ -132,6 +311,13 @@ module ModViscoelasticMatrix
             this%Fvm_old = I
             this%gama_new = 0.0d0
             this%gama_old = 0.0d0
+
+            ! Fiber
+            ! -----------------------------------------------------------------------------------
+            this%dvf_new  = 0.0d0
+            this%dvf_old  = 0.0d0
+            this%lvf_old  = 1.0d0
+            this%lvf_new  = 1.0d0
 
 		    !************************************************************************************
 
@@ -146,7 +332,7 @@ module ModViscoelasticMatrix
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-        subroutine ConstitutiveModelDestructor_ViscoelasticMatrix(this)
+        subroutine ConstitutiveModelDestructor_ViscoelasticMatrixFiber(this)
 
 		    !************************************************************************************
             ! DECLARATIONS OF VARIABLES
@@ -157,7 +343,7 @@ module ModViscoelasticMatrix
 
             ! Object
             ! -----------------------------------------------------------------------------------
-            class(ClassViscoelasticMatrix) :: this
+            class(ClassViscoelasticMatrixFiber) :: this
 
             ! Input variables
             ! -----------------------------------------------------------------------------------
@@ -175,6 +361,11 @@ module ModViscoelasticMatrix
             this%gama_new = 0.0d0
             this%gama_old = 0.0d0
 
+            this%dvf_new  = 0.0d0
+            this%dvf_old  = 0.0d0
+            this%lvf_old  = 1.0d0
+            this%lvf_new  = 1.0d0
+
 		    !************************************************************************************
 
         end subroutine
@@ -189,7 +380,7 @@ module ModViscoelasticMatrix
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-        subroutine ReadMaterialParameters_ViscoelasticMatrix(this,DataFile)
+        subroutine ReadMaterialParameters_ViscoelasticMatrixFiber(this,DataFile)
             use Parser
 
 		    !************************************************************************************
@@ -197,7 +388,7 @@ module ModViscoelasticMatrix
 		    !************************************************************************************
             ! Object
             ! ---------------------------------------------------------------------------------
-            class(ClassViscoelasticMatrix) :: this
+            class(ClassViscoelasticMatrixFiber) :: this
 
             ! Input variables
             ! ---------------------------------------------------------------------------------
@@ -205,8 +396,8 @@ module ModViscoelasticMatrix
             type(ClassParser)::DataFile
 
 		    !************************************************************************************
-		    character(len=100),dimension(6)::ListOfOptions,ListOfValues
-		    logical,dimension(6)::FoundOption
+		    character(len=100),dimension(12)::ListOfOptions,ListOfValues
+		    logical,dimension(12)::FoundOption
 		    integer::i
 
             !************************************************************************************
@@ -214,25 +405,32 @@ module ModViscoelasticMatrix
 		    !************************************************************************************
             allocate (this%Properties)
 
-            ListOfOptions=[ "K_inf", "Mu_inf", "Lambda_inf", "K_e", "Mu_e", "Ni_v" ]
+            ListOfOptions=[ "Fiber_Volume_Fraction", "Matrix - K_inf", "Matrix - Mu_inf", "Matrix - Lambda_inf", &
+                            "Matrix - K_e", "Matrix - Mu_e", "Matrix - Ni_v", "Fiber - C1_inf","Fiber - C2_inf", &
+                            "Fiber - C1_e", "Fiber - C2_e","Fiber - Ni_v" ]
 
             call DataFile%FillListOfOptions(ListOfOptions,ListOfValues,FoundOption)
             call DataFile%CheckError
 
             do i=1,size(FoundOption)
                 if (.not.FoundOption(i)) then
-                    write(*,*) "ReadMaterialParameters_ViscoelasticMatrix :: Option not found ["//trim(ListOfOptions(i))//"]"
+                    write(*,*) "ReadMaterialParameters_ViscoelasticMatrixFiber :: Option not found ["//trim(ListOfOptions(i))//"]"
                     stop
                 endif
             enddo
 
-            this%Properties%K_inf       = ListOfValues(1)
-            this%Properties%Mu_inf      = ListOfValues(2)
-            this%Properties%Lambda_inf  = ListOfValues(3)
-            this%Properties%K_e         = ListOfValues(4)
-            this%Properties%Mu_e        = ListOfValues(5)
-            this%Properties%Ni_v        = ListOfValues(6)
-
+            this%Properties%FiberVolumeFraction = ListOfValues(1)
+            this%Properties%K_inf_Matrix        = ListOfValues(2)
+            this%Properties%Mu_inf_Matrix       = ListOfValues(3)
+            this%Properties%Lambda_inf_Matrix   = ListOfValues(4)
+            this%Properties%K_e_Matrix          = ListOfValues(5)
+            this%Properties%Mu_e_Matrix         = ListOfValues(6)
+            this%Properties%Ni_v_Matrix         = ListOfValues(7)
+            this%Properties%C1_inf_Fiber        = ListOfValues(8)
+            this%Properties%C2_inf_Fiber        = ListOfValues(9)
+            this%Properties%C1_e_Fiber          = ListOfValues(10)
+            this%Properties%C2_e_Fiber          = ListOfValues(11)
+            this%Properties%Ni_v_Fiber          = ListOfValues(12)
 
 		    !************************************************************************************
 
@@ -247,17 +445,17 @@ module ModViscoelasticMatrix
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-        subroutine CopyProperties_ViscoelasticMatrix(this,Reference)
+        subroutine CopyProperties_ViscoelasticMatrixFiber(this,Reference)
 
-             class(ClassViscoelasticMatrix) :: this
+             class(ClassViscoelasticMatrixFiber) :: this
              class(ClassConstitutiveModel) :: Reference
 
              select type ( Reference )
 
-                 class is ( ClassViscoelasticMatrix )
+                 class is ( ClassViscoelasticMatrixFiber )
                     this%Properties => Reference%Properties
                  class default
-                     stop "erro na subroutine CopyProperties_ViscoelasticMatrix"
+                     stop "erro na subroutine CopyProperties_ViscoelasticMatrixFiber"
 
             end select
 
@@ -273,29 +471,30 @@ module ModViscoelasticMatrix
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-        subroutine UpdateStressAndStateVariables_ViscoelasticMatrix_3D(this,Status)
+        subroutine UpdateStressAndStateVariables_ViscoelasticMatrixFiber_3D(this,Status)
 
 		    !************************************************************************************
             ! DECLARATIONS OF VARIABLES
 		    !************************************************************************************
-            ! Object
-            ! ---------------------------------------------------------------------------------
             use MathRoutines
             use ModVoigtNotation
 
-            class(ClassViscoelasticMatrix_3D) :: this
+            ! Object
+            ! ---------------------------------------------------------------------------------
+            class(ClassViscoelasticMatrixFiber_3D) :: this
             type (ClassStatus) :: Status
 
 
             ! Internal variables
             ! -----------------------------------------------------------------------------------
             real(8) :: K_inf, Mu_inf, Lambda_inf, K_e, Mu_e, Ni_v
-            real(8) :: dt, gama_new, gama_old, Q
-            real(8) :: J_new, TrC_new
-            real(8) :: F_new(9), C_new(9)
+            real(8) :: vf, cinf1, cinf2, ce1, ce2, nv
+            real(8) :: dvf_new, dvf_old, lvf_old, lvf_new
+            real(8) :: dt, gama_new, gama_old
+            real(8) :: F_new(3,3)
+            real(8) :: mX_new(3)
             real(8) :: dvm_new(9), dvm_old(9), Fvm_new(9), Fvm_old(9)
-            real(8) :: Sm_new(9), Sinfm_new(9), Sem_new(9)
-            real(8) :: I(9), Aux_T2(9), Snh(9), Cauchy(3,3)
+            real(8) :: Cauchy_Matrix(3,3), Cauchy_Fiber(3,3)
 
 		    !************************************************************************************
 
@@ -304,29 +503,132 @@ module ModViscoelasticMatrix
 		    !************************************************************************************
 
             ! Optional: Retrieve Variables
-            ! -----------------------------------------------------------------------------------
-            K_inf       = this%Properties%K_inf
-            Mu_inf      = this%Properties%Mu_inf
-            Lambda_inf  = this%Properties%Lambda_inf
-            K_e         = this%Properties%K_e
-            Mu_e        = this%Properties%Mu_e
-            Ni_v        = this%Properties%Ni_v
+		    !************************************************************************************
+            ! Deformation Gradient
+            F_new  = this%F
 
-            F_new  = Tensor2ToVoigt(this%F)
+            ! Matrix Variables
+            ! ---------------------------------------------------
+            ! Properties
+            K_inf       = this%Properties%K_inf_Matrix
+            Mu_inf      = this%Properties%Mu_inf_Matrix
+            Lambda_inf  = this%Properties%Lambda_inf_Matrix
+            K_e         = this%Properties%K_e_Matrix
+            Mu_e        = this%Properties%Mu_e_Matrix
+            Ni_v        = this%Properties%Ni_v_Matrix
 
+            ! Internal Variables
+            dvm_new  = this%dvm_new
+            Fvm_new  = this%Fvm_new
+            gama_new = this%gama_new
             dvm_old  = this%dvm_old
             Fvm_old  = this%Fvm_old
             gama_old = this%gama_old
+
+            ! Fiber Variables
+            ! ---------------------------------------------------
+            ! Properties
+            vf      = this%Properties%FiberVolumeFraction
+            cinf1   = this%Properties%C1_inf_Fiber
+            cinf2   = this%Properties%C2_inf_Fiber
+            ce1     = this%Properties%C1_e_Fiber
+            ce2     = this%Properties%C2_e_Fiber
+            nv      = this%Properties%Ni_v_Fiber
+
+            ! Fiber Direction
+            mX_new = this%AdditionalVariables%mX
+
+            ! Internal Variables
+            dvf_old = this%dvf_old
+            lvf_old = this%lvf_old
+            dvf_new = this%dvf_new
+            lvf_new = this%lvf_new
+		    !************************************************************************************
+
+
+            ! Increment of Time
+            dt = this%Time - this%Time_old
+
+
+            ! Updated Cauchy Stress and Internal Variable - MATRIX
             ! -----------------------------------------------------------------------------------
+            Cauchy_Matrix = 0.0d0
+            call UpdateStressAndStateVariables_MATRIX(Cauchy_Matrix, Tensor2ToVoigt(F_new), dvm_new, &
+                                                      dvm_old, Fvm_new, Fvm_old, gama_new, gama_old, &
+                                                      K_inf, Mu_inf, Lambda_inf, K_e, Mu_e, Ni_v, dt, Status)
+
+            ! Updated Cauchy Stress and Internal Variable - FIBER
+            ! -----------------------------------------------------------------------------------
+            Cauchy_Fiber = 0.0d0
+            call UpdateStressAndStateVariables_FIBER(Cauchy_Fiber, F_new, mX_new, dvf_new, dvf_old, &
+                                                     lvf_old, lvf_new, cinf1, cinf2, ce1, ce2, nv,  &
+                                                     dt, Status)
+
+
+            ! Save Updated Internal Variable
+            ! -----------------------------------------------------------------------------------
+            ! Matrix
+            this%dvm_new  = dvm_new
+            this%Fvm_new  = Fvm_new
+            this%gama_new = gama_new
+
+            ! Fiber
+            this%dvf_new = dvf_new
+            this%lvf_new = lvf_new
+
+
+            ! TOTAL CAUCHY STRESS - Output for CEOS Global Equilibrium
+            ! -----------------------------------------------------------------------------------
+            !this%Stress = Tensor2ToVoigtSym(  (1.0d0-vf)*Cauchy_Matrix + vf*Cauchy_Fiber   )
+
+            this%Stress = Tensor2ToVoigtSym(  Cauchy_Matrix  + vf*Cauchy_Fiber   )
+            ! -----------------------------------------------------------------------------------
+
+
+		    !************************************************************************************
+
+        end subroutine
+        !==========================================================================================
+
+        !==========================================================================================
+        subroutine UpdateStressAndStateVariables_MATRIX(Cauchy_Matrix, F_new, dvm_new, dvm_old, Fvm_new, &
+                                                        Fvm_old, gama_new, gama_old, K_inf, Mu_inf,      &
+                                                        Lambda_inf, K_e, Mu_e, Ni_v, dt, Status)
+
+		    !************************************************************************************
+            ! DECLARATIONS OF VARIABLES
+		    !************************************************************************************
+            use MathRoutines
+            use ModVoigtNotation
+
+            ! Object
+            ! ---------------------------------------------------------------------------------
+            type (ClassStatus) :: Status
+
+            ! Input/Output variables
+            ! -----------------------------------------------------------------------------------
+            real(8)                 :: K_inf, Mu_inf, Lambda_inf, K_e, Mu_e, Ni_v, dt
+            real(8)                 :: gama_new, gama_old
+            real(8), dimension(:)   :: F_new, dvm_new, dvm_old, Fvm_new, Fvm_old
+            real(8), dimension(:,:) :: Cauchy_Matrix
+
+            ! Internal variables
+            ! -----------------------------------------------------------------------------------
+            real(8) :: Q, J_new, TrC_new
+            real(8) :: C_new(9), Sm_new(9), Sinfm_new(9), Sem_new(9)
+            real(8) :: I(9), Aux_T2(9), Snh(9)
+
+		    !************************************************************************************
+
+            !************************************************************************************
+            ! ALGORITHM THAT UPDATES STATE VARIABLES
+		    !************************************************************************************
 
             ! Identity
             I = 0.0d0
             I(1) = 1.0d0
             I(5) = 1.0d0
             I(9) = 1.0d0
-
-            ! Increment of Time
-            dt = this%Time - this%Time_old
 
 
             ! VARIATIONAL UPDATE - Local Newton-Raphson Procedure
@@ -336,10 +638,6 @@ module ModViscoelasticMatrix
             call Local_Newton_Raphson_MATRIX( F_new, Fvm_new, Fvm_old, dvm_new, dvm_old, gama_new, gama_old, &
                                               K_e, Mu_e, Ni_v, dt, Sem_new, Status )
 
-            ! Save Updated Internal Variable
-            this%dvm_new  = dvm_new
-            this%Fvm_new  = Fvm_new
-            this%gama_new = gama_new
             ! -----------------------------------------------------------------------------------
 
 
@@ -359,11 +657,10 @@ module ModViscoelasticMatrix
 
             ! Neo-Hookean
             !=========================
-            
             ! Second Piola Inf
             Sinfm_new = Mu_inf*(I - InverseT2Voigt(C_new)) + Lambda_inf*dlog(J_new)*InverseT2Voigt(C_new)
             !=========================
-            
+
             ! Fung with Q=Neo-Hookean
             !=========================
             !Q = (Mu_inf/2.0d0)*( TrC_new - 3.0d0 ) - Mu_inf*dlog(J_new) + &
@@ -391,9 +688,8 @@ module ModViscoelasticMatrix
 
             ! TOTAL STRESS - Cauchy
             ! -----------------------------------------------------------------------------------
-            Cauchy = StressTransformation(this%F,VoigtToTensor2(Sm_new),StressMeasures%SecondPiola,StressMeasures%Cauchy )
+            Cauchy_Matrix = StressTransformation(VoigtToTensor2(F_new),VoigtToTensor2(Sm_new),StressMeasures%SecondPiola,StressMeasures%Cauchy )
 
-            this%Stress = Tensor2ToVoigtSym(Cauchy)
             ! -----------------------------------------------------------------------------------
 
 
@@ -401,8 +697,6 @@ module ModViscoelasticMatrix
 
         end subroutine
         !==========================================================================================
-
-
 
         !==========================================================================================
         subroutine  Local_Newton_Raphson_MATRIX( F_new, Fvm_new, Fvm_old, dvm_new, dvm_old, gama_new, gama_old, &
@@ -446,7 +740,7 @@ module ModViscoelasticMatrix
 
             ! NR Parameters
             !--------------------------------------------------------------------------------
-            MaxIter = 10
+            MaxIter = 100
             Tol     = 1.0d-5
 
             ! Guess
@@ -484,7 +778,7 @@ module ModViscoelasticMatrix
                 CemInv_new = InverseT2Voigt(Cem_new)
 
                 TrCem_new = Cem_new(1) + Cem_new(5) + Cem_new(9)
-               
+
                 ! Neo-Hookean
                 !=========================
                 ! Elastic Second Piola
@@ -493,7 +787,7 @@ module ModViscoelasticMatrix
                 ! Elastic Modulus
                 Dem = 2.0d0*Mu_e*RightSymmetrizationT4Voigt( SquareVoigt(CemInv_new,CemInv_new) )
                 !=========================
-                
+
                 ! Fung with Qe=Neo-Hookean
                 !=========================
                 !Qe = (Mu_e/2.0d0)*( TrCem_new - 3.0d0 ) - Mu_e*dlog(Jem_new)
@@ -506,8 +800,8 @@ module ModViscoelasticMatrix
                 !Dem = 2.0d0*Mu_e*RightSymmetrizationT4Voigt( SquareVoigt(CemInv_new,CemInv_new) )
                 !Dem = K_e*dexp(Qe)*( Dem + BallVoigt(Snhe,Snhe) )
                 !=========================
-                
-                
+
+
                 ! Elastic Mandel
                 Mem_new = SingleContractionT2T2Voigt(Cem_new,Sem_new)
 
@@ -736,13 +1030,255 @@ module ModViscoelasticMatrix
 
 
         !==========================================================================================
+        subroutine UpdateStressAndStateVariables_FIBER(Cauchy_Fiber, F_new, mX_new, dvf_new, dvf_old, &
+                                                       lvf_old, lvf_new, cinf1, cinf2, ce1, ce2, nv,  &
+                                                       dt, Status)
+
+
+		    !************************************************************************************
+            ! DECLARATIONS OF VARIABLES
+		    !************************************************************************************
+            use MathRoutines
+
+            implicit none
+
+		    !************************************************************************************
+            ! Input/Output variables
+            ! -----------------------------------------------------------------------------------
+            real(8), dimension(:,:) :: Cauchy_Fiber, F_new
+            real(8), dimension(:)   :: mX_new
+            real(8)                 :: dvf_new, dvf_old, lvf_old, lvf_new
+            real(8)                 :: cinf1, cinf2, ce1, ce2, nv, dt
+
+            type(ClassStatus) :: Status
+
+
+            ! Internal variables
+            ! -----------------------------------------------------------------------------------
+            real(8) :: I4_new, I4e_new, lef_new, lf_new
+            real(8) :: I(3,3), C_new(3,3), M_new(3,3), Sf_new(3,3)
+            real(8) :: dPhiInf_dI4, dPhie_dI4e, D_Psif_DI4
+            real(8) :: Sinff_new, Sef_new
+
+		    !************************************************************************************
+
+            !************************************************************************************
+            ! ALGORITHM THAT UPDATES STATE VARIABLES
+		    !************************************************************************************
+
+            ! Identity
+            I = 0.0d0
+            I(1,1) = 1.0d0
+            I(2,2) = 1.0d0
+            I(3,3) = 1.0d0
+
+            ! Kinematic Variables
+            ! -----------------------------------------------------------------------------------
+
+            !Right-Cauchy Green Strain
+            C_new = matmul(transpose(F_new),F_new)
+
+            !Material Structural Tensor
+            M_new = Tensor_Product(mX_new,mX_new)
+
+            !Fourth Invariant
+            I4_new = Tensor_Inner_Product(C_new,M_new)
+
+            !Total Stretch
+            lf_new = (I4_new)**(0.50d0)
+
+            ! -----------------------------------------------------------------------------------
+
+
+            ! VARIATIONAL UPDATE - Local Newton-Raphson Procedure
+            ! -----------------------------------------------------------------------------------
+
+            ! FIBERS
+            ! -----------------------------------------------------------------------------------
+
+            call Local_Newton_Raphson_FIBER( dvf_new, lf_new, dvf_old, lvf_old, lvf_new, ce1, ce2, nv, dt, Status )
+
+
+            ! -----------------------------------------------------------------------------------
+
+            ! UPDATE STRESSES
+            ! -----------------------------------------------------------------------------------
+
+            ! STRESS IN FIBER - Calculated in 3D Tensorial Format
+            ! -----------------------------------------------------------------------------------
+            Sf_new = 0.0d0
+            if ( lf_new .gt. 1.0d0) then
+
+                ! Equilibrium Stress - Scalar
+                ! -------------------------------------------------------------------------------
+                ! POWER LAW - Balzani (2006)
+                dPhiInf_dI4   = cinf1*cinf2*((I4_new-1.0d0)**(cinf2-1.0d0))
+
+                ! Scalar Second Piola-Kirchoof
+                Sinff_new = 2.0d0*dPhiInf_dI4
+
+
+                ! Non-equilibrium Stress - Scalar
+                ! -------------------------------------------------------------------------------
+                ! Updated Variables
+                lef_new = lf_new/lvf_new
+                I4e_new = lef_new**2.0d0
+
+                ! POWER LAW - Balzani (2006)
+                dPhie_dI4e   = ce1*ce2*((I4e_new-1.0d0)**(ce2-1.0d0))
+
+                ! Scalar Second Piola-Kirchoof
+                Sef_new   = 2.0d0*dPhie_dI4e
+
+                if (lef_new .le. 1.0d0) then
+                    Sef_new = 0.0d0
+                endif
+
+                ! Second Piola-Kirchoof - Tensorial
+                ! -------------------------------------------------------------------------------
+                Sf_new = ( Sinff_new + Sef_new/(lvf_new**2.0d0) )*M_new
+
+            else
+
+                Sf_new = 0.0d0
+
+            endif
+
+            ! -----------------------------------------------------------------------------------
+
+            ! CAUCHY
+            ! -----------------------------------------------------------------------------------
+            Cauchy_Fiber = StressTransformation(F_new,Sf_new,StressMeasures%SecondPiola,StressMeasures%Cauchy )
+
+		    !************************************************************************************
+
+        end subroutine
+        !==========================================================================================
+
+
+        !==========================================================================================
+        subroutine  Local_Newton_Raphson_FIBER( dvf_new, lf_new, dvf_old, lvf_old, lvf_new, ce1, ce2, nv, dt, Status )
+
+
+            ! Input/Output variables
+            real(8) :: dvf_new, lf_new, dvf_old, lvf_old, lvf_new
+            real(8) :: ce1, ce2, nv, dt
+
+            type(ClassStatus) :: Status
+
+            ! Internal Variables
+            integer :: MaxIter, it
+            real(8) :: Tol, Norm_Rf, Rf, Kf, delta_dvf
+            real(8) :: lef_new, I4e_new, lef_new_pr
+            real(8) :: Sef_new, Mef_new, Cef_new
+            real(8) :: dPhie_dI4e, d2Phie_dI4e2, dPhiv_ddv, d2Phiv_ddv2
+
+
+            ! NR Parameters
+            ! -----------------------------------------------------------------------------------
+            MaxIter = 10
+            Tol     = 1.0d-5
+
+            ! Strategy of Solution - Vassoler(2012)
+            ! -----------------------------------------------------------------------------------
+            lef_new_pr = lf_new/lvf_old
+
+            if ((lef_new_pr .le. 1.0d0) .and. (lf_new .ge. 1.0d0)) then
+                lvf_new = lf_new
+                dvf_new = (1.0d0/dt)*(1.0d0-(lvf_old/lvf_new))
+                return
+            endif
+            if ((lef_new_pr .lt. 1.0d0) .and. (lf_new .lt. 1.0d0)) then
+                dvf_new = 0.0d0
+                lvf_new = lvf_old
+                return
+            endif
+
+            ! NR Procedure
+            ! -----------------------------------------------------------------------------------
+
+            ! Guess
+            dvf_new = 0.0d0
+
+            ! NR Loop
+            LOCAL_NR:  do it = 1 , MaxIter
+
+                ! Variables
+                ! -------------------------------------------------------------------------------
+                ! Stretches
+                lvf_new = lvf_old / (1.0d0 - dt*dvf_new)
+
+                lef_new = lf_new/lvf_new
+
+                I4e_new = lef_new**2.0d0
+
+
+                ! Elastic Model - POWER LAW - Balzani (2006)
+                dPhie_dI4e   = ce1*ce2*((I4e_new-1.0d0)**(ce2-1.0d0))
+                d2Phie_dI4e2 = ce1*ce2*(ce2-1.0d0)*((I4e_new-1.0d0)**(ce2-2.0d0))
+
+                ! Viscous Model - QUADRATIC
+                dPhiv_ddv   = nv*dvf_new
+                d2Phiv_ddv2 = nv
+
+                ! Stresses
+                Sef_new = 2.0d0*dPhie_dI4e
+
+                Mef_new = (lef_new**2.0d0)*Sef_new
+
+                ! Elastic Modulus
+                Cef_new = 4.0d0*d2Phie_dI4e2
+                ! -------------------------------------------------------------------------------
+
+                ! Residual
+                ! -------------------------------------------------------------------------------
+                Rf = -dt*(lvf_new/lvf_old)*Mef_new + dt*dPhiv_ddv
+                ! -------------------------------------------------------------------------------
+
+                ! Stopping Criterion
+                ! -------------------------------------------------------------------------------
+                Norm_Rf = dabs(Rf)
+                if (Norm_Rf .lt. Tol) then
+                    return !exit
+                endif
+
+                ! Jacobian
+                ! -------------------------------------------------------------------------------
+                Kf = ( (dt*lvf_new/lvf_old)**2.0d0 )*(Mef_new + (lef_new**4.0d0)*Cef_new) + &
+                     dt*d2Phiv_ddv2
+                ! -------------------------------------------------------------------------------
+
+                ! Solve NR Increment
+                ! -------------------------------------------------------------------------------
+                delta_dvf = -Rf/Kf
+
+                ! Update NR Increment
+                ! -------------------------------------------------------------------------------
+                dvf_new = dvf_new + delta_dvf
+
+
+            enddo LOCAL_NR
+
+
+            Status%Error = .true.
+            Status%ErrorDescription = 'Max Iteration in Local Newton-Raphson - Viscoelastic Fiber Model'
+
+
+
+
+        end subroutine
+        !==========================================================================================
+
+
+
+        !==========================================================================================
         ! Method GetTangentModulus_"NameOfTheMaterialModel"_3D: Routine that evaluates the
         ! Tangente Modulus in Plane Strain analysis.
         !------------------------------------------------------------------------------------------
         ! Modifications:
         ! Date:         Author:
         !==========================================================================================
-        subroutine GetTangentModulus_ViscoelasticMatrix_3D(this,D)
+        subroutine GetTangentModulus_ViscoelasticMatrixFiber_3D(this,D)
 
 
 		    !************************************************************************************
@@ -752,7 +1288,7 @@ module ModViscoelasticMatrix
             ! -----------------------------------------------------------------------------------
             use ModVoigtNotation
 
-            class(ClassViscoelasticMatrix_3D) :: this
+            class(ClassViscoelasticMatrixFiber_3D) :: this
 
             ! Input/Output variables
             ! -----------------------------------------------------------------------------------
@@ -761,18 +1297,13 @@ module ModViscoelasticMatrix
             ! Internal variables
             ! -----------------------------------------------------------------------------------
             real(8) :: K_inf, Mu_inf, Lambda_inf, K_e, Mu_e, Ni_v
-            real(8) :: dt, gama_new, gama_old, Q, Qe
-            real(8) :: J_new, TrC_new, Jvm_new, Jem_new, TrCem_new
-            real(8) :: I(9), Aux_T2(9), W(9,9), Z(9,9), G(9,9)
-            real(8) :: F_new(9), C_new(9), CInv_new(9)
+            real(8) :: vf, cinf1, cinf2, ce1, ce2, nv
+            real(8) :: dvf_new, dvf_old, lvf_old, lvf_new
+            real(8) :: dt, gama_new, gama_old
+            real(8) :: F_new(3,3)
+            real(8) :: mX_new(3)
             real(8) :: dvm_new(9), dvm_old(9), Fvm_new(9), Fvm_old(9)
-            real(8) :: Sm_new(9), Sem_new(9), Snh(9),  Snhe(9), Mem_new(9)
-            real(8) :: Fem_new(9), Cem_new(9), CemInv_new(9)
-            real(8) :: Fvm_new_FvmInv_old(9), FvmInv_square_FvmInv(9,9), FvmInvT_square_FvmInvT(9,9)
-            real(8) :: D2Phivm_Ddvm2(9,9), DSem_Ddvm(9,9), Dem(9,9), Dinfm(9,9)
-            real(8) :: DSm_DC(9,9), DSm_Ddvm(9,9), D2L_DCDdvm(9,9)
-            real(8) :: DCem_DC(9,9), DSem_DC(9,9), DMem_DC(9,9)
-            real(8) :: dXm_dC(7,6), Drm_DC(7,6), Km(7,7), ddvm_dC(6,6), Dm(6,6)
+            real(8) :: D_Matrix(6,6), D_Fiber(6,6)
 
 		    !************************************************************************************
 
@@ -780,35 +1311,124 @@ module ModViscoelasticMatrix
             ! TANGENT MODULUS
 		    !************************************************************************************
 
-            ! Optional: Retrieve Variables
-            ! -----------------------------------------------------------------------------------
-            K_inf       = this%Properties%K_inf
-            Mu_inf      = this%Properties%Mu_inf
-            Lambda_inf  = this%Properties%Lambda_inf
-            K_e         = this%Properties%K_e
-            Mu_e        = this%Properties%Mu_e
-            Ni_v        = this%Properties%Ni_v
+             ! Optional: Retrieve Variables
+		    !************************************************************************************
+            ! Deformation Gradient
+            F_new  = this%F
 
-            F_new  = Tensor2ToVoigt(this%F)
+            ! Matrix Variables
+            ! ---------------------------------------------------
+            ! Properties
+            K_inf       = this%Properties%K_inf_Matrix
+            Mu_inf      = this%Properties%Mu_inf_Matrix
+            Lambda_inf  = this%Properties%Lambda_inf_Matrix
+            K_e         = this%Properties%K_e_Matrix
+            Mu_e        = this%Properties%Mu_e_Matrix
+            Ni_v        = this%Properties%Ni_v_Matrix
 
+            ! Internal Variables
+            dvm_new  = this%dvm_new
+            Fvm_new  = this%Fvm_new
+            gama_new = this%gama_new
             dvm_old  = this%dvm_old
             Fvm_old  = this%Fvm_old
             gama_old = this%gama_old
 
-            dvm_new  = this%dvm_new
-            Fvm_new  = this%Fvm_new
-            gama_new = this%gama_new
+            ! Fiber Variables
+            ! ---------------------------------------------------
+            ! Properties
+            vf      = this%Properties%FiberVolumeFraction
+            cinf1   = this%Properties%C1_inf_Fiber
+            cinf2   = this%Properties%C2_inf_Fiber
+            ce1     = this%Properties%C1_e_Fiber
+            ce2     = this%Properties%C2_e_Fiber
+            nv      = this%Properties%Ni_v_Fiber
+
+            ! Fiber Direction
+            mX_new = this%AdditionalVariables%mX
+
+            ! Internal Variables
+            dvf_old = this%dvf_old
+            lvf_old = this%lvf_old
+            dvf_new = this%dvf_new
+            lvf_new = this%lvf_new
+		    !************************************************************************************
+
+            ! Increment of Time
+            dt = this%Time - this%Time_old
+
+
+            ! Spatial Tangent Modulus - MATRIX
             ! -----------------------------------------------------------------------------------
+            D_Matrix = 0.0d0
+            call TangentModulus_MATRIX(D_Matrix, Tensor2ToVoigt(F_new), dvm_new, dvm_old,   &
+                                       Fvm_new, Fvm_old, gama_new, gama_old, K_inf, Mu_inf, &
+                                       Lambda_inf, K_e, Mu_e, Ni_v, dt)
+
+            ! Spatial Tangent Modulus - FIBER
+            ! -----------------------------------------------------------------------------------
+            D_Fiber = 0.0d0
+            call TangentModulus_FIBER(D_Fiber, F_new, mX_new, dvf_new, dvf_old, lvf_old, &
+                                      lvf_new, cinf1, cinf2, ce1, ce2, nv, dt)
+
+
+            ! TOTAL TANGENT MODULUS - Output for CEOS Global Equilibrium
+            ! -----------------------------------------------------------------------------------
+            !D = (1.0d0-vf)*D_Matrix + vf*D_Fiber
+            D = D_Matrix + vf*D_Fiber
+
+		    !************************************************************************************
+
+        end subroutine
+        !==========================================================================================
+
+
+        !==========================================================================================
+        subroutine TangentModulus_MATRIX(Dm, F_new, dvm_new, dvm_old, Fvm_new, Fvm_old,   &
+                                         gama_new, gama_old, K_inf, Mu_inf, Lambda_inf,   &
+                                         K_e, Mu_e, Ni_v, dt)
+
+
+		    !************************************************************************************
+            ! DECLARATIONS OF VARIABLES
+		    !************************************************************************************
+            ! Object
+            ! -----------------------------------------------------------------------------------
+            use ModVoigtNotation
+
+
+            ! Input/Output variables
+            ! -----------------------------------------------------------------------------------
+            real(8)                 :: K_inf, Mu_inf, Lambda_inf, K_e, Mu_e, Ni_v, dt
+            real(8)                 :: gama_new, gama_old
+            real(8), dimension(:)   :: F_new, dvm_new, dvm_old, Fvm_new, Fvm_old
+            real(8), dimension(:,:) :: Dm
+
+            ! Internal variables
+            ! -----------------------------------------------------------------------------------
+            real(8) :: Q, Qe
+            real(8) :: J_new, TrC_new, Jvm_new, Jem_new, TrCem_new
+            real(8) :: I(9), Aux_T2(9), W(9,9), Z(9,9), G(9,9)
+            real(8) :: C_new(9), CInv_new(9)
+            real(8) :: Sm_new(9), Sem_new(9), Snh(9),  Snhe(9), Mem_new(9)
+            real(8) :: Fem_new(9), Cem_new(9), CemInv_new(9)
+            real(8) :: Fvm_new_FvmInv_old(9), FvmInv_square_FvmInv(9,9), FvmInvT_square_FvmInvT(9,9)
+            real(8) :: D2Phivm_Ddvm2(9,9), DSem_Ddvm(9,9), Dem(9,9), Dinfm(9,9)
+            real(8) :: DSm_DC(9,9), DSm_Ddvm(9,9), D2L_DCDdvm(9,9)
+            real(8) :: DCem_DC(9,9), DSem_DC(9,9), DMem_DC(9,9)
+            real(8) :: dXm_dC(7,6), Drm_DC(7,6), Km(7,7), ddvm_dC(6,6)
+
+		    !************************************************************************************
+
+            !************************************************************************************
+            ! TANGENT MODULUS
+		    !************************************************************************************
 
             ! Identity
             I = 0.0d0
             I(1) = 1.0d0
             I(5) = 1.0d0
             I(9) = 1.0d0
-
-            ! Increment of Time
-            dt = this%Time - this%Time_old
-
 
             ! *******************************************************************************
             ! VARIABLES
@@ -858,12 +1478,12 @@ module ModViscoelasticMatrix
 
             ! Inf Potential
             !--------------------------------------------------------------------------------
-            
+
             ! Neo-Hookean
             !=========================
             ! Modulus
             Dinfm = Lambda_inf*BallVoigt(CInv_new,CInv_new)
-            Dinfm = Dinfm + 2.0d0*(Mu_inf - Lambda_inf*dlog(J_new))*RightSymmetrizationT4Voigt( SquareVoigt(CInv_new,CInv_new) )            
+            Dinfm = Dinfm + 2.0d0*(Mu_inf - Lambda_inf*dlog(J_new))*RightSymmetrizationT4Voigt( SquareVoigt(CInv_new,CInv_new) )
             !=========================
 
             ! Fung with Q=Neo-Hookean
@@ -883,9 +1503,9 @@ module ModViscoelasticMatrix
             !--------------------------------------------------------------------------------
 
 
-            ! Elastic Potential 
+            ! Elastic Potential
             !--------------------------------------------------------------------------------
-            
+
             ! Neo-Hookean
             !=========================
             ! Elastic Second Piola
@@ -894,7 +1514,7 @@ module ModViscoelasticMatrix
             ! Elastic Modulus
             Dem = 2.0d0*Mu_e*RightSymmetrizationT4Voigt( SquareVoigt(CemInv_new,CemInv_new) )
             !=========================
-                
+
             ! Fung with Qe=Neo-Hookean
             !=========================
             !Qe = (Mu_e/2.0d0)*( TrCem_new - 3.0d0 ) - Mu_e*dlog(Jem_new)
@@ -907,7 +1527,7 @@ module ModViscoelasticMatrix
             !Dem = 2.0d0*Mu_e*RightSymmetrizationT4Voigt( SquareVoigt(CemInv_new,CemInv_new) )
             !Dem = K_e*dexp(Qe)*( Dem + BallVoigt(Snhe,Snhe) )
             !=========================
-                
+
             ! Elastic Mandel
             Mem_new = SingleContractionT2T2Voigt(Cem_new,Sem_new)
             !--------------------------------------------------------------------------------
@@ -991,7 +1611,155 @@ module ModViscoelasticMatrix
             ! SPATIAL TANGENT MODULUS - Push-Forward
             ! *******************************************************************************
 
-            D = Push_Forward_Voigt(Dm,this%F)
+            Dm = Push_Forward_Voigt(Dm,VoigtToTensor2(F_new))
+
+		    !************************************************************************************
+
+        end subroutine
+        !==========================================================================================
+
+
+        !==========================================================================================
+        subroutine TangentModulus_FIBER(Df_voigt, F_new, mX_new, dvf_new, dvf_old, lvf_old, &
+                                        lvf_new, cinf1, cinf2, ce1, ce2, nv, dt)
+
+
+		    !************************************************************************************
+            ! DECLARATIONS OF VARIABLES
+		    !************************************************************************************
+            ! Object
+            ! -----------------------------------------------------------------------------------
+             use MathRoutines
+
+            ! Input/Output variables
+            ! -----------------------------------------------------------------------------------
+            real(8)                 :: cinf1, cinf2, ce1, ce2, nv, dt
+            real(8)                 :: dvf_new, dvf_old, lvf_old, lvf_new
+            real(8), dimension(:)   :: mX_new
+            real(8), dimension(:,:) :: F_new, Df_voigt
+
+            ! Internal variables
+            ! -----------------------------------------------------------------------------------
+            real(8) :: I4_new, I4e_new, J_new, D_Psif_DI4
+            real(8) :: lf_new, lef_new
+
+            real(8) :: d2PhiInf_dI42, ddvf_dlf, drf_ddvf, drf_dlf
+            real(8) :: dPhie_dI4e, d2Phie_dI4e2, dPhiv_ddv, d2Phiv_ddv2
+            real(8) :: Sef_new, Mef_new, Cef_new, Cinff_new, Cf_new
+
+            real(8) :: M_new(3,3), C_new(3,3), I(3,3)
+
+            real(8) :: Ivoigt(6), M_new_voigt(6)
+
+		    !************************************************************************************
+
+            !************************************************************************************
+            ! TANGENT MODULUS
+		    !************************************************************************************
+
+            ! Identity
+            I = 0.0d0
+            I(1,1) = 1.0d0
+            I(2,2) = 1.0d0
+            I(3,3) = 1.0d0
+
+            Ivoigt = Convert_to_Voigt_3D_Sym(I)
+
+            ! Kinematic Variables
+            ! -----------------------------------------------------------------------------------
+
+            !Right-Cauchy Green Strain
+            C_new = matmul(transpose(F_new),F_new)
+
+            !Material Structural Tensor
+            M_new = Tensor_Product(mX_new,mX_new)
+
+            M_new_voigt = Convert_to_Voigt_3D_Sym(M_new)
+
+            !Fourth Invariant
+            I4_new = Tensor_Inner_Product(C_new,M_new)
+
+            !Total Stretch
+            lf_new = (I4_new)**(0.50d0)
+
+            ! -----------------------------------------------------------------------------------
+
+
+            ! FIBER CONTRIBUTION
+            ! -----------------------------------------------------------------------------------
+            if ( lf_new .ge. 1.0d0) then
+
+                ! Equilibrium Modulus - Scalar
+                ! -------------------------------------------------------------------------------
+                ! POWER LAW - Balzani (2006)
+                d2PhiInf_dI42  = cinf1*cinf2*(cinf2-1.0d0)*((I4_new-1.0d0)**(cinf2-2.0d0))
+
+                ! Inf. Scalar Modulus
+                Cinff_new = 4.0d0*d2PhiInf_dI42
+
+
+                ! Non-equilibrium Modulus - Scalar
+                ! -------------------------------------------------------------------------------
+                ! Stretches
+                lef_new = lf_new/lvf_new
+
+                I4e_new = lef_new**2.0d0
+
+                ! Elastic Model - POWER LAW - Balzani (2006)
+                dPhie_dI4e   = ce1*ce2*((I4e_new-1.0d0)**(ce2-1.0d0))
+                d2Phie_dI4e2 = ce1*ce2*(ce2-1.0d0)*((I4e_new-1.0d0)**(ce2-2.0d0))
+
+                ! Viscous Model - QUADRATIC
+                dPhiv_ddv   = nv*dvf_new
+                d2Phiv_ddv2 = nv
+
+                ! Stresses
+                Sef_new = 2.0d0*dPhie_dI4e
+
+                Mef_new = (lef_new**2.0d0)*Sef_new
+
+                ! Elastic Modulus
+                Cef_new = 4.0d0*d2Phie_dI4e2
+
+                if (lef_new .le. 1.0d0) then
+                    Sef_new = 0.0d0
+                    Mef_new = 0.0d0
+                    Cef_new = 0.0d0
+                endif
+
+
+                ! Computation of the Derivative - Ddvf_Dlf_new
+                ! -------------------------------------------------------------------------------
+                drf_ddvf = ( (dt*lvf_new/lvf_old)**2.0d0 )*(Mef_new + (lef_new**4.0d0)*Cef_new) + &
+                            dt*d2Phiv_ddv2
+
+                drf_dlf = -(dt*lvf_new/(lf_new*lvf_old))*(2.0d0*Mef_new + (lef_new**4.0d0)*Cef_new)
+
+                ddvf_dlf = -drf_dlf/drf_ddvf
+
+
+                ! Scalar Tangent Modulus
+                ! -------------------------------------------------------------------------------
+                Cf_new = Cinff_new + Cef_new/(lvf_new**4.0d0) - &
+                ( dt/(lf_new*lvf_new*lvf_old) )*( 2.0d0*Sef_new + (lef_new**2.0d0)*Cef_new )*ddvf_dlf
+
+
+                ! Material Tangent Modulus - In Voigt Notation
+                ! -------------------------------------------------------------------------------
+                Df_voigt = Cf_new*Ball_Voigt(M_new_voigt,M_new_voigt)
+
+                ! Spatial Tangent Modulus - In Voigt Notation
+                ! -------------------------------------------------------------------------------
+                Df_voigt = Push_Forward_Voigt(Df_voigt,F_new)
+
+
+            else
+
+                Df_voigt = 0.0d0
+
+            endif
+            ! -----------------------------------------------------------------------------------
+
 
 		    !************************************************************************************
 
@@ -1001,8 +1769,11 @@ module ModViscoelasticMatrix
 
 
 
+
+
+
         !==========================================================================================
-        subroutine SwitchConvergedState_ViscoelasticMatrix(this)
+        subroutine SwitchConvergedState_ViscoelasticMatrixFiber(this)
 
 		    !************************************************************************************
             ! DECLARATIONS OF VARIABLES
@@ -1012,17 +1783,21 @@ module ModViscoelasticMatrix
 
             ! Object
             ! -----------------------------------------------------------------------------------
-            class(ClassViscoelasticMatrix) :: this
+            class(ClassViscoelasticMatrixFiber) :: this
 
 		    !************************************************************************************
 
+            ! TIME t_n
             this%Time_old = this%Time
 
+            ! MATRIX
             this%dvm_old  = this%dvm_new
-
             this%Fvm_old  = this%Fvm_new
-
             this%gama_old = this%gama_new
+
+            ! FIBER
+            this%dvf_old = this%dvf_new
+            this%lvf_old = this%lvf_new
 
 
         end subroutine
@@ -1031,7 +1806,7 @@ module ModViscoelasticMatrix
 
 
         !==========================================================================================
-        subroutine GetResult_ViscoelasticMatrix(this, ID , Name , Length , Variable , VariableType  )
+        subroutine GetResult_ViscoelasticMatrixFiber(this, ID , Name , Length , Variable , VariableType  )
 
 		    !************************************************************************************
             ! DECLARATIONS OF VARIABLES
@@ -1042,7 +1817,7 @@ module ModViscoelasticMatrix
 
             ! Object
             ! -----------------------------------------------------------------------------------
-            class(ClassViscoelasticMatrix) :: this
+            class(ClassViscoelasticMatrixFiber) :: this
 
             ! Input variables
             ! -----------------------------------------------------------------------------------
@@ -1073,10 +1848,31 @@ module ModViscoelasticMatrix
 
                 case (1)
 
+                    Name='Fiber_Direction'
+                    VariableType = Vector
+                    Length=size(this%AdditionalVariables%mX)
+                    !-----------------------------------------------------------------
+                    mX = this%AdditionalVariables%mX
+
+                    C = matmul(transpose(this%F),this%F)
+                    A = Tensor_Product(mX,mX)
+                    FiberStretch = dsqrt( Tensor_Inner_Product(C,A) )
+                    m = matmul(this%F,mX)/FiberStretch
+                    !-----------------------------------------------------------------
+                    Variable(1:Length) = m
 
 
                 case (2)
 
+                    Name='Fiber_Stretch'
+                    VariableType = Scalar
+                    Length=1
+                    !-----------------------------------------------------------------
+                    C = matmul(transpose(this%F),this%F)
+                    A = Tensor_Product(mX,mX)
+                    FiberStretch = dsqrt( Tensor_Inner_Product(C,A) )
+                    !-----------------------------------------------------------------
+                    Variable(1:Length) = FiberStretch
 
 
                 case (3)
@@ -1089,7 +1885,7 @@ module ModViscoelasticMatrix
 
                 case default
 
-                    call Error("Error retrieving result :: GetResult_ViscoelasticMatrix")
+                    call Error("Error retrieving result :: GetResult_ViscoelasticMatrixFiber")
 
             end select
 

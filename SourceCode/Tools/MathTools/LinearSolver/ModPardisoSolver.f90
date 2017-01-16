@@ -179,7 +179,7 @@ module PardisoSolver
             iparm(1) = 1
 
             ! INPUT - The parallel (OpenMP) version of the nested dissection algorithm.
-            iparm(2) = 3
+            iparm(2) = 0
 
             ! INPUT - Preconditioned CGS/CG. The default isiparm(4)=0.
             iparm(4) = 0

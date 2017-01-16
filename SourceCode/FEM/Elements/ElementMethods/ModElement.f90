@@ -583,7 +583,7 @@ module Element
 
             !Determinant of the Jacobian
             detJ = det(Jacob)
-            if (detJ<=0.0d0 ) then
+            if (detJ<=1.0d-13 ) then
                 return
             endif
 
@@ -681,7 +681,7 @@ module Element
 
             !Determinant of the Jacobian
             detJ = det(Jacob)
-            if (detJ<=0.0d0 ) then
+            if (detJ<=1.0d-13 ) then
                 return
             endif
 
@@ -802,7 +802,7 @@ module Element
             !Determinant of the Jacobian
             detJ = det(Jacob)
 
-            if (detJ<=0.0d0 ) then
+            if (detJ<=1.0d-13 ) then
                 return
             endif
 
@@ -895,7 +895,7 @@ module Element
             !Determinant of the Jacobian
             detJ = det(Jacob)
 
-            if (detJ<=0.0d0 ) then
+            if (detJ<=1.0d-13 ) then
                 call Status%SetError(-1, 'Subroutine DeformationGradient in ModElement.f90. Error: Determinant of the Jacobian Matrix <= 0.0d0')
                 return
             endif
@@ -1036,7 +1036,7 @@ module Element
                 detJ = det(Jacob)
                 detJX = det(JacobX)
 
-                if (detJ<=0.0d0 ) then
+                if (detJ<=1.0d-13 ) then
                     call Status%SetError(-1, 'Subroutine ElementVolume in ModElement.f90. Error: Determinant of the Jacobian Matrix <= 0.0d0')
                     return
                 endif

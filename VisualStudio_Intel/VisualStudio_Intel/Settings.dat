@@ -13,7 +13,7 @@
 
 ANALYSIS SETTINGS
 
-	Multiscale Analysis = True ! False  !
+	Multiscale Analysis = True ! False !
 	Problem Type = Mechanical
 	Analysis Type = Quasi Static
 	Nonlinear Analysis = True !False !
@@ -47,31 +47,55 @@ END NONLINEAR SOLVER
 
 MATERIAL
 
-	Number of Materials = 2
-
+	Number of Materials = 2	
+	
 	Material ID = 1
-	Matrix_Elastic_And_Fiber_Viscoelastic
-	Fiber Volume Fraction = 0.75e0 !0.764e0
-	Mu Matrix = 1.00e3 ! E=2kPa
-	Lambda Matrix = 4.93e4 ! v=0.49
-	Cinf1 Fiber = 970.174e6 
-	Cinf2 Fiber = 2.828e0 
-	Ce1 Fiber = 194.162e6
-	Ce2 Fiber = 2.397e0
-	Ni Fiber = 565.612e6
-
+	Matrix_And_Fiber_Viscoelastic
+	Fiber_Volume_Fraction = 0.750e0
+	Matrix - K_inf = 1.0e0
+	Matrix - Mu_inf = 12.50e0 
+	Matrix - Lambda_inf = 50.0e0 
+	Matrix - K_e = 1.0e0
+	Matrix - Mu_e = 100.0e0 
+	Matrix - Ni_v = 400.0e0
+	Fiber - C1_inf = 970.174e0 
+	Fiber - C2_inf = 2.828e0 
+	Fiber - C1_e = 194.162e0
+	Fiber - C2_e = 2.397e0
+	Fiber - Ni_v = 565.612e0
+	
 	Material ID = 2
-	Compressible_Neo_Hookean
-	Mu = 1.33e3 ! E=4kPa
-	Lambda = 6.65e5 ! v=0.499
+	Matrix_Viscoelastic
+	K_inf = 1.0e0
+	Mu_inf = 17.0e-3
+	Lambda_inf = 1700.0e-3
+	K_e = 1.0e0
+	Mu_e = 17.0e-3 
+	Ni_v = 70.0e-3	
+	
+	! Material ID = 1
+	! Matrix_Elastic_And_Fiber_Viscoelastic
+	! Fiber Volume Fraction = 0.75e0 !0.764e0
+	! Mu Matrix = 1.00e3 ! E=2kPa
+	! Lambda Matrix = 4.93e4 ! v=0.49
+	! Cinf1 Fiber = 970.174e6 
+	! Cinf2 Fiber = 2.828e0 
+	! Ce1 Fiber = 194.162e6
+	! Ce2 Fiber = 2.397e0
+	! Ni Fiber = 565.612e6
+
+	! Material ID = 1
+	! Compressible_Neo_Hookean
+	! Mu = 5.0e2 
+	! Lambda = 6.0e2
 
 	! Material ID = 1
 	! Hyperelastic_Tranverse_Isotropic
 	! Fiber Volume Fraction = 0.75e0 !0.764e0
 	! Mu Matrix = 1.00e3 ! E=2kPa
 	! Lambda Matrix = 4.93e4 ! v=0.49
-	! Cte1 Fiber = 3.40e7  !2.43e7 !5.0e6 !8.9e6 
-	! Cte2 Fiber = 1.17e9 !3.57e8 !7.50e7 !1.2e6 
+	! Cte1 Fiber = 3.40e5  !2.43e7 !5.0e6 !8.9e6 
+	! Cte2 Fiber = 1.17e8 !3.57e8 !7.50e7 !1.2e6 
 
 	! Material ID = 2
 	! Compressible_Neo_Hookean
@@ -89,10 +113,13 @@ MATERIAL
 	
 	! Material ID = 1
 	! Neo_Hookean_Isochoric
-	! G = 4.0e3 !5.0e2
-	! Bulk Modulus = 1.0e4 !5.0e5  
+	! G = 5.0e2 !5.0e2
+	! Bulk Modulus = 9.0e2 !5.0e5  
 	
-	
+	! Material ID = 1
+	! Generalized_Hookes_Law
+	! Young Modulus = 210000.0e0 
+	! Poisson = 0.3e0
 	
 	! Material ID = 2
 	! Compressible_Neo_Hookean
@@ -107,7 +134,7 @@ END MATERIAL
 
 MESH AND BOUNDARY CONDITIONS
 
-	Mesh File =  Malha_Menor_Cis_Fibras12_fracao70.cdb !Malha_Menor_Cubo_1x1x3.cdb  !Mesh_Block_96elem_Disp_Z.cdb !Malha_RVE_1.cdb !Malha_Menor_Fibras9_fracao70.cdb ! ! Malha_Menor_Fibras4_fracao70.cdb ! !  Malha_Fibras9_fracao70.cdb
+	Mesh File =  Mesh_RVE_Poligonal_12Fibras_2Voltas_vf70.cdb !!Mesh_RVE_Cis_2Fibers_70vf.cdb !Mesh_1Elem_Ana.cdb   !Malha_Fibra_Helicoidal_3_Passos.cdb !Malha_Fibra_Reta_3_Passos.cdb !Mesh_Block_96elem_Disp_Z.cdb !Mesh_Block_1Elem_Disp_Z.cdb !Malha_Menor_Cubo_1x1x3.cdb !Malha_Menor_Cis_Fibras12_fracao70.cdb ! !Malha_RVE_1.cdb !Malha_Menor_Fibras9_fracao70.cdb ! ! Malha_Menor_Fibras4_fracao70.cdb ! !  Malha_Fibras9_fracao70.cdb
 	Preprocessor = HyperMesh !Gid 12
 	Time Discretization File = Time_Discretization.dat
 		
@@ -117,7 +144,7 @@ END MESH AND BOUNDARY CONDITIONS
 
 MULTISCALE SETTINGS
 
-	Kinematical Constraints =   Linear  ! Taylor  !     Periodic ! 
+	Kinematical Constraints =  Linear  ! Taylor  !   
 	F11 = F11.dat !One !
 	F12 = Zero   
 	F13 = Zero 

@@ -5,7 +5,7 @@
 POST PROCESSOR 
 
 	Post Processor = HyperView 12 !None !GiD 7 !
-	Results = Displacements , Cauchy Stress , Logarithmic Strain , Fiber_Direction, Fiber_Stretch, Cauchy_Stress_Fiber_Contribution, Cauchy_Stress_Matrix_Contribution ! , First Piola Stress, Deformation Grad !,  , Logarithmic Strain !, von Mises Cauchy Stress
+	Results = Displacements , Fiber_Direction !, Logarithmic Strain , Cauchy Stress ! , Fiber_Stretch !, Cauchy_Stress_Fiber_Contribution, Cauchy_Stress_Matrix_Contribution ! , First Piola Stress, Deformation Grad !,  , Logarithmic Strain !, von Mises Cauchy Stress
 	File Name = hypermesh_results.hwascii
 	
 END POST PROCESSOR 
@@ -47,7 +47,6 @@ NUMBER OF PROBES = 2
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-
 PROBE
 	Location = Micro Structure
 	File Name = Homogenized_F.probe
@@ -61,6 +60,128 @@ PROBE
 	Variable Name = First Piola Stress 
 	Components = All !1 !All
 END PROBE
+
+
+
+
+
+
+PROBE
+	Location = Node
+	File Name = Disp_Node_13981.probe
+	Variable Name = Displacements 
+	Node = 13981
+	Components = All
+END PROBE 
+
+PROBE
+	Location = Node
+	File Name = Disp_Node_12595.probe
+	Variable Name = Displacements 
+	Node = 12595
+	Components = All
+END PROBE 
+
+PROBE
+	Location = Node
+	File Name = Disp_Node_11311.probe
+	Variable Name = Displacements 
+	Node = 11311
+	Components = All
+END PROBE
+
+PROBE
+	Location = Node
+	File Name = Disp_Node_9316.probe
+	Variable Name = Displacements 
+	Node = 9316
+	Components = All
+END PROBE
+
+PROBE
+	Location = Node
+	File Name = Disp_Node_12350.probe
+	Variable Name = Displacements 
+	Node = 12350
+	Components = All
+END PROBE
+
+
+
+
+
+
+
+
+
+PROBE
+	Location = Nodal Force
+	File Name = Reaction_Force.probe
+	Load Collector = Reaction Force
+	HyperMesh File = Malha_Fibra_Helicoidal_3_Passos.cdb
+END PROBE 
+
+PROBE
+	Location = Node
+	File Name = Displacement_X.probe
+	Variable Name = Displacements 
+	Node = 75
+	Components = 1
+END PROBE 
+
+
+
+
+
+PROBE
+	Location = Nodal Force
+	File Name = Reaction_Force.probe
+	Load Collector = Reaction Force
+	HyperMesh File = Malha_Fibra_Reta_3_Passos.cdb
+END PROBE 
+
+PROBE
+	Location = Node
+	File Name = Displacement_X.probe
+	Variable Name = Displacements 
+	Node = 682
+	Components = 1
+END PROBE 
+
+
+
+
+
+
+PROBE
+	Location = Gauss Point
+	File Name = Cauchy_Stress_33.probe
+	Variable Name = Cauchy Stress
+	Element = 1
+	Gauss Point = 1	
+	Components = 3
+END PROBE
+
+PROBE
+	Location = Gauss Point
+	File Name = Log_Strain_33.probe
+	Variable Name = Logarithmic Strain 
+	Element = 1
+	Gauss Point = 1	
+	Components = 3
+END PROBE
+
+PROBE
+	Location = Gauss Point
+	File Name = Deformation_Gradient.probe
+	Variable Name = Deformation Gradient
+	Element = 1
+	Gauss Point = 1	
+	Components = All
+END PROBE
+
+
+
 
 
 

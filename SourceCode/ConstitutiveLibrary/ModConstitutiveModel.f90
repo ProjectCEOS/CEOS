@@ -31,7 +31,6 @@ module ConstitutiveModel
         real(8) , pointer , dimension(:)    :: Stress => null()
         real(8)                             :: F(3,3)=0.0d0
         real(8)                             :: T
-        !real(8)                             :: Jbar
         real(8)                             :: Time = 0.0d0
 
 
@@ -55,10 +54,10 @@ module ConstitutiveModel
             procedure :: SecondDerivativesOfPSI_Jbar    => SecondDerivativesOfPSI_JbarBase
             procedure :: CopyProperties                 => CopyPropertiesBase
 
-            procedure :: LoadProperties                 => LoadPropertiesBase
-            procedure :: LoadInternalVariables          => LoadInternalVariablesBase
-            procedure :: ExportInternalVariables        => ExportInternalVariablesBase
-            procedure :: LoadDataFromAnsys              => LoadDataFromAnsysBase
+            procedure :: LoadPropertiesFromVector        => LoadPropertiesFromVectorBase
+            procedure :: LoadInternalVariablesFromVector => LoadInternalVariablesFromVectorBase
+            procedure :: ExportInternalVariablesToVector => ExportInternalVariablesToVectorBase
+
 
         end type
 
@@ -140,7 +139,7 @@ module ConstitutiveModel
 
                         ! Central Finite Difference
                         A(3*(j-1)+i,:) = Convert_to_Voigt_3D( (Piola_forward-Piola_backward)/(2.0d0*h) )
-                        
+
                         ! Forward Finite Difference
                         !A(3*(j-1)+i,:) = Convert_to_Voigt_3D( (Piola_forward-Piola_Current)/h )
 
@@ -198,31 +197,30 @@ module ConstitutiveModel
                 class(ClassConstitutiveModel) :: this , Reference
                 stop "Error: CopyProperties"
             end subroutine
+
+
+
             !==========================================================================================
-            subroutine LoadPropertiesBase(this, Props)
+            subroutine LoadPropertiesFromVectorBase(this, Props)
                 class(ClassConstitutiveModel) :: this
                 real(8),dimension(:) :: Props
-                stop "Error: LoadPropertiesBase"
+                stop "Error: LoadPropertiesFromVectorBase"
             end subroutine
+
             !==========================================================================================
-            subroutine LoadInternalVariablesBase(this, IntVars)
+            subroutine LoadInternalVariablesFromVectorBase(this, IntVars)
                 class(ClassConstitutiveModel) :: this
                 real(8),dimension(:) :: IntVars
                 stop "Error: LoadInternalVariablesBase"
             end subroutine
              !==========================================================================================
-            subroutine ExportInternalVariablesBase(this, IntVars)
+            subroutine ExportInternalVariablesToVectorBase(this, IntVars)
                 class(ClassConstitutiveModel) :: this
                 real(8),dimension(:) :: IntVars
                 stop "Error: ExportInternalVariablesBase"
             end subroutine
-            !==========================================================================================
-            subroutine LoadDataFromAnsysBase(this, Time,dTime,Temp,dTemp,defgrad , defGrad_t )
-                class(ClassConstitutiveModel) :: this
-                real(8) :: Time , dTime , Temp , dTemp
-                real(8) , dimension(3,3) :: defGrad , defGrad_t
-                stop "Error: LoadDataFromAnsysBase"
-            end subroutine
+             !==========================================================================================
+
 
 
 !____________________________________________________________________________________________________________________________________________________

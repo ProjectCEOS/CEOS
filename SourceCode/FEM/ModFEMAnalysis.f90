@@ -538,18 +538,18 @@ module FEMAnalysis
             ! Cálculo das tangentes da hélice
             !####################################################################################
 
-    if ( n .eq. 1234123312 ) then
+    !if ( n .eq. 1234123312 ) then
 
             ! Parâmetros da Hélice
-            R = 2.30d0
-            L = 99.30d0
-            pitch = 1.0d0
-            hand = -1.0d0
-            theta = 0.0d0 !90.0d0  !CUIDAR A ORDEM DO DESENHO NO SOLIDWORKS!!!!!
+            R = 2.30d0          !1 fibra de 3 voltas: 2.30d-3
+            L = 99.30d0         !1 fibra de 3 voltas: 297.90d-3
+            pitch =  1.0d0
+            hand  = -1.0d0 
+            theta =  0.0d0   !CUIDAR A ORDEM DO DESENHO NO SOLIDWORKS!!!!!   !1 fibra de 3 voltas: 0.0d0
 
             ! Elemento e Nó de Referência
-            ElemRef = 3276 !576 ! 9FibrasRetas=2601! 16Fibras=3876 ! 9Fibras=1776 ! 4Fibras=576
-            NodeRef = 35 !34  ! 9FibrasRetas=4241! 16Fibras=221  ! 9Fibras=4317  ! 4Fibras=34
+            ElemRef = 211 !166 !45271 !15226 !4401     !2 Fibras: 1776  !12 Fibras: 4526       !1 fibra de 3 voltas: 1501
+            NodeRef = 1064 !110 !289 !5150 !2088     !2 Fibras: 2868  !12 Fibras: 5950       !1 fibra de 3 voltas: 31 
 
             !Obtendo o ID do Nó de Referência
             NumberOfNodes =  this%ElementList(ElemRef)%El%GetNumberOfNodes()
@@ -603,11 +603,10 @@ module FEMAnalysis
             enddo
             !####################################################################################
 
+    !endif
+    
+ 		    !************************************************************************************
 
-            !***********************************************************************************
-    endif
-
-		    !************************************************************************************
 
         end subroutine
         !==========================================================================================

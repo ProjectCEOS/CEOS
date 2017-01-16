@@ -49,7 +49,7 @@ module NeoHookeanIsochoric
 
 		! Class Attributes : Usually the internal variables
 		!----------------------------------------------------------------------------------------
-
+        real(8) :: iv(6)
 
 		! Class Attributes : Material Properties
 		!----------------------------------------------------------------------------------------
@@ -66,6 +66,10 @@ module NeoHookeanIsochoric
              procedure :: GetResult                    => GetResult_NeoHookeanIsochoric
              procedure :: SwitchConvergedState         => SwitchConvergedState_NeoHookeanIsochoric
              procedure :: CopyProperties               => CopyProperties_NeoHookeanIsochoric
+
+             procedure :: LoadPropertiesFromVector            => LoadPropertiesFromVector_NeoHookeanIsochoric
+             procedure :: LoadInternalVariablesFromVector     => LoadInternalVariablesFromVector_NeoHookeanIsochoric
+             procedure :: ExportInternalVariablesToVector     => ExportInternalVariablesToVector_NeoHookeanIsochoric
 
     end type
 	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -98,9 +102,121 @@ module NeoHookeanIsochoric
              procedure :: GetTangentModulus              =>  GetTangentModulus_NeoHookeanIsochoric_3D
 
     end type
-	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX         
+	!XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
     contains
+
+
+        !==========================================================================================
+        ! Method ConstitutiveModelConstructor_"NameOfTheMaterialModel": Routine that constructs the
+        ! Constitutive Model
+        !------------------------------------------------------------------------------------------
+        ! Modifications:
+        ! Date:         Author:
+        !==========================================================================================
+        subroutine LoadPropertiesFromVector_NeoHookeanIsochoric(this,Props)
+
+		    !************************************************************************************
+            ! DECLARATIONS OF VARIABLES
+		    !************************************************************************************
+            ! Modules and implicit declarations
+            ! -----------------------------------------------------------------------------------
+
+            ! Object
+            ! -----------------------------------------------------------------------------------
+            class(ClassNeoHookeanIsochoric) :: this
+
+            ! Input variables
+            ! -----------------------------------------------------------------------------------
+            real(8), dimension(:) :: Props
+
+		    !************************************************************************************
+            if (associated(this%Properties)) deallocate(this%Properties)
+
+            allocate (this%Properties)
+
+            ! Abaqus Properties
+            this%Properties%G           = 2.0d0*Props(1)
+            this%Properties%BulkModulus = 2.0d0/Props(2)
+
+		    !************************************************************************************
+
+        end subroutine
+        !==========================================================================================
+
+        !==========================================================================================
+        ! Method ConstitutiveModelConstructor_"NameOfTheMaterialModel": Routine that constructs the
+        ! Constitutive Model
+        !------------------------------------------------------------------------------------------
+        ! Modifications:
+        ! Date:         Author:
+        !==========================================================================================
+        subroutine LoadInternalVariablesFromVector_NeoHookeanIsochoric(this,IntVars)
+
+		    !************************************************************************************
+            ! DECLARATIONS OF VARIABLES
+		    !************************************************************************************
+            ! Modules and implicit declarations
+            ! -----------------------------------------------------------------------------------
+
+            ! Object
+            ! -----------------------------------------------------------------------------------
+            class(ClassNeoHookeanIsochoric) :: this
+
+            ! Input variables
+            ! -----------------------------------------------------------------------------------
+            real(8), dimension(:) :: IntVars
+
+		    !************************************************************************************
+
+            ! Abaqus Internal Variables
+
+            this%iv = IntVars
+
+
+		    !************************************************************************************
+
+        end subroutine
+        !==========================================================================================
+
+
+        !==========================================================================================
+        ! Method ConstitutiveModelConstructor_"NameOfTheMaterialModel": Routine that constructs the
+        ! Constitutive Model
+        !------------------------------------------------------------------------------------------
+        ! Modifications:
+        ! Date:         Author:
+        !==========================================================================================
+        subroutine ExportInternalVariablesToVector_NeoHookeanIsochoric(this,IntVars)
+
+		    !************************************************************************************
+            ! DECLARATIONS OF VARIABLES
+		    !************************************************************************************
+            ! Modules and implicit declarations
+            ! -----------------------------------------------------------------------------------
+
+            ! Object
+            ! -----------------------------------------------------------------------------------
+            class(ClassNeoHookeanIsochoric) :: this
+
+            ! Input variables
+            ! -----------------------------------------------------------------------------------
+            real(8), dimension(:) :: IntVars
+
+		    !************************************************************************************
+
+            ! Abaqus Internal Variables
+            IntVars = this%iv
+
+
+		    !************************************************************************************
+
+        end subroutine
+        !==========================================================================================
+
+
+
+
 
         !==========================================================================================
         ! Method ConstitutiveModelConstructor_"NameOfTheMaterialModel": Routine that constructs the
@@ -434,7 +550,7 @@ module NeoHookeanIsochoric
             I(1,1) = 1.0d0
             I(2,2) = 1.0d0
             I(3,3) = 1.0d0
-            
+
             ! Right-Cauchy Green Strain
             C = matmul(transpose(F),F)
 
@@ -452,7 +568,8 @@ module NeoHookeanIsochoric
 
             ! Hydrostatic Pressure
             p = BulkModulus*( 1.0d0 - (1.0d0/J) )
-
+            
+            
             ! Derivative of Hydrostatic Pressure
             d2PSIvol_dJ2 = BulkModulus/(J**2.0d0)
 
@@ -597,7 +714,8 @@ module NeoHookeanIsochoric
             Sfric = G*I
 
             ! Hydrostatic Pressure
-            p = BulkModulus*( 1.0d0 - (1.0d0/J) )
+            !p = BulkModulus*( 1.0d0 - (1.0d0/J) )
+            p = BulkModulus*( J - 1.0d0  )
 
             ! Deviatoric part of the Second Piola-Kirchhoff Frictional
             devSfric = Sfric - (1.0d0/3.0d0)*Tensor_Inner_Product(Sfric,C)*Cinv
@@ -611,7 +729,7 @@ module NeoHookeanIsochoric
             ! notation.
             ! -----------------------------------------------------------------------------------
             S = matmul(matmul(F,S),transpose(F))/J
-            
+
             this%Stress = Convert_to_Voigt_3D_Sym( S )
             ! -----------------------------------------------------------------------------------
 
@@ -677,7 +795,7 @@ module NeoHookeanIsochoric
             I(1,1) = 1.0d0
             I(2,2) = 1.0d0
             I(3,3) = 1.0d0
-            
+
             ! Right-Cauchy Green Strain
             C = matmul(transpose(F),F)
 
@@ -694,11 +812,12 @@ module NeoHookeanIsochoric
             Sfric = G*I
 
             ! Hydrostatic Pressure
-            p = BulkModulus*( 1.0d0 - (1.0d0/J) )
+            !p = BulkModulus*( 1.0d0 - (1.0d0/J) )
+            p = BulkModulus*( J - 1.0d0  )
 
             ! Derivative of Hydrostatic Pressure
-            d2PSIvol_dJ2 = BulkModulus/(J**2.0d0)
-
+            !d2PSIvol_dJ2 = BulkModulus/(J**2.0d0)
+            d2PSIvol_dJ2 = BulkModulus
 
             ! -----------------------------------------------------------------------------------
             ! The subsequent computations are made in Voigt notation
@@ -753,7 +872,7 @@ module NeoHookeanIsochoric
         end subroutine
         !==========================================================================================
 
-        
+
 
         !==========================================================================================
         ! Method SwitchConvergedState_"NameOfTheMaterialModel": Routine that save de converged state.
@@ -831,20 +950,20 @@ module NeoHookeanIsochoric
             I(3,3) = 1.0d0
 
             select case (ID)
-
+            
                 case(0)
-
+            
                     Length = 2
-
+            
                 case(1)
-
+            
                     Name='Cauchy Stress'
                     VariableType=Tensor
                     Length=size(this%Stress)
                     Variable(1:Length) = this%Stress
-
+            
                 case (2)
-
+            
                     Name='Almansi Strain'
                     VariableType = Tensor
                     Length=size(this%Stress)
@@ -855,7 +974,7 @@ module NeoHookeanIsochoric
                     eV = Convert_to_Voigt(e)
                     Variable(1:Length) = eV(1:Length)
                     !-------------------------------------------------------------
-
+            
                 case default
                     call Error("Error retrieving result :: GetResult")
             end select

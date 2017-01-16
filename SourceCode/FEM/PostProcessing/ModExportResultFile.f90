@@ -13,6 +13,7 @@ module ModExportResultFile
     ! Subroutine Description:
     !==========================================================================================
     subroutine  ReadPostProcessingInputFile(FileName,ProbeList,PostProcessor)
+! TODO (Thiago#2#): Organizar melhor a lógica de leitura dos Probes.
 
 
         !************************************************************************************
@@ -33,7 +34,7 @@ module ModExportResultFile
         ! Internal variables
         ! -----------------------------------------------------------------------------------
         type (ClassParser) :: File
-        character(len=255) :: OptionName, OptionValue, String
+        character(len=255) :: OptionName, OptionValue, String, ProbeHyperMeshFile, ProbeLoadCollector
         character(len=255) :: ProbeLocation, ProbeFileName, ProbeVariableName, ProbeComponentsString
         logical :: ProbeAllComponents
 
@@ -166,6 +167,9 @@ module ModExportResultFile
             ProbeNode = 0
             ProbeElement = 0
             ProbeGaussPoint = 0
+            ProbeHyperMeshFile = ''
+            ProbeLoadCollector = ''
+
 
             PROBE_BLOCK_LOOP: do while (.true.)
 
@@ -198,6 +202,12 @@ module ModExportResultFile
                 elseif (File%CompareStrings(OptionName,'Gauss Point')) then
                     ProbeGaussPoint = OptionValue
 
+                elseif (File%CompareStrings(OptionName,'HyperMesh File')) then
+                    ProbeHyperMeshFile = OptionValue
+
+                elseif (File%CompareStrings(OptionName,'Load Collector')) then
+                    ProbeLoadCollector = OptionValue
+
                 else
                     call File%RaiseError('Expression not identified in '//trim(FileName))
                 endif
@@ -216,6 +226,11 @@ module ModExportResultFile
         elseif (  File%CompareStrings(ProbeLocation, 'Gauss Point' ) ) then
 
             call GaussPointProbeConstructor(ProbeList(i)%Pr, ProbeVariableName, ProbeElement, ProbeFileName, ProbeGaussPoint, ProbeComponentsString)
+
+        ! Probes de Forças Nodais
+        elseif (  File%CompareStrings(ProbeLocation, 'Nodal Force' ) ) then
+
+            call NodalForceProbeConstructor(ProbeList(i)%Pr, ProbeHyperMeshFile, ProbeFileName, ProbeLoadCollector)
 
         ! Probes de Micro Estrutura
         elseif (  File%CompareStrings(ProbeLocation, 'Micro Structure' ) ) then
